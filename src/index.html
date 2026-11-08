@@ -1,9 +1,9 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'"><title>CotrimScan</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'"><title>CotrimScan</title><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="assets/icones_3d/LOGO.png"></head><body>
 <div id="auth-view" class="auth-view">
  <div class="auth-shell">
   <section class="auth-card" aria-labelledby="auth-title">
    <div class="auth-content">
-    <img class="auth-mark" src="assets/icones_3d/01_impressora_3d.png" alt="CotrimScan" width="30" height="30">
+    <img class="auth-mark" src="assets/icones_3d/LOGO.png" alt="CotrimScan" width="124" height="63">
     <h1 id="auth-title">Bem-vindo ao CotrimScan</h1>
     <p id="auth-description">Carregando sua conta local…</p>
     <form id="auth-form" hidden>
@@ -42,7 +42,7 @@
  </div>
 </div>
 <div id="projects-view" class="workspace" hidden>
- <header class="workspace-header"><div class="workspace-brand"><img src="assets/scanner.svg" width="28" height="28" alt=""><span>COTRIMSCAN</span></div><div class="workspace-account"><span id="projects-user"></span><button id="projects-logout" class="quiet-button">Sair</button></div></header>
+ <header class="workspace-header"><div class="workspace-brand"><img class="brand-logo" src="assets/icones_3d/LOGO.png" width="72" height="36" alt="CotrimScan"><span>COTRIMSCAN</span></div><div class="workspace-account"><span id="projects-user"></span><button id="projects-logout" class="quiet-button">Sair</button></div></header>
  <main class="projects-main">
   <div class="projects-heading"><div><span class="eyebrow">SEU ESPAÇO DE TRABALHO</span><h1>Meus projetos</h1><p>Organize suas digitalizações. Dê dois cliques em uma pasta para começar.</p></div><button id="new-project" class="blue-button"><span aria-hidden="true">＋</span> Novo projeto</button></div>
   <p id="projects-status" class="workspace-status" role="status" aria-live="polite"></p>
@@ -110,7 +110,7 @@
  </div></div><p id="mobile-error" class="mobile-error" role="status" aria-live="polite"></p>
 </dialog>
 <div id="scanner-view" class="workspace" hidden>
- <header class="workspace-header"><div class="workspace-brand"><button id="back-projects" class="quiet-button">← Projetos</button><span id="active-project-name"></span></div><div class="workspace-account"><span id="session-user"></span><button id="logout" class="quiet-button">Sair</button></div></header>
+ <header class="workspace-header"><div class="workspace-brand"><img class="brand-logo" src="assets/icones_3d/LOGO.png" width="56" height="28" alt="CotrimScan"><button id="back-projects" class="quiet-button">← Projetos</button><span id="active-project-name"></span></div><div class="workspace-account"><span id="session-user"></span><button id="logout" class="quiet-button">Sair</button></div></header>
  <main class="review-main">
   <div class="review-heading"><div><span class="eyebrow">REVISÃO DE DOCUMENTOS</span><h1>Documentos do projeto</h1><p id="status" role="status" aria-live="polite">Pronto para digitalizar.</p></div><div class="review-actions"><button id="connect-mobile" class="secondary">Conectar celular</button><button id="export-outputs" class="secondary">Enviar para saídas</button><button id="scan">＋ Digitalizar</button></div></div>
   <div class="review-layout">

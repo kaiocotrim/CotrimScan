@@ -67,6 +67,7 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
   await stop();
   const files={};
   for(const [url,name,type] of [['/','index.html','text/html; charset=utf-8'],['/phone.js','phone.js','text/javascript; charset=utf-8'],['/phone.css','phone.css','text/css; charset=utf-8']])files[url]={data:await fs.readFile(path.join(__dirname,'mobile',name)),type};
+  files['/logo.png']={data:await fs.readFile(path.join(__dirname,'assets','icones_3d','LOGO.png')),type:'image/png'};
   const s={id:secret(),address,projectName,startedAt:now(),qrExpiresAt:now()+pairLifetime,token:secret(),clients:new Map(),attempts:new Map(),receiving:false};
   const server=http.createServer(async(req,res)=>{
    function reply(status,value,type='application/json; charset=utf-8'){

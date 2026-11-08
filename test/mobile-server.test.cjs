@@ -20,6 +20,7 @@ async function fixture(t,extra={}){
 test('QR temporário exige aprovação, protege origem e evita envio duplicado',async t=>{
  const f=await fixture(t),jpeg=await fs.readFile(path.join(__dirname,'fixtures/document.jpg'));
  const page=await fetch(f.base+'/');assert.equal(page.status,200);assert.ok(page.headers.get('content-security-policy').includes("frame-ancestors 'none'"));assert.equal(page.headers.get('cache-control'),'no-store');
+ const logo=await fetch(f.base+'/logo.png');assert.equal(logo.status,200);assert.equal(logo.headers.get('content-type'),'image/png');assert.ok((await logo.arrayBuffer()).byteLength>0);
  assert.equal((await f.request('/api/upload',{method:'POST',auth:'errado'})).status,401);
  assert.equal((await f.request('/api/pair',{method:'POST',headers:{Origin:'https://outro.exemplo'},body:'{}'})).status,403);
  const badHost=await new Promise((resolve,reject)=>{const req=http.request(f.base+'/api/status',{headers:{Host:'outro.exemplo'}},res=>{res.resume();res.on('end',()=>resolve(res.statusCode));});req.on('error',reject);req.end();});assert.equal(badHost,403);
