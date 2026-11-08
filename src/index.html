@@ -1,0 +1,106 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'"><title>NAPS2 Desktop</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="auth-view" class="auth-view">
+ <div class="auth-shell">
+  <section class="auth-card" aria-labelledby="auth-title">
+   <div class="auth-content">
+    <img class="auth-mark" src="assets/icones_3d/01_impressora_3d.png" alt="NAPS2 Desktop" width="30" height="30">
+    <h1 id="auth-title">Bem-vindo ao NAPS2</h1>
+    <p id="auth-description">Carregando sua conta local…</p>
+    <form id="auth-form" hidden>
+     <label class="auth-field"><span class="visually-hidden">Usuário</span><input id="username" name="username" autocomplete="username" placeholder="Seu usuário" minlength="3" maxlength="40" required></label>
+     <label class="auth-field"><span class="visually-hidden">Senha</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" maxlength="256" required></label>
+     <label id="confirm-label" class="auth-field" hidden><span class="visually-hidden">Confirmar senha</span><input id="confirm-password" name="confirm-password" type="password" autocomplete="new-password" placeholder="Confirme sua senha" maxlength="256"></label>
+     <button id="auth-submit" type="submit">Entrar</button>
+    </form>
+    <p id="auth-status" role="status" aria-live="polite"></p>
+    <div class="auth-divider"><span>OU</span></div>
+    <button id="auth-about" class="auth-about" type="button" aria-expanded="false" aria-controls="auth-help"><span class="play-icon" aria-hidden="true">▷</span> Conheça o aplicativo</button>
+    <p id="auth-help" class="auth-help" hidden>Digitalize documentos pelo serviço NAPS2 WebScan, visualize suas páginas e salve em JPEG. Entre com sua conta local para começar.</p>
+    <p class="auth-footer">Seu espaço de digitalização, neste computador.<br>Conta local · Sem recuperação automática de senha.</p>
+   </div>
+  </section>
+  <div class="auth-visual" aria-hidden="true">
+   <div class="visual-grid"></div>
+   <div class="integration-map">
+    <svg class="connection-lines" viewBox="0 0 600 440" fill="none"><g stroke="currentColor" stroke-dasharray="2 6"><path d="M300 220V68M300 220 154 145M300 220 446 145M300 220 154 295M300 220 446 295M300 220V368"/></g></svg>
+    <div class="hub-halo"></div>
+    <div class="integration-hub"><img class="scanner-3d" src="assets/icones_3d/01_impressora_3d.png" alt="" width="1254" height="1254" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-document"><img src="assets/icones_3d/02_pagina_digitalizada_3d.png" alt="" width="1145" height="1374" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-pages"><img src="assets/icones_3d/03_documentos_3d.png" alt="" width="1216" height="1293" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-cloud"><img src="assets/icones_3d/04_upload_nuvem_3d.png" alt="" width="1536" height="1024" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-folder"><img src="assets/icones_3d/05_arquivo_salvo_3d.png" alt="" width="1368" height="1149" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-shield"><img src="assets/icones_3d/06_seguranca_3d.png" alt="" width="1254" height="1254" decoding="sync" draggable="false"></div>
+    <div class="integration-node node-seal"><img src="assets/icones_3d/07_tudo_organizado_3d.png" alt="" width="1254" height="1254" decoding="sync" draggable="false"></div>
+    <span class="flow-dot dot-one"></span><span class="flow-dot dot-two"></span><span class="flow-dot dot-three"></span><span class="flow-dot dot-four"></span><span class="flow-dot dot-five"></span><span class="flow-dot dot-six"></span>
+    <div class="event-chip chip-scanned"><i></i>Página digitalizada</div>
+    <div class="event-chip chip-checked"><i></i>Documento conferido</div>
+    <div class="event-chip chip-saved"><i></i>Arquivo salvo</div>
+    <div class="event-chip chip-organized"><i></i>Tudo organizado</div>
+   </div>
+   <div class="visual-caption"><p>Do papel ao digital, com tudo organizado.</p><span>Digitalize, confira e salve seus documentos com o NAPS2.</span><div class="visual-pagination"><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+ </div>
+</div>
+<div id="projects-view" class="workspace" hidden>
+ <header class="workspace-header"><div class="workspace-brand"><img src="assets/scanner.svg" width="28" height="28" alt=""><span>NAPS2 / DESKTOP</span></div><div class="workspace-account"><span id="projects-user"></span><button id="projects-logout" class="quiet-button">Sair</button></div></header>
+ <main class="projects-main">
+  <div class="projects-heading"><div><span class="eyebrow">SEU ESPAÇO DE TRABALHO</span><h1>Meus projetos</h1><p>Organize suas digitalizações. Dê dois cliques em uma pasta para começar.</p></div><button id="new-project" class="blue-button"><span aria-hidden="true">＋</span> Novo projeto</button></div>
+  <p id="projects-status" class="workspace-status" role="status" aria-live="polite"></p>
+  <div id="projects-grid" class="projects-grid" aria-label="Projetos"></div>
+  <div id="projects-empty" class="projects-empty" hidden><img src="assets/folder.svg" width="100" height="80" alt=""><h2>Seu primeiro projeto começa aqui</h2><p>Crie uma pasta, configure o scanner e organize seus documentos.</p><button id="first-project" class="blue-button">Criar meu primeiro projeto</button></div>
+ </main>
+</div>
+<dialog id="project-editor" class="project-editor" aria-labelledby="editor-title">
+ <form id="project-form">
+  <div class="editor-heading"><div><span class="eyebrow">PROJETO LOCAL</span><h2 id="editor-title">Novo projeto</h2><p>Configure a digitalização, os destinos e a assinatura dos seus documentos.</p></div><button id="editor-close" type="button" class="quiet-button" aria-label="Fechar">×</button></div>
+  <div class="editor-body">
+   <div class="editor-settings"><h3><span>01</span> Digitalização</h3>
+    <label>Nome do projeto<input id="project-name" maxlength="80" placeholder="Ex.: Contratos · Novembro" required></label>
+    <div class="editor-fields"><label>Porta do serviço<input id="project-port" type="number" min="1024" max="65535" value="9880" required></label><label>Resolução<select id="project-dpi"><option value="150">150 dpi</option><option value="300" selected>300 dpi</option><option value="600">600 dpi</option></select></label></div>
+    <label>Origem<select id="project-source"><option value="Feeder">Alimentador automático</option><option value="Platen">Vidro do scanner</option></select></label>
+    <label>Cor do documento<select id="project-color"><option value="RGB24">Colorido</option><option value="Grayscale8">Tons de cinza</option><option value="BlackAndWhite1">Preto e branco</option></select></label>
+    <p class="editor-note">O modo de cor solicitado precisa ser suportado pelo serviço e pelo scanner.</p>
+   </div>
+   <div class="editor-outputs"><div class="outputs-heading"><h3><span>02</span> Pastas de saída</h3><span id="output-count" class="output-count">0</span></div>
+    <p class="outputs-description">Cada página será salva em todas as pastas adicionadas, além da cópia no projeto.</p>
+    <div id="output-list" class="output-list"></div>
+    <div id="outputs-empty" class="outputs-empty"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10V6h9l3 4h12v17H4Z"/><path d="M4 14h24M16 18v6m-3-3h6"/></svg><p>Para onde seus documentos vão?</p><span>Adicione quantas saídas precisar.</span></div>
+    <button id="add-output" type="button" class="add-output">＋ Adicionar pasta de saída</button>
+    <button id="manual-output" type="button" class="manual-output">Digitar um caminho</button>
+    <p class="editor-note">Sem saídas configuradas, as páginas ficam somente no projeto local.</p>
+   </div>
+   <div class="editor-signature"><h3><span>03</span> Certificado digital</h3>
+    <p class="outputs-description">Vincule um certificado ao projeto para gerar documentos assinados automaticamente.</p>
+    <label>Assinatura dos documentos<select id="project-signature"><option value="none">Sem assinatura digital</option><option value="a1">A1 · Arquivo .pfx / .p12</option><option value="a3">A3 · Token ou cartão (Windows)</option></select></label>
+    <div id="signature-a1" hidden>
+     <label>Arquivo do certificado<input id="certificate-file" readonly placeholder="Nenhum certificado selecionado"></label>
+     <button id="pick-certificate" type="button" class="add-output">Selecionar certificado A1</button>
+     <p class="editor-note">O projeto guarda o caminho do arquivo. A senha será solicitada ao assinar e mantida somente na memória até sair do aplicativo.</p>
+    </div>
+    <div id="signature-a3" hidden>
+     <label>Certificado do Windows<select id="certificate-store"><option value="">Selecione um certificado</option></select></label>
+     <button id="refresh-certificates" type="button" class="add-output">Buscar certificados do Windows</button>
+     <p class="editor-note">Conecte o token ou cartão e instale o driver do fabricante. A chave permanece no dispositivo e o Windows poderá solicitar o PIN. A lista pode incluir certificados A1 instalados no Windows.</p>
+    </div>
+    <p id="certificate-editor-status" class="editor-note" role="status" aria-live="polite"></p>
+    <div id="signature-summary" class="signature-summary" hidden><strong>Saída: PDF com assinatura digital</strong><p>Um PDF assinado por página, em todas as saídas. Sem carimbo visual. As imagens originais ficam no projeto.</p></div>
+    <p class="editor-note">A assinatura comprova a integridade do PDF. Não inclui carimbo do tempo nem validação de revogação ou da cadeia ICP-Brasil.</p>
+   </div>
+  </div>
+  <p id="editor-status" class="workspace-status" role="status" aria-live="polite"></p>
+  <div class="editor-actions"><span>Salvo neste computador</span><button id="editor-cancel" type="button" class="quiet-button">Cancelar</button><button id="editor-save" type="submit" class="blue-button">Criar projeto</button></div>
+ </form>
+</dialog>
+<dialog id="certificate-unlock" class="certificate-dialog" aria-labelledby="unlock-title">
+ <form id="certificate-unlock-form"><span class="eyebrow">CERTIFICADO A1</span><h2 id="unlock-title">Liberar assinatura digital</h2><p>Informe a senha do certificado vinculado a este projeto. Ela não será salva em arquivo.</p><label>Senha do certificado<input id="certificate-password" type="password" autocomplete="off" maxlength="1024"></label><p id="certificate-unlock-status" role="status" aria-live="polite"></p><div class="unlock-actions"><button id="unlock-cancel" type="button" class="quiet-button">Cancelar</button><button id="unlock-confirm" type="submit">Liberar certificado</button></div></form>
+</dialog>
+<div id="scanner-view" class="workspace" hidden>
+ <header class="workspace-header"><div class="workspace-brand"><button id="back-projects" class="quiet-button">← Projetos</button><span id="active-project-name"></span></div><div class="workspace-account"><span id="session-user"></span><button id="logout" class="quiet-button">Sair</button></div></header>
+ <main class="review-main">
+  <div class="review-heading"><div><span class="eyebrow">REVISÃO DE DOCUMENTOS</span><h1>Documentos do projeto</h1><p id="status" role="status" aria-live="polite">Pronto para digitalizar.</p></div><div class="review-actions"><button id="export-outputs" class="secondary">Enviar para saídas</button><button id="scan">＋ Digitalizar</button></div></div>
+  <div class="review-layout">
+   <aside class="page-sidebar" aria-label="Páginas digitalizadas"><div class="sidebar-heading"><h2>Páginas</h2><span id="count">0 páginas</span></div><button id="select-all" class="quiet-button">Selecionar todas</button><div id="pages"><p id="empty">Suas páginas aparecerão aqui.</p></div><div class="selection-actions"><span id="selection-count" aria-live="polite">Nenhuma selecionada</span><button id="delete-selected" class="quiet-button" disabled>Excluir selecionadas</button></div></aside>
+   <section class="preview-panel" aria-label="Prévia do documento"><div class="preview-toolbar"><h2 id="preview-title">Prévia do documento</h2><button id="save-page" class="quiet-button" disabled>Salvar documento</button></div><div class="preview-canvas"><div id="preview-empty" class="preview-empty"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M10 3h20l12 12v38H6V3h4ZM30 3v13h12M14 26h20M14 34h20M14 42h12"/></svg><h3>Seus documentos, em detalhe</h3><p>Digitalize ou escolha uma página ao lado para visualizar.</p></div><img id="document-preview" alt="" hidden></div><div class="preview-footer"><span id="preview-position">Nenhum documento</span><span>Clique para selecionar · Delete para excluir</span></div></section>
+  </div>
+ </main>
+</div><script src="renderer.js"></script></body></html>

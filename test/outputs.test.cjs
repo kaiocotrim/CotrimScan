@@ -1,0 +1,47 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const {createProjects}=require('../src/projects.cjs');
+const {normalizeOutputs}=require('../src/outputs.cjs');
+test('grava todas as saídas, mantém opções e repete envio sem sobrescrever',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-outputs-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const folders=[path.join(dir,'saida-a'),path.join(dir,'saida-b')];await Promise.all(folders.map(p=>fs.mkdir(p)));
+ const store=createProjects(path.join(dir,'projects'));
+ const input={name:'Teste',port:9880,dpi:300,source:'Feeder',colorMode:'BlackAndWhite1',outputs:[...folders,folders[0]]};
+ const project=await store.create(input);assert.deepEqual(project.outputs,folders);
+ await store.checkOutputs(project.id);
+ const buffer=Buffer.from('imagem'),page=await store.append(project.id,buffer);
+ await store.sendPage(project.id,page,buffer);
+ for(const folder of folders)assert.deepEqual(await fs.readFile(path.join(folder,`pagina-${page}.jpg`)),buffer);
+ const reopened=createProjects(path.join(dir,'projects'));
+ assert.equal((await reopened.open(project.id)).project.colorMode,'BlackAndWhite1');
+ await reopened.update(project.id,{name:'Renomeado'});
+ assert.deepEqual((await reopened.open(project.id)).project.outputs,folders);
+ assert.deepEqual(await reopened.exportAll(project.id),{pages:1,outputs:2});
+ await fs.writeFile(path.join(folders[0],`pagina-${page}.jpg`),'arquivo-diferente');
+ await assert.rejects(reopened.exportAll(project.id),/preservada no projeto/);
+ assert.equal(await fs.readFile(path.join(folders[0],`pagina-${page}.jpg`),'utf8'),'arquivo-diferente');
+ assert.equal((await reopened.open(project.id)).pages.length,1);
+ await reopened.clear(project.id);
+ assert.deepEqual(await fs.readFile(path.join(folders[1],`pagina-${page}.jpg`)),buffer);
+});
+test('falha de destino preserva original e não impede outras saídas',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-outputs-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const good=path.join(dir,'ok'),missing=path.join(dir,'ausente');await fs.mkdir(good);
+ const store=createProjects(path.join(dir,'projects'));
+ const project=await store.create({name:'Teste',port:9880,dpi:300,source:'Feeder',outputs:[missing,good]});
+ await assert.rejects(store.checkOutputs(project.id),/não está disponível/);
+ const buffer=Buffer.from('pagina'),page=await store.append(project.id,buffer);
+ await assert.rejects(store.sendPage(project.id,page,buffer),/preservada no projeto/);
+ assert.deepEqual(await fs.readFile(path.join(good,`pagina-${page}.jpg`)),buffer);
+ assert.equal((await store.open(project.id)).pages.length,1);
+ assert.throws(()=>normalizeOutputs(['relativa']),/caminho completo/);
+});
+test('projeto antigo recebe cor e saídas padrão sem perder páginas',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-legacy-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const store=createProjects(dir),p=await store.create({name:'Antigo',port:9880,dpi:300,source:'Feeder'});
+ const file=path.join(dir,p.id,'project.json'),data=JSON.parse(await fs.readFile(file,'utf8'));delete data.colorMode;delete data.outputs;await fs.writeFile(file,JSON.stringify(data));
+ const opened=await store.open(p.id);assert.equal(opened.project.colorMode,'RGB24');assert.deepEqual(opened.project.outputs,[]);
+});

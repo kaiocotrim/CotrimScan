@@ -1,0 +1,106 @@
+const {test,before,after}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const os=require('node:os');
+const crypto=require('node:crypto');
+const forge=require('node-forge');
+const {PDFDocument}=require('pdf-lib');
+const {P12Signer}=require('@signpdf/signer-p12');
+const {normalizeSignature,createSignatures}=require('../src/signatures.cjs');
+const {createProjects}=require('../src/projects.cjs');
+const {signedPage}=require('../src/pdf.cjs');
+const {windowsCertificates}=require('../src/windows-certificates.cjs');
+let dir,pfx,jpeg;
+const password='senha-ficticia-de-teste';
+before(async()=>{
+ dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-signature-'));
+ pfx=path.join(dir,'certificate.pfx');
+ const pair=crypto.generateKeyPairSync('rsa',{modulusLength:2048});
+ const privateKey=forge.pki.privateKeyFromPem(pair.privateKey.export({type:'pkcs1',format:'pem'}));
+ const publicKey=forge.pki.publicKeyFromPem(pair.publicKey.export({type:'spki',format:'pem'}));
+ const certificate=forge.pki.createCertificate();certificate.publicKey=publicKey;certificate.serialNumber='01';
+ certificate.validity.notBefore=new Date(Date.now()-60000);certificate.validity.notAfter=new Date(Date.now()+2*86400000);
+ certificate.setSubject([{name:'commonName',value:'NAPS2 Test Certificate'}]);certificate.setIssuer(certificate.subject.attributes);
+ certificate.setExtensions([{name:'basicConstraints',cA:false},{name:'keyUsage',digitalSignature:true}]);certificate.sign(privateKey,forge.md.sha256.create());
+ const p12=forge.pkcs12.toPkcs12Asn1(privateKey,[certificate],password,{algorithm:'aes256'});
+ await fs.writeFile(pfx,Buffer.from(forge.asn1.toDer(p12).getBytes(),'binary'));
+ jpeg=await fs.readFile(path.join(__dirname,'fixtures/document.jpg'));
+});
+after(async()=>{if(dir)await fs.rm(dir,{recursive:true,force:true});});
+async function verify(pdf,label){
+ const range=pdf.toString('latin1').match(/\/ByteRange \[(\d+) (\d+) (\d+) (\d+)\]/);assert.ok(range);
+ const [start,len,end,last]=range.slice(1).map(Number);assert.equal(start,0);assert.equal(end+last,pdf.length);
+ const payload=Buffer.concat([pdf.subarray(0,len),pdf.subarray(end,end+last)]);
+ const hex=pdf.subarray(len+1,end-1).toString();const raw=Buffer.from(hex,'hex');
+ const count=raw[1]&0x80?raw[1]&0x7f:0;
+ const signatureLength=count?2+count+raw.readUIntBE(2,count):2+raw[1];
+ const der=raw.subarray(0,signatureLength);
+ const parsed=forge.asn1.fromDer(der.toString('binary'));
+ const signedData=parsed.value[1].value[0];
+ const signerInfo=signedData.value[signedData.value.length-1].value[0];
+ const attributes=signerInfo.value.find(v=>v.tagClass===forge.asn1.Class.CONTEXT_SPECIFIC&&v.type===0);
+ const octets=signerInfo.value.find(v=>v.type===forge.asn1.Type.OCTETSTRING&&v.tagClass===forge.asn1.Class.UNIVERSAL);
+ const signature=Buffer.from(octets.value,'binary');
+ const certContainer=signedData.value.find(v=>v.tagClass===forge.asn1.Class.CONTEXT_SPECIFIC&&v.type===0);
+ const certificate=forge.pki.certificateFromAsn1(certContainer.value[0]);
+ const publicKey=forge.pki.publicKeyToPem(certificate.publicKey);
+ function valid(content){
+  if(!attributes)return crypto.verify('sha256',content,publicKey,signature);
+  const digest=attributes.value.find(attr=>forge.asn1.derToOid(attr.value[0].value)===forge.pki.oids.messageDigest).value[1].value[0].value;
+  if(!crypto.createHash('sha256').update(content).digest().equals(Buffer.from(digest,'binary')))return false;
+  const set=forge.asn1.create(forge.asn1.Class.UNIVERSAL,forge.asn1.Type.SET,true,attributes.value);
+  return crypto.verify('sha256',Buffer.from(forge.asn1.toDer(set).getBytes(),'binary'),publicKey,signature);
+ }
+ assert.equal(valid(payload),true,label+' assinatura válida');
+ payload[100]^=1;assert.equal(valid(payload),false,label+' alteração rejeitada');
+}
+test('A1 assina PDFs reais, confere senha, integridade e encerramento de sessão',async()=>{
+ const manager=createSignatures(),signature={type:'a1',filePath:pfx};
+ await assert.rejects(manager.prepare('a',signature,'errada'),/Confira a senha/);
+ assert.equal(manager.ready('a',signature),false);
+ const metadata=await manager.prepare('a',signature,password);assert.equal(metadata.subject,'NAPS2 Test Certificate');
+ assert.equal(manager.ready('a',signature),true);
+ const signer=manager.get('a',signature);
+ const pdf=await signedPage(jpeg,{dpi:150,name:'Teste'},signer);
+ const doc=await PDFDocument.load(pdf);assert.equal(doc.getPageCount(),1);assert.equal(doc.getPages()[0].getWidth(),620*72/150);
+ await verify(pdf,'a1');
+ const second=await signedPage(jpeg,{dpi:150,name:'Outro'},signer);await verify(second,'a1-second');
+ manager.clear();assert.equal(manager.ready('a',signature),false);assert.equal(signer.password,'');assert.ok(signer.buffer.every(byte=>byte===0));
+ await assert.rejects(signedPage(jpeg,{dpi:150},null),/Nenhum PDF sem assinatura/);
+});
+test('A3 usa o assinador CMS do Windows por adaptador e não exporta chave privada',async()=>{
+ const thumbprint='A'.repeat(40),p12=await fs.readFile(pfx),requests=[];
+ const manager=createSignatures({windowsBridge:async request=>{
+  requests.push(request);
+  if(request.action==='list')return {certificates:[{thumbprint,subject:'Token de teste',expiresAt:new Date(Date.now()+86400000).toISOString()}]};
+  assert.equal(request.thumbprint,thumbprint);assert.equal(request.password,undefined);
+  const cms=await new P12Signer(Buffer.from(p12),{passphrase:password}).sign(Buffer.from(request.content,'base64'));
+  return {signature:cms.toString('base64')};
+ }});
+ const signature={type:'a3',thumbprint};await manager.prepare('b',signature);
+ const pdf=await signedPage(jpeg,{dpi:150},manager.get('b',signature));await verify(pdf,'a3-adapter');
+ assert.ok(requests.some(request=>request.action==='sign'));manager.clear();
+ if(process.platform!=='win32')await assert.rejects(windowsCertificates({action:'list'}),/somente no Windows/);
+});
+test('projeto assinado exporta somente PDF, reutiliza assinatura e não grava senha',async()=>{
+ const manager=createSignatures(),store=createProjects(path.join(dir,'projects'),{signatures:manager});
+ const output=path.join(dir,'output');await fs.mkdir(output);
+ const signature={type:'a1',filePath:pfx,password};
+ const project=await store.create({name:'Assinado',port:9880,dpi:150,source:'Feeder',outputs:[output],signature});
+ const config=await fs.readFile(path.join(dir,'projects',project.id,'project.json'),'utf8');assert.ok(!config.includes(password));
+ const page=await store.append(project.id,jpeg);
+ await assert.rejects(store.sendPage(project.id,page,jpeg),/Libere o certificado/);
+ assert.deepEqual(await fs.readdir(output),[]);assert.equal((await store.open(project.id)).pages.length,1);
+ await manager.prepare(project.id,project.signature,password);
+ await store.sendPage(project.id,page,jpeg);
+ const files=await fs.readdir(output);assert.equal(files.length,1);assert.match(files[0],/\.pdf$/);
+ const saved=await fs.readFile(path.join(output,files[0]));await verify(saved,'project');
+ await store.exportAll(project.id);assert.deepEqual(await fs.readFile(path.join(output,files[0])),saved);
+ await store.clear(project.id);assert.equal((await store.open(project.id)).pages.length,0);
+ assert.ok((await fs.readdir(path.join(dir,'projects',project.id))).every(file=>!file.endsWith('.pdf')));
+ manager.clear();
+ assert.deepEqual(normalizeSignature(signature),{type:'a1',filePath:pfx});
+ assert.throws(()=>normalizeSignature({type:'a3',thumbprint:'invalido'}),/Selecione/);
+ assert.throws(()=>normalizeSignature({type:'a1',filePath:'relative.pfx'}),/Selecione/);
+});

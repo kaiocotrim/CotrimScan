@@ -1,0 +1,44 @@
+{
+  "name": "naps2-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cliente desktop eSCL para NAPS2 WebScan",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "dist:win": "electron-builder --win nsis",
+    "dist:linux": "electron-builder --linux AppImage deb"
+  },
+  "devDependencies": {
+    "electron": "^42.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.local.naps2desktop",
+    "productName": "NAPS2 Desktop",
+    "files": [
+      "src/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    }
+  },
+  "dependencies": {
+    "@signpdf/placeholder-pdf-lib": "^4.0.0",
+    "@signpdf/signer-p12": "^4.0.0",
+    "@signpdf/signpdf": "^4.0.0",
+    "node-forge": "^1.4.3",
+    "pdf-lib": "^1.17.1"
+  }
+}

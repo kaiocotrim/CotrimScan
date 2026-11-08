@@ -1,0 +1,42 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const {createProjects}=require('../src/projects.cjs');
+const options={name:'Contratos',port:9880,dpi:300,source:'Feeder'};
+test('persiste projetos e páginas sem misturar as pastas',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-projects-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const store=createProjects(dir);assert.deepEqual(await store.list(),[]);
+ const a=await store.create(options),b=await store.create({...options,name:'Notas fiscais'});
+ await store.append(a.id,Buffer.from('pagina-a'));await store.append(a.id,Buffer.from('pagina-b'));
+ const restarted=createProjects(dir);
+ const opened=await restarted.open(a.id);assert.equal(opened.project.pageCount,2);assert.deepEqual(opened.pages.map(p=>p.toString()),['pagina-a','pagina-b']);
+ assert.equal((await restarted.open(b.id)).pages.length,0);
+ await restarted.update(a.id,{...options,name:'Contratos 2026',dpi:600});
+ assert.equal((await restarted.open(a.id)).pages.length,2);
+ assert.equal((await restarted.list())[0].name,'Contratos 2026');
+ await restarted.clear(a.id);assert.equal((await store.open(a.id)).pages.length,0);
+ assert.equal((await store.list()).length,2);
+ await assert.rejects(store.open('../account.json'),/inválido/);
+ await assert.rejects(store.create({...options,name:' '}),/nome/);
+ await assert.rejects(store.update(b.id,{...options,port:80}),/Porta/);
+ await assert.rejects(store.update(b.id,{...options,dpi:72}),/Configuração/);
+});
+
+test('exclui somente páginas selecionadas e mantém a ordem das demais',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-delete-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const store=createProjects(dir),a=await store.create(options),b=await store.create({...options,name:'Outro'});
+ const ids=[];for(const value of ['primeira','segunda','terceira','quarta'])ids.push(await store.append(a.id,Buffer.from(value)));
+ await store.append(b.id,Buffer.from('outro projeto'));
+ const root=path.join(dir,a.id);
+ await fs.writeFile(path.join(root,ids[1]+'-cached.pdf'),'pdf da página excluída');
+ await fs.writeFile(path.join(root,ids[0]+'-cached.pdf'),'pdf da página mantida');
+ for(const selection of [[],[-1],[99],[1.5],['0'],null])await assert.rejects(store.removePages(a.id,selection),/páginas válidas/);
+ assert.equal((await store.open(a.id)).pages.length,4);
+ assert.equal(await store.removePages(a.id,[1,3,1]),2);
+ assert.deepEqual((await createProjects(dir).open(a.id)).pages.map(buffer=>buffer.toString()),['primeira','terceira']);
+ assert.equal((await store.open(b.id)).pages.length,1);
+ const files=await fs.readdir(root);assert.ok(!files.includes(ids[1]+'.jpg'));assert.ok(!files.includes(ids[1]+'-cached.pdf'));assert.ok(files.includes(ids[0]+'-cached.pdf'));
+ assert.equal(await store.removePages(a.id,[0,1]),2);assert.equal((await store.open(a.id)).pages.length,0);
+});
