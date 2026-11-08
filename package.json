@@ -45,9 +45,12 @@
     "@signpdf/placeholder-pdf-lib": "^4.0.0",
     "@signpdf/signer-p12": "^4.0.0",
     "@signpdf/signpdf": "^4.0.0",
+    "@techstark/opencv-js": "^5.0.0-release.1",
+    "@tesseract.js-data/por": "^1.0.0",
     "node-forge": "^1.4.3",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "tesseract.js": "^7.0.0"
   }
 }
