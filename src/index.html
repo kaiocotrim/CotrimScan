@@ -94,10 +94,25 @@
 <dialog id="certificate-unlock" class="certificate-dialog" aria-labelledby="unlock-title">
  <form id="certificate-unlock-form"><span class="eyebrow">CERTIFICADO A1</span><h2 id="unlock-title">Liberar assinatura digital</h2><p>Informe a senha do certificado vinculado a este projeto. Ela não será salva em arquivo.</p><label>Senha do certificado<input id="certificate-password" type="password" autocomplete="off" maxlength="1024"></label><p id="certificate-unlock-status" role="status" aria-live="polite"></p><div class="unlock-actions"><button id="unlock-cancel" type="button" class="quiet-button">Cancelar</button><button id="unlock-confirm" type="submit">Liberar certificado</button></div></form>
 </dialog>
+<dialog id="mobile-dialog" class="mobile-dialog" aria-labelledby="mobile-title">
+ <div class="mobile-dialog-heading"><div><span class="eyebrow">DO CELULAR PARA O PROJETO</span><h2 id="mobile-title">Conectar celular</h2><p id="mobile-project-label"></p></div><button id="mobile-close" type="button" aria-label="Fechar janela">×</button></div>
+ <div class="mobile-dialog-body"><div class="mobile-qr-panel">
+  <label>Rede deste computador<select id="mobile-address"></select></label>
+  <div class="qr-stage"><img id="mobile-qr" alt="QR Code temporário para conectar o celular" width="240" height="240" hidden><p id="mobile-qr-empty">Gere um QR Code e leia com a câmera do celular.</p></div>
+  <p id="mobile-expiry" class="mobile-note"></p>
+  <button id="mobile-generate" type="button" class="mobile-primary">Gerar QR Code</button>
+  <div id="mobile-link-box" hidden><label>Link temporário<input id="mobile-link" readonly></label><button id="mobile-copy" type="button">Copiar link</button></div>
+ </div><div class="mobile-approval-panel"><h3>Conecte em três passos</h3><ol><li>Use a mesma rede Wi-Fi do computador.</li><li>Leia o QR Code com a câmera do celular.</li><li>Confira o código e aprove a conexão aqui.</li></ol>
+  <div id="mobile-pending" aria-live="polite"></div>
+  <div id="mobile-connected" hidden><span class="mobile-connected-label">CELULAR CONECTADO</span><h3 id="mobile-connected-name"></h3><p>As imagens enviadas aparecem nas prévias deste projeto.</p><p id="mobile-receiving" class="mobile-note"></p></div>
+  <button id="mobile-stop" type="button" hidden>Encerrar conexão</button>
+  <p class="mobile-note">Use uma rede de confiança. A transferência é local, por HTTP, sem servidor na nuvem. No Windows, permita o CotrimScan na rede privada se o firewall solicitar.</p>
+ </div></div><p id="mobile-error" class="mobile-error" role="status" aria-live="polite"></p>
+</dialog>
 <div id="scanner-view" class="workspace" hidden>
  <header class="workspace-header"><div class="workspace-brand"><button id="back-projects" class="quiet-button">← Projetos</button><span id="active-project-name"></span></div><div class="workspace-account"><span id="session-user"></span><button id="logout" class="quiet-button">Sair</button></div></header>
  <main class="review-main">
-  <div class="review-heading"><div><span class="eyebrow">REVISÃO DE DOCUMENTOS</span><h1>Documentos do projeto</h1><p id="status" role="status" aria-live="polite">Pronto para digitalizar.</p></div><div class="review-actions"><button id="export-outputs" class="secondary">Enviar para saídas</button><button id="scan">＋ Digitalizar</button></div></div>
+  <div class="review-heading"><div><span class="eyebrow">REVISÃO DE DOCUMENTOS</span><h1>Documentos do projeto</h1><p id="status" role="status" aria-live="polite">Pronto para digitalizar.</p></div><div class="review-actions"><button id="connect-mobile" class="secondary">Conectar celular</button><button id="export-outputs" class="secondary">Enviar para saídas</button><button id="scan">＋ Digitalizar</button></div></div>
   <div class="review-layout">
    <aside class="page-sidebar" aria-label="Páginas digitalizadas"><div class="sidebar-heading"><h2>Páginas</h2><span id="count">0 páginas</span></div><button id="select-all" class="quiet-button">Selecionar todas</button><div id="pages"><p id="empty">Suas páginas aparecerão aqui.</p></div><div class="selection-actions"><span id="selection-count" aria-live="polite">Nenhuma selecionada</span><button id="delete-selected" class="quiet-button" disabled>Excluir selecionadas</button></div></aside>
    <section class="preview-panel" aria-label="Prévia do documento"><div class="preview-toolbar"><h2 id="preview-title">Prévia do documento</h2><button id="save-page" class="quiet-button" disabled>Salvar documento</button></div><div class="preview-canvas"><div id="preview-empty" class="preview-empty"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M10 3h20l12 12v38H6V3h4ZM30 3v13h12M14 26h20M14 34h20M14 42h12"/></svg><h3>Seus documentos, em detalhe</h3><p>Digitalize ou escolha uma página ao lado para visualizar.</p></div><img id="document-preview" alt="" hidden></div><div class="preview-footer"><span id="preview-position">Nenhum documento</span><span>Clique para selecionar · Delete para excluir</span></div></section>

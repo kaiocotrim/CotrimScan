@@ -32,3 +32,14 @@ contextBridge.exposeInMainWorld('certificates',{
  status:()=>ipcRenderer.invoke('certificates:status'),
  prepare:password=>ipcRenderer.invoke('certificates:prepare',password)
 });
+
+contextBridge.exposeInMainWorld('mobile',{
+ addresses:()=>ipcRenderer.invoke('mobile:addresses'),
+ copyLink:()=>ipcRenderer.invoke('mobile:copyLink'),
+ status:()=>ipcRenderer.invoke('mobile:status'),
+ start:address=>ipcRenderer.invoke('mobile:start',address),
+ decide:(id,allow)=>ipcRenderer.invoke('mobile:decide',id,allow),
+ stop:()=>ipcRenderer.invoke('mobile:stop'),
+ onState:callback=>ipcRenderer.on('mobile:state',(_event,state)=>callback(state)),
+ onReceived:callback=>ipcRenderer.on('mobile:received',(_event,data)=>callback(data))
+});

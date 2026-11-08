@@ -21,13 +21,15 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
   if(name==='./auth.cjs')return {createAuth};
   if(name==='./projects.cjs')return require('../src/projects.cjs');
   if(name==='./signatures.cjs')return require('../src/signatures.cjs');
+  if(name==='./mobile-server.cjs')return require('../src/mobile-server.cjs');
+  if(name==='./mobile-images.cjs')return require('../src/mobile-images.cjs');
   if(name==='./scanner.cjs')return {settings:require('../src/scanner.cjs').settings,connect:()=>++connected,scan:async(port,dpi,source,onPage,colorMode)=>{scanOptions.push({port,dpi,source,colorMode});await onPage(Buffer.from('test-jpeg'));return 1;}};
   return require(name);
  }});
  await new Promise(resolve=>setImmediate(resolve));
  const event={sender:win.webContents,senderFrame:win.webContents.mainFrame};
  const invoke=(name,...args)=>Promise.resolve().then(()=>handlers.get(name)(event,...args));
- for(const name of ['connect','scan','clear','save','pages:remove','projects:list','projects:create','projects:update','projects:open','projects:close','projects:pickOutputs','projects:export','certificates:platform','certificates:list','certificates:pickFile','certificates:status','certificates:prepare'])await assert.rejects(invoke(name),/Faça login/);
+ for(const name of ['connect','scan','clear','save','pages:remove','projects:list','projects:create','projects:update','projects:open','projects:close','projects:pickOutputs','projects:export','certificates:platform','certificates:list','certificates:pickFile','certificates:status','certificates:prepare','mobile:addresses','mobile:copyLink','mobile:status','mobile:start','mobile:decide','mobile:stop'])await assert.rejects(invoke(name),/Faça login/);
  await invoke('auth:register','kaio','senha-segura');
  await invoke('connect',9880);assert.equal(connected,1);
  await assert.rejects(invoke('scan',{port:9880,dpi:300,source:'Feeder'}),/Abra um projeto/);
@@ -48,7 +50,7 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  assert.throws(()=>handlers.get('connect')({sender:{},senderFrame:{}},9880),/inválida/);
  assert.throws(()=>handlers.get('connect')({sender:win.webContents,senderFrame:{}},9880),/inválida/);
  await invoke('auth:logout');
- for(const name of ['connect','scan','clear','save','pages:remove','projects:list','projects:create','projects:update','projects:open','projects:close','projects:pickOutputs','projects:export','certificates:platform','certificates:list','certificates:pickFile','certificates:status','certificates:prepare'])await assert.rejects(invoke(name),/Faça login/);
+ for(const name of ['connect','scan','clear','save','pages:remove','projects:list','projects:create','projects:update','projects:open','projects:close','projects:pickOutputs','projects:export','certificates:platform','certificates:list','certificates:pickFile','certificates:status','certificates:prepare','mobile:addresses','mobile:copyLink','mobile:status','mobile:start','mobile:decide','mobile:stop'])await assert.rejects(invoke(name),/Faça login/);
  await invoke('auth:login','kaio','senha-segura');
  await invoke('connect',9880);assert.equal(connected,2);
 });

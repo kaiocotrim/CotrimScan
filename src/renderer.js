@@ -12,12 +12,15 @@ async function task(action,target='status'){
  finally{controls.forEach(e=>e.disabled=false);document.querySelectorAll('.workspace button,.workspace input,.project-editor button,.project-editor input').forEach(e=>e.disabled=false);uiBusy=false;syncReviewControls();}
 }
 const run=action=>task(action);
-let reviewPages=[],selectedPages=new Set(),activePage=null;
+let reviewPages=[],selectedPages=new Set(),activePage=null,remoteReceiving=false;
 function syncReviewControls(){
- $('delete-selected').disabled=uiBusy||selectedPages.size===0;
- $('select-all').disabled=uiBusy||reviewPages.length===0;
- $('save-page').disabled=uiBusy||activePage===null;
- $('export-outputs').disabled=uiBusy||reviewPages.length===0||!currentProject?.outputs?.length;
+ const locked=uiBusy||remoteReceiving;
+ $('scan').disabled=locked;
+ for(const input of $('pages').querySelectorAll('button,input'))input.disabled=locked;
+ $('delete-selected').disabled=locked||selectedPages.size===0;
+ $('select-all').disabled=locked||reviewPages.length===0;
+ $('save-page').disabled=locked||activePage===null;
+ $('export-outputs').disabled=locked||reviewPages.length===0||!currentProject?.outputs?.length;
  $('export-outputs').title=currentProject?.outputs?.length?'Enviar documentos para as pastas do projeto':'Configure as pastas de saída no editor do projeto';
  $('save-page').textContent=currentProject?.signature?.type&&currentProject.signature.type!=='none'?'Salvar PDF assinado':'Salvar JPEG';
 }
@@ -42,7 +45,7 @@ function activatePage(id){
  $('pages').querySelector(`[data-page-id="${id}"]`)?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function selectPage(id,additive=false){
- if(uiBusy)return;
+ if(uiBusy||remoteReceiving)return;
  if(additive){if(selectedPages.has(id))selectedPages.delete(id);else selectedPages.add(id);}
  else selectedPages=new Set([id]);
  activatePage(id);
@@ -75,7 +78,7 @@ function addPage(page,follow=true){
  if(follow)activatePage(id);else updateSelection();
 }
 function loadReview(pages){resetPages();for(const page of pages)addPage(page,false);if(pages.length)activatePage(pages[0].id);}
-window.scanner.onPage(page=>addPage(page));
+window.scanner.onPage(page=>{if(!page.projectId||page.projectId===currentProject?.id)addPage(page);});
 $('scan').onclick=()=>run(async()=>{
  await ensureCertificate();status('Digitalizando… aguarde.');
  const n=await window.scanner.scan();status(`${n} página(s) adicionada(s) ao projeto${currentProject.outputs?.length?' e enviada(s) para as saídas':''}.`);
@@ -91,10 +94,65 @@ function deleteSelected(){return run(async()=>{
 });}
 $('delete-selected').onclick=deleteSelected;
 document.addEventListener('keydown',event=>{
- if($('scanner-view').hidden||uiBusy||$('project-editor').open||$('certificate-unlock').open||!selectedPages.size)return;
+ if($('scanner-view').hidden||uiBusy||remoteReceiving||$('project-editor').open||$('certificate-unlock').open||$('mobile-dialog').open||!selectedPages.size)return;
  if(event.key!=='Delete'||event.target.closest('input:not([type="checkbox"]),textarea,select,[contenteditable="true"]'))return;
  event.preventDefault();deleteSelected();
 });
+let mobileState={active:false},mobileBusy=false;
+async function mobileAction(action){
+ if(mobileBusy)return;mobileBusy=true;$('mobile-error').textContent='';
+ const controls=$('mobile-dialog').querySelectorAll('button,select');controls.forEach(e=>e.disabled=true);
+ try{await action();}catch(error){$('mobile-error').textContent=message(error);}
+ finally{mobileBusy=false;controls.forEach(e=>e.disabled=false);$('mobile-generate').disabled=!$('mobile-address').value;}
+}
+function renderMobile(state){
+ mobileState=state.active&&state.sessionId===mobileState.sessionId?{...mobileState,...state}:state;
+ remoteReceiving=!!state.receiving;syncReviewControls();
+ $('connect-mobile').textContent=state.receiving?'Recebendo foto…':state.connected?'Celular conectado':state.active?'Pareamento do celular':'Conectar celular';
+ $('mobile-qr').hidden=!mobileState.qr||!state.url;
+ if(mobileState.qr&&state.url)$('mobile-qr').src=mobileState.qr;else $('mobile-qr').removeAttribute('src');
+ $('mobile-qr-empty').hidden=!$('mobile-qr').hidden;
+ $('mobile-qr-empty').textContent=state.connected?'Celular conectado. Você já pode enviar imagens.':'Gere um QR Code e leia com a câmera do celular.';
+ $('mobile-link-box').hidden=!state.url;$('mobile-link').value=state.url||'';
+ $('mobile-generate').textContent=state.active?'Gerar nova conexão':'Gerar QR Code';
+ $('mobile-stop').hidden=!state.active;
+ $('mobile-connected').hidden=!state.connected;
+ $('mobile-connected-name').textContent=state.connected?.name||'';
+ $('mobile-receiving').textContent=state.receiving?'Recebendo imagem…':'Pronto para receber fotos.';
+ $('mobile-pending').replaceChildren();
+ for(const peer of state.pending||[]){
+  const item=document.createElement('div');item.className='mobile-pending-item';
+  const name=document.createElement('h3');name.textContent=peer.name;
+  const hint=document.createElement('p');hint.textContent='Confira este código no celular:';
+  const code=document.createElement('strong');code.textContent=peer.code;
+  const actions=document.createElement('div');actions.className='mobile-pending-actions';
+  const deny=document.createElement('button');deny.type='button';deny.textContent='Recusar';
+  const allow=document.createElement('button');allow.type='button';allow.className='mobile-primary';allow.textContent='Permitir conexão';
+  for(const [button,decision] of [[deny,false],[allow,true]])button.onclick=()=>mobileAction(async()=>renderMobile(await window.mobile.decide(peer.id,decision)));
+  actions.append(deny,allow);item.append(name,hint,code,actions);$('mobile-pending').append(item);
+ }
+ if(state.pending?.length&&!$('mobile-dialog').open&&!$('scanner-view').hidden&&!$('certificate-unlock').open)$('mobile-dialog').showModal();
+ updateMobileExpiry();
+}
+function updateMobileExpiry(){
+ if(mobileState.url){const left=Math.max(0,Math.ceil((mobileState.qrExpiresAt-Date.now())/1000));$('mobile-expiry').textContent=left?`QR Code válido por ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'QR Code expirado. Gere uma nova conexão.';}
+ else $('mobile-expiry').textContent=mobileState.connected?'Conexão aprovada neste computador.':'';
+}
+setInterval(updateMobileExpiry,1000);
+$('connect-mobile').onclick=()=>run(async()=>{
+ $('mobile-project-label').textContent=currentProject.name;$('mobile-error').textContent='';
+ const rows=await window.mobile.addresses();$('mobile-address').replaceChildren();
+ for(const row of rows)$('mobile-address').append(new Option(`${row.name} · ${row.address}`,row.address));
+ renderMobile(await window.mobile.status());$('mobile-generate').disabled=!rows.length;
+ if(!rows.length)$('mobile-error').textContent='Nenhuma rede local disponível. Conecte o computador e o celular à mesma rede Wi-Fi.';
+ $('mobile-dialog').showModal();
+});
+$('mobile-close').onclick=()=>$('mobile-dialog').close();
+$('mobile-generate').onclick=()=>mobileAction(async()=>{await ensureCertificate();renderMobile(await window.mobile.start($('mobile-address').value));});
+$('mobile-stop').onclick=()=>mobileAction(async()=>renderMobile(await window.mobile.stop()));
+$('mobile-copy').onclick=()=>mobileAction(async()=>{await window.mobile.copyLink();$('mobile-error').textContent='Link copiado. Abra no celular conectado à mesma rede.';});
+window.mobile.onState(renderMobile);
+window.mobile.onReceived(data=>{if(data.projectId===currentProject?.id)status(data.warning?`Foto recebida e preservada no projeto. ${data.warning}`:`Página ${data.pageNumber} recebida do celular.`);});
 function renderProjects(){
  $('projects-grid').replaceChildren();$('projects-empty').hidden=projectList.length>0;
  for(const project of projectList){
