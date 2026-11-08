@@ -2,7 +2,7 @@
   "name": "naps2-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Cliente desktop eSCL para NAPS2 WebScan",
+  "description": "CotrimScan — digitalização de documentos com NAPS2 WebScan",
   "main": "src/main.cjs",
   "scripts": {
     "start": "electron .",
@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.local.naps2desktop",
-    "productName": "NAPS2 Desktop",
+    "productName": "CotrimScan",
     "files": [
       "src/**/*"
     ],

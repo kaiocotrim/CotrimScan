@@ -14,7 +14,7 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
   isDestroyed(){return false;}
   loadFile(){}
  }
- const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,on(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
+ const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
  vm.runInNewContext(code,{__dirname:path.join(__dirname,'../src'),require(name){
   if(name==='electron')return electron;

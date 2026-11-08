@@ -228,7 +228,7 @@ async function loadAuth(){
   const session=await window.localAuth.status();
   if(session.authenticated){showProjects(session.username);return;}
   creatingAccount=!session.hasAccount;
-  $('auth-title').textContent=creatingAccount?'Comece com o NAPS2':'Bem-vindo ao NAPS2';
+  $('auth-title').textContent=creatingAccount?'Comece com o CotrimScan':'Bem-vindo ao CotrimScan';
   $('auth-description').textContent=creatingAccount?'Crie sua conta local para começar. Escolha um usuário e uma senha com pelo menos 8 caracteres.':'Entre com seu usuário e senha para acessar seus documentos e começar a digitalizar.';
   $('auth-submit').textContent=creatingAccount?'Criar conta e entrar':'Entrar';
   $('confirm-label').hidden=!creatingAccount;

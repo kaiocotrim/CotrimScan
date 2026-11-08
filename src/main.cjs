@@ -1,6 +1,11 @@
 const {app,BrowserWindow,ipcMain,dialog}=require('electron');
 const path=require('node:path');
 const fs=require('node:fs/promises');
+// Keep the existing local account and projects when changing the display name.
+app.setName('CotrimScan');
+const userDataPath=path.join(app.getPath('appData'),'naps2-desktop');
+require('node:fs').mkdirSync(userDataPath,{recursive:true,mode:0o700});
+app.setPath('userData',userDataPath);
 const scanner=require('./scanner.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
@@ -33,7 +38,7 @@ app.whenReady().then(()=>{
  handle('auth:register',(username,password)=>auth.register(username,password),false);
  handle('auth:login',(username,password)=>auth.login(username,password),false);
  handle('auth:logout',()=>{if(busy) throw Error('Aguarde a operação em andamento.'); auth.logout();signatures.clear(); pages=[];activeProject=null;});
- win=new BrowserWindow({width:1100,height:780,minWidth:760,minHeight:600,backgroundColor:'#111827',webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
+ win=new BrowserWindow({title:'CotrimScan',width:1100,height:780,minWidth:760,minHeight:600,backgroundColor:'#111827',webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));

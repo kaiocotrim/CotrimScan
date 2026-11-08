@@ -7,8 +7,8 @@ async function signedPage(jpeg,{dpi=300,name='Documento'},signer){
  const image=await doc.embedJpg(jpeg);
  const width=image.width*72/dpi,height=image.height*72/dpi;
  const page=doc.addPage([width,height]);page.drawImage(image,{x:0,y:0,width,height});
- doc.setTitle(name);doc.setCreator('NAPS2 Desktop');
- pdflibAddPlaceholder({pdfDoc:doc,reason:'Assinatura do documento digitalizado',name:signer.metadata?.subject||'',contactInfo:'',location:'',signatureLength:32768,appName:'NAPS2 Desktop'});
+ doc.setTitle(name);doc.setCreator('CotrimScan');
+ pdflibAddPlaceholder({pdfDoc:doc,reason:'Assinatura do documento digitalizado',name:signer.metadata?.subject||'',contactInfo:'',location:'',signatureLength:32768,appName:'CotrimScan'});
  const unsigned=Buffer.from(await doc.save({useObjectStreams:false}));
  return new SignPdf().sign(unsigned,signer);
 }

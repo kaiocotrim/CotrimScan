@@ -1,4 +1,4 @@
-# NAPS2 Desktop — versão inicial
+# CotrimScan — versão inicial
 
 App Electron para Windows e Linux que acessa o serviço NAPS2 WebScan em `127.0.0.1`. Inclui teste de conexão, resolução, vidro/alimentador, prévias e salvamento de páginas em JPEG ou PDF assinado por certificado digital. A escolha do scanner é feita pela porta do serviço; não há descoberta automática nem seleção de dispositivos físicos nesta versão.
 
@@ -15,6 +15,8 @@ O serviço local deve estar ativo antes de digitalizar. Projeto original: https:
 **Windows:** compile e configure `NAPS2.WebScan.LocalService` do projeto original. Ele usa o primeiro dispositivo WIA e a porta 9880. Este app não instala nem inicia esse serviço automaticamente.
 
 **Linux:** a interface Electron é preparada para Linux, mas o serviço original usa WIA, exclusivo do Windows. É necessário adaptar o serviço com NAPS2.Sdk para um driver compatível, como SANE, e expor a API eSCL na máquina local. Esse serviço Linux não está incluído nem validado nesta entrega. Não basta executar o serviço WIA no Linux.
+
+O nome exibido no aplicativo e nos instaladores é **CotrimScan**. O identificador interno e a pasta de dados `naps2-desktop` são mantidos para preservar contas e projetos existentes.
 
 ## Login local
 
