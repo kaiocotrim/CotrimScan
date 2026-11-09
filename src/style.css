@@ -186,7 +186,91 @@
 @media(max-width:600px){.mobile-dialog-body{grid-template-columns:1fr}.mobile-approval-panel{border-left:0;border-top:1px solid #333}.mobile-dialog-heading{padding:22px}.mobile-dialog-heading h2{font-size:21px}}
 
 
-/* Original CotrimScan logo, preserving its aspect ratio and transparency. */
-.auth-mark{width:124px;height:63px;object-fit:contain}
-.workspace-brand .brand-logo{display:block;width:72px;height:36px;object-fit:contain;flex-shrink:0}
-#scanner-view .workspace-brand .brand-logo{width:56px;height:28px}
+/* Project logo, preserving its horizontal aspect ratio and transparency. */
+.auth-mark{width:180px;height:auto;object-fit:contain}
+.workspace-brand .brand-logo{display:block;width:128px;height:auto;object-fit:contain;flex-shrink:0}
+#scanner-view .workspace-brand .brand-logo{width:110px;height:auto}
+.page-context-menu{position:fixed;z-index:1000;min-width:200px;padding:5px;background:#292929;border:1px solid #555;border-radius:4px;box-shadow:0 8px 24px #0008}
+.page-context-menu[hidden]{display:none}
+.page-context-menu button{display:block;width:100%;margin:0;padding:11px 14px;border:0;background:transparent;color:#eee;text-align:left;font:12px Arial;cursor:pointer;border-radius:2px}
+.page-context-menu button:hover,.page-context-menu button:focus-visible{background:#444;outline:1px solid #888}
+.preview-actions{display:flex;flex-wrap:wrap;gap:8px}
+#scanner-view #enhance-page{font-size:10px;padding:8px 12px}
+.crop-dialog{width:760px;max-width:calc(100vw - 40px);max-height:90vh;overflow:auto;background:#222;color:#eee;border:1px solid #555;padding:22px;border-radius:4px;font:13px Arial;color-scheme:dark}
+.crop-dialog::backdrop{background:#000c}.crop-dialog h2{font-size:20px;margin:0 0 12px}.crop-dialog p{color:#ccc;line-height:1.6}
+#crop-canvas{display:block;max-width:100%;margin:auto;touch-action:none;cursor:crosshair}
+.crop-dialog button{padding:10px 16px;background:#eee;color:#222;border:1px solid #555;border-radius:3px;cursor:pointer}.crop-dialog button:disabled{opacity:.5}
+.crop-corner-fields{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.crop-corner-fields fieldset{flex:1;min-width:130px;border:1px solid #555;font-size:11px}.crop-corner-fields label{display:inline-block;margin:4px}.crop-corner-fields input{width:50px;background:#181818;color:#eee;border:1px solid #666;padding:4px}
+#scanner-view #manual-crop-page{font-size:10px;padding:8px 12px}
+#scanner-view #ocr-page{font-size:10px;padding:8px 12px}
+#ocr-result{width:680px;max-height:85vh;overflow:auto}#ocr-result-text{box-sizing:border-box;width:100%;margin-top:8px;padding:12px;background:#161616;color:#eee;border:1px solid #555;font:12px/1.6 monospace;resize:vertical}
+.processing-mode-label{display:flex;align-items:center;gap:6px;font:11px Arial;color:#bbb}.processing-mode-label select{background:#202020;color:#eee;border:1px solid #555;padding:7px;max-width:200px}
+#scanner-view #compare-page{font-size:10px;padding:8px 12px}.preview-toolbar{flex-wrap:wrap}.preview-actions{align-items:center}
+.comparison-dialog{width:1240px;max-width:94vw;max-height:92vh;overflow:auto;background:#202020;color:#eee;border:1px solid #555;padding:20px;font:13px Arial}.comparison-dialog::backdrop{background:#000c}.comparison-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.comparison-heading h2{font-size:20px;margin:0}.comparison-heading button{background:#eee;color:#222;padding:9px 15px;border:0;border-radius:3px;cursor:pointer}.comparison-images{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.comparison-images figure{margin:0;min-width:0}.comparison-images figcaption{margin-bottom:10px;color:#ccc}.comparison-images img{display:block;width:100%;height:65vh;object-fit:contain;background:#111}.comparison-dialog p{line-height:1.6;color:#ccc}@media(max-width:650px){.comparison-images{grid-template-columns:1fr}.comparison-images img{height:55vh}}
+.preview-content{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-width:0;min-height:0;overflow:hidden}
+.preview-content.has-ocr{grid-template-columns:minmax(0,1fr) minmax(320px,.9fr)}
+.ocr-editor{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;padding:18px;border-left:1px solid #444;background:#252525}.ocr-editor[hidden]{display:none}
+#scanner-view #ocr-editor{background:#252525;border:0;border-left:1px solid #444;border-radius:0}
+.ocr-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}#ocr-editor .ocr-editor-heading h2{flex:1;font:14px Arial;margin:0;color:#eee}#scanner-view #ocr-editor-close{flex:0 0 auto;width:auto;font-size:23px;margin:0;padding:0 6px;border:0;background:none;color:#bbb}
+.ocr-editor p,.ocr-editor label{font:11px/1.6 Arial;color:#bbb;margin:0}
+#ocr-editor #ocr-result-text{flex:1;min-height:160px;box-sizing:border-box;width:100%;padding:20px;margin:0;border:1px solid #555;border-radius:2px;background:#fafafa;color:#202020;font:15px/1.65 'Segoe UI',Arial,sans-serif;resize:none;white-space:pre-wrap}
+#ocr-editor #ocr-result-text:focus-visible{outline:2px solid #66aaff;outline-offset:1px}.ocr-editor-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}#scanner-view .ocr-editor-actions button{width:auto;font-size:11px;padding:10px 12px;margin:0}
+@media(max-width:1000px){.preview-content.has-ocr{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(250px,1fr) minmax(300px,1fr);overflow:auto}.ocr-editor{border-left:0;border-top:1px solid #444}.preview-content.has-ocr .preview-canvas{min-height:250px}}
+.zoom-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid #363636;color:#bbb;font:11px Arial;flex-shrink:0}
+#scanner-view .zoom-toolbar button{width:auto;padding:6px 10px;margin:0;background:#292929;color:#ddd;border:1px solid #555;border-radius:2px;font:11px Arial}
+#scanner-view .zoom-toolbar #zoom-out,#scanner-view .zoom-toolbar #zoom-in{font-size:17px;line-height:17px;min-width:30px}
+#scanner-view .zoom-toolbar #zoom-loupe[aria-pressed="true"]{background:#234968;border-color:#72b9ed;color:#fff}
+#zoom-level{width:auto;max-width:220px;margin:0;padding:6px 8px;background:#202020;color:#eee;border:1px solid #555;border-radius:2px;font:11px Arial}.zoom-hint{color:#999;margin-left:auto}
+#document-viewport{display:block;padding:0;position:relative;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}
+#document-viewport:focus-visible{outline:2px solid #72b9ed;outline-offset:-2px}
+#document-viewport .preview-empty{height:100%;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.zoom-stage{display:grid;place-items:center;min-width:0;min-height:0}
+#document-preview{width:auto;height:auto;max-width:none;max-height:none;object-fit:fill;flex-shrink:0;user-select:none;-webkit-user-drag:none}
+#document-viewport.can-pan{cursor:grab}#document-viewport.is-panning{cursor:grabbing}#document-viewport.has-loupe{cursor:crosshair}
+.document-loupe{position:fixed;z-index:10000;width:190px;height:190px;border:2px solid #78bfff;border-radius:50%;box-shadow:0 5px 28px #000b;background-color:#fff;background-repeat:no-repeat;pointer-events:none}
+@media(max-width:700px){.zoom-toolbar{padding:8px;gap:6px}.zoom-hint{display:none}}
+/* Zone capture: proportional regions on a document sample and editable indexes. */
+.preview-content.has-capture{grid-template-columns:minmax(0,1fr) minmax(280px,.65fr)}
+.capture-panel{overflow:auto;padding:18px;min-width:0;border-left:1px solid #555;background:#252525;color:#eee}
+.capture-panel[hidden]{display:none}.capture-panel h2{font-size:16px}.capture-panel p{font-size:12px;line-height:1.5}
+.capture-value{padding:12px 0;border-bottom:1px solid #555}.capture-value label{display:block;font-size:13px}
+.capture-value input[type=text]{box-sizing:border-box;width:100%;margin-top:6px;padding:10px;font-size:16px;background:#fafafa;color:#222;border:1px solid #888;border-radius:4px}
+.capture-value input[type=checkbox]{width:auto}.capture-warning{color:#ffd58a}.capture-highlight{position:absolute;box-sizing:border-box;border:3px solid #60a5fa;background:#60a5fa22;pointer-events:none;z-index:3}
+#document-viewport{position:relative}.capture-editor{box-sizing:border-box;width:min(1200px,95vw);max-height:92vh;overflow:auto;padding:24px;background:#252525;color:#eee;border:1px solid #777;border-radius:12px}
+.capture-editor::backdrop{background:#000b}.capture-editor h2{margin-top:0}.capture-editor label{display:block;font-size:13px;margin:8px 0}
+.capture-editor input:not([type=checkbox]),.capture-editor select{box-sizing:border-box;width:100%;padding:8px;background:#fafafa;color:#222;border:1px solid #999;border-radius:4px}
+.capture-editor button{padding:9px 14px;cursor:pointer}.capture-model-actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:16px 0}.capture-model-actions label{flex:1}
+.capture-editor-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:20px}.capture-editor-layout>div{min-width:0}
+.capture-surface{position:relative;line-height:0;user-select:none}.capture-surface img{width:100%;height:auto;display:block}
+.capture-surface svg{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+.capture-surface rect{fill:#3b82f633;stroke:#2563eb;stroke-width:3}.capture-surface rect.selected{stroke:#f59e0b;fill:#f59e0b33}.capture-surface text{fill:#111;stroke:white;paint-order:stroke;stroke-width:2;font:bold 20px Arial;pointer-events:none}
+#capture-field-list{max-height:60vh;overflow:auto}#capture-field-list fieldset{border:1px solid #777;margin-bottom:12px;border-radius:6px}.capture-coordinates{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+@media(max-width:1000px){.preview-content.has-capture{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(250px,1fr) minmax(250px,1fr);overflow:auto}.capture-panel{border-left:0;border-top:1px solid #555}.capture-editor-layout{grid-template-columns:1fr}#capture-field-list{max-height:none}}
+/* Settings use a single tab panel with label/control rows and a fixed footer. */
+.project-editor .editor-tabs{display:flex;flex-shrink:0;gap:0;overflow-x:auto;padding:0 28px;border-bottom:1px solid #444}
+.project-editor .editor-tabs button{width:auto;flex:0 0 auto;margin:0;padding:15px 20px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:inherit;font:12px Arial}
+.project-editor .editor-tabs button[aria-selected=true]{border-bottom-color:currentColor;background:#ffffff08}
+.project-editor .editor-body{display:block;overflow:auto;scrollbar-gutter:stable}
+.project-editor .editor-tab-panel{padding:24px 28px;min-width:0}
+.project-editor .editor-group{margin-bottom:28px}.project-editor .editor-group:last-child{margin-bottom:0}
+.project-editor .editor-body h3{margin:0;padding:12px 14px;border:1px solid #ffffff0c;background:#ffffff04;font-weight:500}
+.project-editor .editor-setting-row{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:center;margin:0;padding:14px;border-bottom:1px solid #ffffff0c;line-height:1.6;min-width:0}
+.project-editor .editor-setting-row input,.project-editor .editor-setting-row select{width:100%;min-width:0;margin:0}
+.project-editor .editor-body .editor-setting-note{margin:0;padding:0 14px 14px 268px;max-width:none}
+.project-editor .editor-outputs,.project-editor .editor-signature{padding:0;border:0;background:transparent;max-width:none}
+.project-editor .outputs-heading{padding:0;position:relative}.project-editor .outputs-heading h3{width:100%}.project-editor .output-count{position:absolute;right:14px}
+.project-editor .editor-signature #signature-a1,.project-editor .editor-signature #signature-a3{max-width:none}
+.project-editor .editor-signature .add-output{width:calc(100% - 268px);margin:12px 14px 14px 254px}
+.project-editor #editor-status:empty{display:none}
+@media(max-width:650px){.project-editor .editor-tabs{padding:0 12px}.project-editor .editor-tabs button{padding:14px 12px}.project-editor .editor-tab-panel{padding:18px 14px}.project-editor .editor-setting-row{grid-template-columns:minmax(0,1fr);gap:8px}.project-editor .editor-body .editor-setting-note{padding:0 14px 14px}.project-editor .editor-signature .add-output{width:calc(100% - 28px);margin:12px 14px}}
+.capture-editor{height:min(850px,92vh);display:flex;flex-direction:column;overflow:hidden;border-radius:4px}
+.capture-editor:not([open]){display:none}.capture-editor>h2,.capture-editor>p,.capture-editor>.capture-model-actions,.capture-editor>label{flex-shrink:0}
+.capture-editor .capture-editor-layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 320px}
+.capture-sample-column{display:flex;flex-direction:column;min-height:0}.capture-sample-toolbar{display:flex;align-items:center;gap:12px;flex-shrink:0;margin-bottom:12px}
+.capture-editor .capture-sample-toolbar button{width:auto;margin:0;font-size:12px}.capture-sample-toolbar label{display:flex;align-items:center;gap:8px;min-width:0}.capture-sample-toolbar input[type=range]{width:100px;padding:0;margin:0}
+#capture-sample-viewport{overflow:auto;flex:1;min-height:0;background:#191919;border:1px solid #444}.capture-surface{margin:auto}
+#capture-sample-empty{padding:48px 24px;text-align:center;color:#bbb;background:#191919;border:1px dashed #555}
+.capture-properties{overflow:auto;min-height:0;border-left:1px solid #444;padding-left:18px}.capture-properties h3{margin-top:0;font-size:14px}#capture-field-list{max-height:none}
+#capture-define-areas{width:auto;margin:0;justify-self:start}.capture-editor .capture-model-actions>button{width:auto;margin:0}
+@media(max-width:750px){.capture-editor{overflow:auto}.capture-editor .capture-editor-layout{display:block;flex:none}.capture-sample-column{height:400px}.capture-properties{margin-top:18px;padding:0;border:0}.capture-sample-toolbar{flex-wrap:wrap}}
+.capture-alignment{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:8px 0 14px;flex-shrink:0}.capture-alignment label{display:flex;align-items:center;gap:8px}.capture-alignment input[type=checkbox]{width:auto;margin:0}.capture-editor .capture-alignment button{width:auto;margin:0;font-size:12px}.capture-alignment span{font-size:11px;color:#bbb}.capture-anchor-options{padding:10px;border:1px solid #555;margin-bottom:12px}.capture-field-result{font-size:12px;line-height:1.6;overflow-wrap:anywhere}.capture-surface rect.capture-search-region{stroke:#eee;stroke-dasharray:8 5;fill:none;pointer-events:none}

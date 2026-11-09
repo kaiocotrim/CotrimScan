@@ -71,6 +71,7 @@ function createSignatures({windowsBridge=windowsCertificates}={}){
    if(!this.ready(id,signature))throw Error('Libere o certificado deste projeto antes de assinar.');
    return sessions.get(id)?.signer;
   },
+  transfer(from,to){const session=sessions.get(from);if(!session)return;this.forget(to);sessions.set(to,session);sessions.delete(from);},
   forget(id){sessions.get(id)?.signer.dispose?.();sessions.delete(id);},
   clear(){for(const id of sessions.keys())this.forget(id);}
  };

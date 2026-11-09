@@ -17,6 +17,23 @@ async function fixture(t,extra={}){
  async function pair(){const response=await request('/api/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Celular teste'})});assert.equal(response.status,201);return response.data;}
  return {mobile,calls,events,state,base,token,request,pair};
 }
+
+test('mostra etapa de processamento, libera recebimento após erro e permite repetir o envio',async t=>{
+ let started,release,attempts=0;
+ const entered=new Promise(resolve=>started=resolve),gate=new Promise(resolve=>release=resolve);
+ const f=await fixture(t,{onImage:async(_bytes,context)=>{
+  attempts++;f.mobile.setReceivingStage(context.sessionId,'processing');
+  if(attempts===1){started();await gate;throw Object.assign(Error('A foto excedeu o tempo de processamento.'),{status:415});}
+  f.mobile.setReceivingStage(context.sessionId,'saving');return {accepted:true,pageNumber:1,exported:true};
+ }}),peer=await f.pair();f.mobile.decide(peer.id,true);
+ const options={method:'POST',auth:peer.secret,headers:{'Content-Type':'image/jpeg','X-Upload-Id':'9'.repeat(32)},body:Buffer.from([255,216,255])};
+ const first=f.request('/api/upload',options);await entered;
+ const processing=await f.request('/api/status',{auth:peer.secret});assert.equal(processing.data.receiving,true);assert.equal(processing.data.receivingStage,'processing');
+ release();assert.equal((await first).status,415);
+ assert.equal(f.mobile.snapshot().receiving,false);assert.equal(f.mobile.snapshot().receivingStage,null);assert.match(f.mobile.snapshot().lastError,/tempo/);
+ assert.equal((await f.request('/api/upload',options)).status,200);assert.equal(f.mobile.snapshot().lastError,null);assert.equal(f.mobile.snapshot().receiving,false);
+ assert.equal((await f.request('/api/upload',options)).data.pageNumber,1);assert.equal(attempts,2);
+});
 test('QR temporário exige aprovação, protege origem e evita envio duplicado',async t=>{
  const f=await fixture(t),jpeg=await fs.readFile(path.join(__dirname,'fixtures/document.jpg'));
  const page=await fetch(f.base+'/');assert.equal(page.status,200);assert.ok(page.headers.get('content-security-policy').includes("frame-ancestors 'none'"));assert.equal(page.headers.get('cache-control'),'no-store');

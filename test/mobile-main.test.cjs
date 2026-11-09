@@ -9,6 +9,7 @@ test('fotos entram no projeto, falha na saída preserva a página e troca de pro
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrimscan-mobile-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
  const handlers=new Map(),events=[];let win,callbacks,session=null,sequence=0;
  const controller={addresses:()=>[{address:'127.0.0.1',name:'Teste'}],snapshot:()=>session||{active:false},isActive:(id,client)=>session?.sessionId===id&&client==='approved',start:async options=>{session={active:true,sessionId:String(++sequence),projectName:options.projectName,url:'http://127.0.0.1:12345/#token='+('a'.repeat(64))};return session;},stop:async()=>{session=null;},decide(){}};
+ controller.setReceivingStage=()=>{};
  class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,data)=>events.push({name,data})};}isDestroyed(){return false;}loadFile(){}}
  const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){},quit(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
@@ -33,7 +34,14 @@ test('fotos entram no projeto, falha na saída preserva a página e troca de pro
  await invoke('projects:open',b.id);assert.equal(controller.snapshot().active,false);
  await assert.rejects(callbacks.onImage(photo,{sessionId:paired.sessionId,clientId:'approved'}),/encerrado/);
  assert.equal((await invoke('projects:open',b.id)).pages.length,0);assert.equal((await invoke('projects:open',a.id)).pages.length,1);
- const locked=await invoke('projects:create',{...options,name:'Assinado',outputs:[],signature:{type:'a1',filePath:path.join(dir,'inexistente.pfx')}});
- await invoke('projects:open',locked.id);await assert.rejects(invoke('mobile:start','127.0.0.1'),/Libere o certificado/);assert.equal(controller.snapshot().active,false);
+ // Simulate a previously saved project whose certificate is unavailable this session.
+ const locked=await require('../src/projects.cjs').createProjects(path.join(dir,'projects')).create({...options,name:'Assinado',outputs:[],signature:{type:'a1',filePath:path.join(dir,'inexistente.pfx')}});
+ await invoke('projects:open',locked.id);
+ const lockedPair=await invoke('mobile:start','127.0.0.1');assert.ok(lockedPair.qr);assert.equal(controller.snapshot().active,true);
+ const accepted=await callbacks.onImage(photo,{sessionId:lockedPair.sessionId,clientId:'approved'});
+ assert.equal(accepted.accepted,true);assert.equal(accepted.exported,false);
+ assert.match(events.filter(event=>event.name==='mobile:received').at(-1).data.warning,/certificado|assinar/);
+ assert.equal((await invoke('projects:open',locked.id)).pages.length,1);
+ await assert.rejects(invoke('projects:export'),/saída/);
  await invoke('projects:open',b.id);await invoke('mobile:start','127.0.0.1');await invoke('auth:logout');assert.equal(controller.snapshot().active,false);
 });

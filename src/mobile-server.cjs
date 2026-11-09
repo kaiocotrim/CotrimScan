@@ -31,9 +31,14 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
   return {active:true,sessionId:s.id,address:s.address,port:s.port,projectName:s.projectName,
    url:s.token&&now()<s.qrExpiresAt?`${s.origin}/#token=${s.token}`:null,qrExpiresAt:s.qrExpiresAt,
    connected:approved?{id:approved.id,name:approved.name,code:approved.code}:null,
-   pending:[...s.clients.values()].filter(c=>c.status==='pending').map(c=>({id:c.id,name:c.name,code:c.code,expiresAt:c.expiresAt})),receiving:s.receiving};
+   pending:[...s.clients.values()].filter(c=>c.status==='pending').map(c=>({id:c.id,name:c.name,code:c.code,expiresAt:c.expiresAt})),receiving:s.receiving,receivingStage:s.receivingStage,lastError:s.lastError};
  }
  function emit(){onState(snapshot());}
+ function setReceivingStage(sessionId,stage){
+  const s=current;if(!s||s.id!==sessionId||!s.receiving)return;
+  if(!['uploading','processing','saving','exporting'].includes(stage))return;
+  s.receivingStage=stage;emit();
+ }
  async function stop(){
   const s=current;if(!s)return;
   current=null;clearInterval(s.timer);s.token=null;s.clients.clear();emit();
@@ -67,7 +72,7 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
   await stop();
   const files={};
   for(const [url,name,type] of [['/','index.html','text/html; charset=utf-8'],['/phone.js','phone.js','text/javascript; charset=utf-8'],['/phone.css','phone.css','text/css; charset=utf-8']])files[url]={data:await fs.readFile(path.join(__dirname,'mobile',name)),type};
-  files['/logo.png']={data:await fs.readFile(path.join(__dirname,'assets','icones_3d','LOGO.png')),type:'image/png'};
+  files['/logo.png']={data:await fs.readFile(path.join(__dirname,'assets','icones_3d','download.png')),type:'image/png'};
   const s={id:secret(),address,projectName,startedAt:now(),qrExpiresAt:now()+pairLifetime,token:secret(),clients:new Map(),attempts:new Map(),receiving:false};
   const server=http.createServer(async(req,res)=>{
    function reply(status,value,type='application/json; charset=utf-8'){
@@ -101,7 +106,7 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
     if(req.method==='GET'&&url.pathname==='/api/status'){
      if(now()>c.expiresAt&&c.status==='pending')c.status='expired';
      if(c.status==='approved'&&(now()-c.lastUsed>idleLifetime||now()-s.startedAt>maxLifetime))throw failure(410,'Conexão expirada.');
-     reply(200,{status:c.status,code:c.code,projectName:c.status==='approved'?s.projectName:undefined});return;
+     reply(200,{status:c.status,code:c.code,projectName:c.status==='approved'?s.projectName:undefined,receiving:s.receiving,receivingStage:s.receivingStage});return;
     }
     if(req.method==='POST'&&url.pathname==='/api/disconnect'){
      const wasApproved=c.status==='approved';c.status='rejected';emit();reply(200,{disconnected:true});if(wasApproved)setImmediate(()=>{if(current===s)stop().catch(()=>{});});return;
@@ -116,7 +121,7 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
      if(now()-c.lastUsed>idleLifetime||now()-s.startedAt>maxLifetime)throw failure(410,'Conexão expirada.');
      const type=(req.headers['content-type']||'').split(';')[0];
      if(!['image/jpeg','image/png','image/webp','application/octet-stream'].includes(type))throw failure(415,'Use fotos JPEG, PNG ou WebP.');
-     s.receiving=true;emit();
+     s.receiving=true;s.receivingStage='uploading';s.lastError=null;emit();
      try{
       const bytes=await body(req,MAX_IMAGE_BYTES);
       if(!bytes.length)throw failure(415,'Envie uma imagem válida.');
@@ -125,7 +130,8 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
       const result=await onImage(bytes,{sessionId:s.id,clientId:c.id});
       if(!result?.accepted)throw Error('A imagem não foi recebida.');
       c.done.set(uploadId,result);c.lastUsed=now();reply(200,result);
-     }finally{s.receiving=false;if(current===s)emit();}
+     }catch(error){s.lastError=error.status?error.message:'Não foi possível processar a foto. Confira o computador e tente novamente.';throw error;}
+     finally{s.receiving=false;s.receivingStage=null;if(current===s)emit();}
      return;
     }
     throw failure(404,'Endereço não encontrado.');
@@ -138,6 +144,6 @@ function createMobileServer({onImage,onState=()=>{},addresses=lanAddresses,now=D
   s.port=server.address().port;s.origin=`http://${address}:${s.port}`;
   s.timer=setInterval(()=>{prune().catch(()=>{});},1000);s.timer.unref();emit();return snapshot();
  }
- return {start,stop,decide,snapshot,isActive,addresses,prune};
+ return {start,stop,decide,snapshot,isActive,addresses,prune,setReceivingStage};
 }
 module.exports={createMobileServer,lanAddresses};

@@ -17,7 +17,14 @@ async function poll(){
  try{
   const state=await request('/api/status',{timeout:10000});connectionFailures=0;$('phone-error').textContent='';
   if(state.status==='pending'){stage('pending-step');$('verification-code').textContent=state.code;}
-  else if(state.status==='approved'){stage('upload-step');$('phone-project').textContent=state.projectName;}
+  else if(state.status==='approved'){
+   stage('upload-step');$('phone-project').textContent=state.projectName;
+   if(sending&&state.receiving){
+    const phase={uploading:'Recebendo foto no computador…',processing:'Melhorando a foto no computador…',saving:'Salvando a foto no projeto…',exporting:'Exportando o documento…'}[state.receivingStage]||'Processando no computador…';
+    const item=queue.find(item=>item.status==='sending');if(item)item.message=phase;
+    $('send-progress').textContent=phase;renderQueue();
+   }
+  }
   else {ended(state.status==='rejected'?'O computador recusou ou encerrou a conexão. Leia um novo QR Code.':'O pareamento expirou. Gere um novo QR Code no computador.');return;}
   pollTimer=setTimeout(poll,state.status==='pending'?1500:5000);
  }catch(error){
@@ -60,16 +67,17 @@ function addFiles(files){
 for(const id of ['camera-input','gallery-input'])$(id).onchange=event=>{addFiles(event.target.files);event.target.value='';};
 $('send-images').onclick=async()=>{
  if(sending||!credential)return;sending=true;$('phone-error').textContent='';renderQueue();
+ try{
  const pending=queue.filter(item=>!['done','warning'].includes(item.status));let sent=0;
  for(const item of pending){
   item.status='sending';item.message='Enviando para o computador…';renderQueue();
   try{
    const response=await request('/api/upload',{method:'POST',headers:{'Content-Type':item.file.type||'application/octet-stream','X-Upload-Id':item.id},body:item.file});
-   item.status=response.exported===false?'warning':'done';item.message=response.exported===false?'Recebida no projeto. Confira no computador uma falha na saída ou assinatura.':`Recebida no projeto · Página ${response.pageNumber}`;sent++;
-  }catch(error){item.status='error';item.message=error.status?error.message:'Envio interrompido. Confira a conexão e tente novamente.';if(error.status===401||error.status===410)ended(error.message);renderQueue();break;}
+   item.status=response.exported===false||response.warning?'warning':'done';item.message=response.warning?`Recebida no projeto. ${response.warning}`:response.exported===false?'Recebida no projeto. Confira no computador uma falha na saída ou assinatura.':`Recebida no projeto · Página ${response.pageNumber}`;sent++;
+  }catch(error){item.status='error';item.message=error.status?error.message:error.name==='AbortError'?'O envio excedeu o tempo limite. Confira o computador e tente novamente.':'Envio interrompido. Confira a conexão e tente novamente.';$('send-progress').textContent=item.message;if(error.status===401||error.status===410)ended(error.message);renderQueue();break;}
   $('send-progress').textContent=`${sent} de ${pending.length} imagem(ns) recebida(s).`;renderQueue();
  }
- sending=false;renderQueue();
+ }finally{sending=false;renderQueue();}
 };
 $('disconnect').onclick=async()=>{try{await request('/api/disconnect',{timeout:10000,method:'POST'});}catch{}ended('Você desconectou este celular. Gere um novo QR Code no computador para continuar.');};
 try{

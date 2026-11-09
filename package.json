@@ -38,7 +38,12 @@
       "node_modules/@img/**/*",
       "node_modules/detect-libc/**/*",
       "node_modules/semver/**/*",
-      "src/mobile-image-*.cjs"
+      "src/mobile-image-*.cjs",
+      "src/document*.cjs",
+      "node_modules/tesseract.js/**/*",
+      "node_modules/tesseract.js-core/**/*",
+      "node_modules/@tesseract.js-data/**/*",
+      "node_modules/zxing-wasm/**/*"
     ]
   },
   "dependencies": {
@@ -47,10 +52,12 @@
     "@signpdf/signpdf": "^4.0.0",
     "@techstark/opencv-js": "^5.0.0-release.1",
     "@tesseract.js-data/por": "^1.0.0",
+    "jscanify": "^1.4.3",
     "node-forge": "^1.4.3",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "sharp": "^0.35.5",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "zxing-wasm": "^3.1.6"
   }
 }

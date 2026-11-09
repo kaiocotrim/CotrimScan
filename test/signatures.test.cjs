@@ -55,6 +55,48 @@ async function verify(pdf,label){
  assert.equal(valid(payload),true,label+' assinatura válida');
  payload[100]^=1;assert.equal(valid(payload),false,label+' alteração rejeitada');
 }
+test('PDF pesquisável mantém OCR ao receber assinatura A1 válida',async()=>{
+ const sharp=require('sharp');
+ const image=await sharp(Buffer.from('<svg width="1400" height="600"><rect width="1400" height="600" fill="white"/><text x="80" y="180" font-family="Arial" font-size="60">DOCUMENTO COTRIMSCAN</text><text x="80" y="280" font-family="Arial" font-size="48">Teste de assinatura com OCR 12345</text></svg>')).jpeg().toBuffer();
+ const {processDocument}=require('../src/documents.cjs');
+ const result=await processDocument(image,{enhance:false,ocr:true});assert.match(result.text,/COTRIMSCAN/);assert.ok(result.pdf);
+ const manager=createSignatures(),signature={type:'a1',filePath:pfx};await manager.prepare('ocr',signature,password);
+ try{
+  const signed=await signedPage(image,{name:'OCR assinado',dpi:300},manager.get('ocr',signature),result.pdf);
+  await verify(signed,'ocr');const doc=await PDFDocument.load(signed);assert.equal(doc.getPageCount(),1);
+  assert.ok(doc.getPages()[0].node.Resources().get(require('pdf-lib').PDFName.of('Font')));
+  const corrected=await require('../src/pdf.cjs').correctedOcrPage(image,result.pdf,'Cliente corrigido: JOÃO DA SILVA\nContrato: 12345');
+  const revised=await signedPage(image,{name:'OCR revisado',dpi:300},manager.get('ocr',signature),corrected);
+  await verify(revised,'ocr-edited');assert.equal((await PDFDocument.load(revised)).getPageCount(),1);
+ }finally{manager.clear();}
+});
+test('nome por QR mantém assinatura válida e não sobrescreve exportação anterior',async()=>{
+ const output=path.join(dir,'qr-signed-output');await fs.mkdir(output);
+ const manager=createSignatures(),store=createProjects(path.join(dir,'qr-projects'),{signatures:manager});
+ const project=await store.create({name:'QR assinado',port:9880,dpi:300,source:'Feeder',outputs:[output],namingMode:'qr',signature:{type:'a1',filePath:pfx}});
+ await manager.prepare(project.id,project.signature,password);
+ try{
+  const image=await require('sharp')(await require('qrcode').toBuffer('00019295',{width:350})).jpeg().toBuffer();
+  const page=await store.append(project.id,image);await store.sendPage(project.id,page,image);
+  const first=await store.pageOutput(project.id,0);assert.equal(first.filename,'00019295.pdf');await verify(first.buffer,'qr-named');
+  await store.exportAll(project.id);assert.equal((await fs.readdir(output)).length,1);
+  await store.rotate(project.id,0,90);await store.exportAll(project.id);
+  const revised=await store.pageOutput(project.id,0);assert.equal(revised.filename,'00019295-2.pdf');await verify(revised.buffer,'qr-named-revised');
+  assert.deepEqual(await fs.readFile(path.join(output,'00019295.pdf')),first.buffer);
+ }finally{manager.clear();}
+});
+test('A1 validado no editor transfere a sessão sem persistir a senha',async()=>{
+ const manager=createSignatures(),signature={type:'a1',filePath:pfx};
+ await manager.prepare('editor',signature,password);
+ const signer=manager.get('editor',signature);
+ manager.transfer('editor','saved-project');
+ assert.equal(manager.ready('editor',signature),false);
+ assert.equal(manager.ready('saved-project',signature),true);
+ assert.equal(manager.get('saved-project',signature),signer);
+ await assert.rejects(manager.prepare('replacement',signature,'wrong'),/Confira a senha/);
+ assert.equal(manager.get('saved-project',signature),signer);
+ manager.clear();assert.equal(signer.password,'');
+});
 test('A1 assina PDFs reais, confere senha, integridade e encerramento de sessão',async()=>{
  const manager=createSignatures(),signature={type:'a1',filePath:pfx};
  await assert.rejects(manager.prepare('a',signature,'errada'),/Confira a senha/);
@@ -103,4 +145,23 @@ test('projeto assinado exporta somente PDF, reutiliza assinatura e não grava se
  assert.deepEqual(normalizeSignature(signature),{type:'a1',filePath:pfx});
  assert.throws(()=>normalizeSignature({type:'a3',thumbprint:'invalido'}),/Selecione/);
  assert.throws(()=>normalizeSignature({type:'a1',filePath:'relative.pfx'}),/Selecione/);
+});
+
+test('indexação fica dentro do PDF assinado e revisão gera nova assinatura sem JSON externo',async()=>{
+ const output=path.join(dir,'indexed-output');await fs.mkdir(output);
+ const manager=createSignatures(),signature={type:'a1',filePath:pfx},store=createProjects(path.join(dir,'indexed-projects'),{signatures:manager});
+ const model={name:'OS',fields:[{id:'os',name:'Ordem de serviço',type:'identifier',required:true,digits:5,region:{x:.1,y:.1,width:.2,height:.1}}]};
+ const project=await store.create({name:'Indexado',port:9880,dpi:300,source:'Feeder',outputs:[output],signature});
+ await manager.prepare(project.id,signature,password);const page=await store.append(project.id,jpeg);
+ const updated=await store.update(project.id,{captureTemplate:model,namingMode:'ocr',namingFieldId:'os'});
+ const capture={revision:'initial',template:updated.captureTemplate,createdAt:'2026-11-09T12:00:00Z',needsReview:false,error:'',fields:[{...updated.captureTemplate.fields[0],recognized:'19236',value:'19236',confidence:96,reviewed:true,corrected:false,error:''}]};
+ await fs.writeFile(path.join(dir,'indexed-projects',project.id,page+'-capture.json'),JSON.stringify(capture));
+ const first=await store.pageOutput(project.id,0);assert.equal(first.filename,'19236.pdf');assert.equal(first.indexBuffer,undefined);await verify(first.buffer,'indexação assinada');
+ const lib=require('pdf-lib');async function embedded(buffer){const doc=await lib.PDFDocument.load(buffer),tree=doc.catalog.lookup(lib.PDFName.of('Names'),lib.PDFDict).lookup(lib.PDFName.of('EmbeddedFiles'),lib.PDFDict).lookup(lib.PDFName.of('Names'),lib.PDFArray),file=doc.context.lookup(tree.get(1),lib.PDFDict),stream=file.lookup(lib.PDFName.of('EF'),lib.PDFDict).lookup(lib.PDFName.of('F'),lib.PDFRawStream);return JSON.parse(Buffer.from(lib.decodePDFRawStream(stream).decode()).toString('utf8'));}
+ assert.equal((await embedded(first.buffer)).fields[0].value,'19236');assert.deepEqual((await store.pageOutput(project.id,0)).buffer,first.buffer);
+ await store.exportAll(project.id);await store.exportAll(project.id);assert.deepEqual(await fs.readdir(output),['19236.pdf']);
+ await store.saveCapture(project.id,0,[{id:'os',value:'19237',reviewed:true}],'initial');
+ const revised=await store.pageOutput(project.id,0);assert.equal(revised.filename,'19237.pdf');await verify(revised.buffer,'indexação revisada assinada');assert.equal((await embedded(revised.buffer)).fields[0].value,'19237');assert.equal((await embedded(revised.buffer)).fields[0].recognized,'19236');assert.notDeepEqual(first.buffer,revised.buffer);
+ await store.exportAll(project.id);assert.deepEqual((await fs.readdir(output)).sort(),['19236.pdf','19237.pdf']);
+ const doc=await lib.PDFDocument.load(revised.buffer),embeddedJpeg=doc.context.enumerateIndirectObjects().map(([,o])=>o).find(o=>o instanceof lib.PDFRawStream&&o.dict.get(lib.PDFName.of('Filter'))?.toString()==='/DCTDecode');assert.deepEqual(Buffer.from(embeddedJpeg.contents),jpeg);
 });
