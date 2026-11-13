@@ -19,7 +19,7 @@ contextBridge.exposeInMainWorld('scanner',{
  saveOcr:(index,text,revision,projectId)=>ipcRenderer.invoke('pages:ocr-save',index,text,revision,projectId),
  save:id=>ipcRenderer.invoke('save',id),
  clear:()=>ipcRenderer.invoke('clear'),
- onPage:callback=>ipcRenderer.on('page',(_event,page)=>callback(page))
+ onPage:callback=>{const listener=(_event,page)=>callback(page);ipcRenderer.on('page',listener);return ()=>ipcRenderer.removeListener('page',listener);}
 });
 
 contextBridge.exposeInMainWorld('localAuth',{
@@ -54,6 +54,6 @@ contextBridge.exposeInMainWorld('mobile',{
  start:address=>ipcRenderer.invoke('mobile:start',address),
  decide:(id,allow)=>ipcRenderer.invoke('mobile:decide',id,allow),
  stop:()=>ipcRenderer.invoke('mobile:stop'),
- onState:callback=>ipcRenderer.on('mobile:state',(_event,state)=>callback(state)),
- onReceived:callback=>ipcRenderer.on('mobile:received',(_event,data)=>callback(data))
+ onState:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('mobile:state',listener);return ()=>ipcRenderer.removeListener('mobile:state',listener);},
+ onReceived:callback=>{const listener=(_event,data)=>callback(data);ipcRenderer.on('mobile:received',listener);return ()=>ipcRenderer.removeListener('mobile:received',listener);}
 });

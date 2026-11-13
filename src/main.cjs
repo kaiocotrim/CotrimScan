@@ -109,7 +109,8 @@ app.whenReady().then(()=>{
  handle('auth:register',(username,password)=>auth.register(username,password),false);
  handle('auth:login',(username,password)=>auth.login(username,password),false);
  handle('auth:logout',()=>operation(async()=>{await mobile.stop();mobileProject=null;auth.logout();signatures.clear();pages=[];activeProject=null;}));
- win=new BrowserWindow({title:'CotrimScan',icon:path.join(__dirname,'assets','icones_3d','download.png'),width:1100,height:780,minWidth:760,minHeight:600,backgroundColor:'#111827',webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
+ win=new BrowserWindow({title:'CotrimScan',icon:path.join(__dirname,'assets','icones_3d','download.png'),width:1100,height:780,minWidth:760,minHeight:600,backgroundColor:'#111827',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
+ win.removeMenu();
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
@@ -156,7 +157,7 @@ app.whenReady().then(()=>{
    return {saved:true,filename:path.basename(result.filePath),warning:output.warning};
    } finally {busy=false;}
  });
- win.loadFile(path.join(__dirname,'index.html'));
+ win.loadFile(path.join(__dirname,'../dist/index.html'));
 });
 app.on('before-quit',()=>{mobile?.stop().catch(()=>{});signatures.clear();});
 app.on('window-all-closed',async()=>{await mobile?.stop();signatures.clear();app.quit();});

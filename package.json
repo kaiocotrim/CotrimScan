@@ -5,20 +5,33 @@
   "description": "CotrimScan — digitalização de documentos com NAPS2 WebScan",
   "main": "src/main.cjs",
   "scripts": {
-    "start": "electron .",
+    "start": "npm run build && electron .",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "test": "node --test",
     "dist:win": "electron-builder --win nsis",
     "dist:linux": "electron-builder --linux AppImage deb"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "electron": "^42.0.0",
-    "electron-builder": "^26.0.0"
+    "electron-builder": "^26.0.0",
+    "postcss": "^8.5.32",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.5",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.8"
   },
   "build": {
     "appId": "com.local.naps2desktop",
     "productName": "CotrimScan",
     "files": [
-      "src/**/*"
+      "src/**/*",
+      "dist/**/*"
     ],
     "directories": {
       "output": "dist"
