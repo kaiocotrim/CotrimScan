@@ -19,7 +19,7 @@ function createProjects(root,{signatures}={}) {
   const captureTemplate=require('./capture.cjs').template(input.captureTemplate);
   const namingFieldId=input.namingFieldId??null;
   if(namingMode==='ocr'&&(!captureTemplate||!captureTemplate.fields.some(f=>f.id===namingFieldId)))throw Error('Selecione um campo do modelo para nomear os arquivos pelo OCR.');
-  return {namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature:normalizeSignature(input.signature)};
+  return {namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature:normalizeSignature(input.signature),signatureStamp:input.signatureStamp===true};
  }
  async function read(id) {
   const data=JSON.parse(await fs.readFile(path.join(directory(id),'project.json'),'utf8'));
@@ -55,7 +55,7 @@ function createProjects(root,{signatures}={}) {
   if(!data.pages.includes(page))throw Error('Página inválida.');
   let searchable=null;try{searchable=await fs.readFile(path.join(directory(data.id),`${page}-ocr.pdf`));}catch(error){if(error.code!=='ENOENT')throw error;}
   if(indexBuffer){
-   const revision=createHash('sha256').update(indexBuffer).update(JSON.stringify({signature:data.signature,name:data.name,dpi:data.dpi})).digest('hex').slice(0,24);
+   const revision=createHash('sha256').update(indexBuffer).update(JSON.stringify({signature:data.signature,signatureStamp:data.signatureStamp,name:data.name,dpi:data.dpi})).digest('hex').slice(0,24);
    const filename=`pagina-${page}-indexado-${revision}.pdf`,file=path.join(directory(data.id),`${page}-indexed-${revision}.pdf`);
    try{return {filename,buffer:await fs.readFile(file),extension:'pdf'};}catch(error){if(error.code!=='ENOENT')throw error;}
    let pdf=await require('./pdf.cjs').indexedPdf(searchable||await require('./pdf.cjs').imagePage(buffer,data),indexBuffer);
@@ -76,7 +76,7 @@ function createProjects(root,{signatures}={}) {
    }
   }
   if(data.signature.type==='none')return {filename:`pagina-${page}.jpg`,buffer,extension:'jpg'};
-  const revision=createHash('sha256').update(JSON.stringify(data.signature)).digest('hex').slice(0,16);
+  const revision=createHash('sha256').update(JSON.stringify({signature:data.signature,signatureStamp:data.signatureStamp})).digest('hex').slice(0,16);
   const filename=`pagina-${page}-assinado-${revision}.pdf`,file=path.join(directory(data.id),`${page}-${revision}.pdf`);
   try{return {filename,buffer:await fs.readFile(file),extension:'pdf'};}catch(error){if(error.code!=='ENOENT')throw error;}
   try{

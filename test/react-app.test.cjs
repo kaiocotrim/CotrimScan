@@ -11,7 +11,12 @@ function input(f, selector, value) {
   element.dispatchEvent(new f.window.Event('input', { bubbles: true }));
 }
 async function click(f, text) {
-  const button = [...f.document.querySelectorAll('button')].find(item => item.textContent.includes(text));
+  let button;
+  for(let attempt=0;attempt<20;attempt++){
+    button=[...f.document.querySelectorAll('button')].find(item => item.textContent.includes(text));
+    if(button)break;
+    await f.act(async()=>new Promise(resolve=>setTimeout(resolve,20)));
+  }
   assert.ok(button, text);
   await f.act(async () => { button.click(); await Promise.resolve(); });
 }
@@ -50,7 +55,7 @@ test('React percorre cadastro, projeto, scanner, OCR, exportação e logout por 
   f.act(() => input(f, 'input[placeholder^="Ex.: Contratos"]', 'Contrato'));
   await click(f, 'Saídas');
   await click(f, 'Digitar um caminho');
-  f.act(() => input(f, '#project-editor input[required]', 'C:/saida'));
+  f.act(() => input(f, '#project-editor [role="tabpanel"]:last-child input[required]', 'C:/saida'));
   await f.act(async () => { f.document.querySelector('#project-editor form').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await Promise.resolve(); });
   assert.equal(created.name, 'Contrato');
   const folder = f.document.querySelector('[aria-label^="Abrir projeto"]');
@@ -59,6 +64,13 @@ test('React percorre cadastro, projeto, scanner, OCR, exportação e logout por 
   await click(f, 'Digitalizar');
   assert.equal(scanned, true);
   assert.equal(f.document.querySelectorAll('#pages article').length, 1);
+  f.act(() => onPage({ id: 1, url: 'data:image/jpeg;base64,Yg==', projectId: project.id, previewPending: true }));
+  assert.equal(f.document.querySelectorAll('#pages article').length, 2);
+  f.act(() => onPage({ id: 1, url: 'data:image/jpeg;base64,Yw==', projectId: project.id }));
+  assert.equal(f.document.querySelectorAll('#pages article').length, 2);
+  f.act(() => onPage({ id: 2, url: 'data:image/jpeg;base64,ZA==', projectId: project.id, previewPending: true }));
+  f.act(() => onPage({ id: 2, url: '', projectId: project.id, discardPreview: true }));
+  assert.equal(f.document.querySelectorAll('#pages article').length, 2);
   await click(f, 'Reconhecer texto');
   assert.equal(f.document.querySelector('#ocr-text').value, 'Contrato 123');
   await click(f, 'Enviar para saídas');

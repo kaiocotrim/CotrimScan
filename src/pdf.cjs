@@ -1,4 +1,4 @@
-const {PDFDocument}=require('pdf-lib');
+const {PDFDocument,StandardFonts,rgb}=require('pdf-lib');
 const {pdflibAddPlaceholder}=require('@signpdf/placeholder-pdf-lib');
 const {SignPdf}=require('@signpdf/signpdf');
 async function correctedOcrPage(jpeg,ocrPdf,text,{dpi=300,name='Documento'}={}){
@@ -35,13 +35,29 @@ async function imagePage(jpeg,{dpi=300,name='Documento'}={}){
  doc.setTitle(name);doc.setCreator('CotrimScan');
  return Buffer.from(await doc.save({useObjectStreams:false}));
 }
-async function signedPage(jpeg,{dpi=300,name='Documento'},signer,searchablePdf=null){
+async function signedPage(jpeg,{dpi=300,name='Documento',signatureStamp=false},signer,searchablePdf=null){
  if(!signer)throw Error('O certificado não está liberado. Nenhum PDF sem assinatura será exportado.');
  const doc=searchablePdf?await PDFDocument.load(searchablePdf):await PDFDocument.create();
  if(!searchablePdf){
  const image=await doc.embedJpg(Uint8Array.from(jpeg));
  const width=image.width*72/dpi,height=image.height*72/dpi;
  const page=doc.addPage([width,height]);page.drawImage(image,{x:0,y:0,width,height});
+ }
+ if(signatureStamp){
+  const page=doc.getPages()[0],width=page.getWidth(),height=page.getHeight();
+  const font=await doc.embedFont(StandardFonts.Helvetica);
+  const size=Math.max(6,Math.min(9,width/52)),margin=12,band=46;
+  const fit=value=>{
+   const clean=String(value||'').replace(/[^\x20-\x7e\xa0-\xff]/g,' ').trim();
+   let result=clean;
+   while(result&&font.widthOfTextAtSize(result,size)>width-2*margin)result=result.slice(0,-1);
+   return result.length<clean.length?result.trimEnd()+'...':result;
+  };
+  page.setSize(width,height+band);
+  page.drawRectangle({x:0,y:height,width,height:band,color:rgb(.96,.97,.98)});
+  page.drawText('ASSINADO DIGITALMENTE',{x:margin,y:height+28,size,font,color:rgb(.15,.22,.34)});
+  page.drawText(fit(signer.metadata?.subject||'Certificado digital'),{x:margin,y:height+16,size,font,color:rgb(.15,.22,.34)});
+  page.drawText(fit(new Date().toLocaleString('pt-BR')),{x:margin,y:height+4,size:Math.max(6,size-1),font,color:rgb(.3,.35,.42)});
  }
  doc.setTitle(name);doc.setCreator('CotrimScan');
  pdflibAddPlaceholder({pdfDoc:doc,reason:'Assinatura do documento digitalizado',name:signer.metadata?.subject||'',contactInfo:'',location:'',signatureLength:32768,appName:'CotrimScan'});

@@ -108,6 +108,10 @@ test('A1 assina PDFs reais, confere senha, integridade e encerramento de sessão
  const doc=await PDFDocument.load(pdf);assert.equal(doc.getPageCount(),1);assert.equal(doc.getPages()[0].getWidth(),620*72/150);
  await verify(pdf,'a1');
  const second=await signedPage(jpeg,{dpi:150,name:'Outro'},signer);await verify(second,'a1-second');
+ const stamped=await signedPage(jpeg,{dpi:150,name:'Com carimbo',signatureStamp:true},signer);
+ await verify(stamped,'a1-carimbo');
+ const stampedDoc=await PDFDocument.load(stamped);
+ assert.equal(stampedDoc.getPages()[0].getHeight(),doc.getPages()[0].getHeight()+46);
  manager.clear();assert.equal(manager.ready('a',signature),false);assert.equal(signer.password,'');assert.ok(signer.buffer.every(byte=>byte===0));
  await assert.rejects(signedPage(jpeg,{dpi:150},null),/Nenhum PDF sem assinatura/);
 });

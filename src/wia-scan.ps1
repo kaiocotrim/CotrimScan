@@ -11,11 +11,22 @@ $manager = New-Object -ComObject WIA.DeviceManager
 $scanner = @($manager.DeviceInfos | Where-Object { $_.Type -eq 1 }) | Select-Object -First 1
 if (-not $scanner) { throw 'Nenhum scanner WIA foi reconhecido pelo Windows.' }
 $device = $scanner.Connect()
-$handling = $device.Properties.Item('Document Handling Select')
-if ($Source -eq 'Platen') { $handling.Value = 2 }
-elseif ($Duplex -eq 'true') { $handling.Value = 5 }
-else { $handling.Value = 1 }
-$item = $device.Items.Item(1)
+$category = if ($Source -eq 'Feeder') { '{FE131934-F84C-42AD-8DA4-6129CDDD7288}' } else { '{FB607B1F-43F3-488B-855B-FB703EC342A6}' }
+$item = $null
+foreach ($candidate in $device.Items) {
+  try {
+    if ([string]$candidate.Properties.Item('Item Category').Value -eq $category) { $item = $candidate; break }
+  } catch { }
+}
+if (-not $item) { $item = $device.Items.Item(1) }
+$handling = $null
+try { $handling = $item.Properties.Item('Document Handling Select') } catch { }
+if (-not $handling) { try { $handling = $device.Properties.Item('Document Handling Select') } catch { } }
+if ($handling) {
+  if ($Source -eq 'Platen') { $handling.Value = 2 }
+  elseif ($Duplex -eq 'true') { $handling.Value = 5 }
+  else { $handling.Value = 1 }
+}
 $item.Properties.Item('Horizontal Resolution').Value = $Dpi
 $item.Properties.Item('Vertical Resolution').Value = $Dpi
 Add-Type -AssemblyName System.Drawing
@@ -31,6 +42,7 @@ for ($page = 1; $page -le $MaxPages; $page++) {
     try { $bitmap.Save($file, [System.Drawing.Imaging.ImageFormat]::Jpeg) }
     finally { $bitmap.Dispose(); Remove-Item -LiteralPath $bmp -Force }
     $files.Add($file)
+    Write-Output (ConvertTo-Json -InputObject @{ file = $file } -Compress)
     if ($Source -eq 'Platen') { break }
   } catch {
     $paperEmpty = $_.Exception.Message -match '80210003|alimentador de documentos|document feeder'
@@ -40,4 +52,3 @@ for ($page = 1; $page -le $MaxPages; $page++) {
   }
 }
 if ($files.Count -eq 0) { throw 'Nenhuma pagina foi recebida do scanner.' }
-ConvertTo-Json -InputObject @($files.ToArray()) -Compress

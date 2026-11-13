@@ -33,8 +33,8 @@ contextBridge.exposeInMainWorld('projects',{
  list:()=>ipcRenderer.invoke('projects:list'),
  pickOutputs:()=>ipcRenderer.invoke('projects:pickOutputs'),
  export:()=>ipcRenderer.invoke('projects:export'),
- create:(input,password)=>ipcRenderer.invoke('projects:create',input,password),
- update:(id,input,password)=>ipcRenderer.invoke('projects:update',id,input,password),
+ create:(input,password,remember)=>ipcRenderer.invoke('projects:create',input,password,remember),
+ update:(id,input,password,remember)=>ipcRenderer.invoke('projects:update',id,input,password,remember),
  open:id=>ipcRenderer.invoke('projects:open',id),
  close:()=>ipcRenderer.invoke('projects:close')
 });
@@ -44,7 +44,7 @@ contextBridge.exposeInMainWorld('certificates',{
  list:()=>ipcRenderer.invoke('certificates:list'),
  pickFile:()=>ipcRenderer.invoke('certificates:pickFile'),
  status:()=>ipcRenderer.invoke('certificates:status'),
- prepare:password=>ipcRenderer.invoke('certificates:prepare',password)
+ prepare:(password,remember)=>ipcRenderer.invoke('certificates:prepare',password,remember)
 });
 contextBridge.exposeInMainWorld('mobile',{
  addresses:()=>ipcRenderer.invoke('mobile:addresses'),

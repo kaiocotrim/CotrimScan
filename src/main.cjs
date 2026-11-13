@@ -1,6 +1,7 @@
-const {app,BrowserWindow,ipcMain,dialog,clipboard}=require('electron');
+const {app,BrowserWindow,ipcMain,dialog,clipboard,safeStorage}=require('electron');
 const path=require('node:path');
 const fs=require('node:fs/promises');
+const sharp=require('sharp');
 // Keep the existing local account and projects when changing the display name.
 app.setName('CotrimScan');
 const userDataPath=path.join(app.getPath('appData'),'naps2-desktop');
@@ -11,11 +12,13 @@ const wiaScanner=require('./wia-scanner.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
 const {createSignatures}=require('./signatures.cjs');
+const {createCertificateCredentials}=require('./certificate-credentials.cjs');
 const {createMobileServer}=require('./mobile-server.cjs');
 const {normalizeMobileImage}=require('./mobile-images.cjs');
 const QRCode=require('qrcode');
 let mobile,mobileProject=null;
 const signatures=createSignatures();
+const credentials=createCertificateCredentials(userDataPath,safeStorage);
 let projects,activeProject=null;
 let captureModels;
 let auth;
@@ -87,26 +90,30 @@ app.whenReady().then(()=>{
  handle('certificates:platform',()=>({a3:process.platform==='win32'}));
  handle('certificates:list',()=>operation(()=>signatures.list()));
  handle('certificates:pickFile',()=>operation(async()=>{const result=await dialog.showOpenDialog(win,{title:'Selecionar certificado A1',properties:['openFile'],filters:[{name:'Certificado A1',extensions:['pfx','p12']}]});return result.canceled?null:result.filePaths[0];}));
- handle('certificates:status',async()=>{requireProject();const project=await projects.info(activeProject);return {type:project.signature.type,ready:signatures.ready(activeProject,project.signature)};});
- handle('certificates:prepare',password=>operation(async()=>{requireProject();const project=await projects.info(activeProject);return signatures.prepare(activeProject,project.signature,password);}));
+ handle('certificates:status',async()=>{requireProject();const project=await projects.info(activeProject);if(project.signature.type==='a1'&&!signatures.ready(activeProject,project.signature)){const saved=await credentials.get(activeProject,project.signature);if(saved!==null)try{await signatures.prepare(activeProject,project.signature,saved);}catch{await credentials.remove(activeProject);}}return {type:project.signature.type,ready:signatures.ready(activeProject,project.signature),remembered:project.signature.type==='a1'&&await credentials.has(activeProject,project.signature),canRemember:credentials.available()};});
+ handle('certificates:prepare',(password,remember=false)=>operation(async()=>{requireProject();const project=await projects.info(activeProject);const result=await signatures.prepare(activeProject,project.signature,password);if(project.signature.type==='a1'&&remember)await credentials.set(activeProject,project.signature,password);return result;}));
  handle('projects:list',()=>operation(()=>projects.list()));
- async function saveProject(id,input,password){
+ async function saveProject(id,input,password,remember=false){
   // Validate into a temporary memory session before changing any project data.
   const pending=require('node:crypto').randomUUID();
   const signature=input?.signature||{type:'none'};
   try{
    const before=id?await projects.info(id):null;
+   const savedPassword=id&&signature.type==='a1'&&(password===undefined||password==='')?await credentials.get(id,signature):null;
+   if(signature.type==='a1'&&remember&&(savedPassword??password)==='')throw Error('Informe a senha do certificado para lembrá-la neste computador.');
    const reuse=!!id&&signature.type==='a1'&&(password===undefined||password==='')&&signatures.ready(id,signature);
-   if(signature.type==='a1'&&!reuse)await signatures.prepare(pending,signature,password);
+   if(signature.type==='a1'&&!reuse)await signatures.prepare(pending,signature,savedPassword??password);
    const saved=id?await projects.update(id,input):await projects.create(input);
    if(signature.type==='a1'&&!reuse)signatures.transfer(pending,saved.id);
    else if(before&&JSON.stringify(before.signature)!==JSON.stringify(saved.signature))signatures.forget(id);
+   if(signature.type!=='a1'||(before&&JSON.stringify(before.signature)!==JSON.stringify(saved.signature)))await credentials.remove(saved.id);
+   if(signature.type==='a1'&&remember)await credentials.set(saved.id,signature,savedPassword??password);
    return saved;
   }finally{signatures.forget(pending);}
  }
- handle('projects:create',(input,password)=>operation(()=>saveProject(null,input,password)));
- handle('projects:update',(id,input,password)=>operation(()=>saveProject(id,input,password)));
- handle('projects:open',id=>operation(async()=>{const data=await projects.open(id); await mobile.stop();mobileProject=null;activeProject=data.project.id; pages=data.pages;return {project:data.project,pages:pages.map((buffer,index)=>({...pageView(buffer,index),hasOcr:!!data.ocr[index],hasProcessed:!!data.processed[index]}))};}));
+ handle('projects:create',(input,password,remember)=>operation(()=>saveProject(null,input,password,remember)));
+ handle('projects:update',(id,input,password,remember)=>operation(()=>saveProject(id,input,password,remember)));
+ handle('projects:open',id=>operation(async()=>{const data=await projects.open(id); await mobile.stop();mobileProject=null;activeProject=data.project.id; pages=data.pages;if(data.project.signature.type==='a1'&&!signatures.ready(activeProject,data.project.signature)){const saved=await credentials.get(activeProject,data.project.signature);if(saved!==null)try{await signatures.prepare(activeProject,data.project.signature,saved);}catch{await credentials.remove(activeProject);}}return {project:data.project,pages:pages.map((buffer,index)=>({...pageView(buffer,index),hasOcr:!!data.ocr[index],hasProcessed:!!data.processed[index]}))};}));
  handle('projects:pickOutputs',()=>operation(async()=>{const result=await dialog.showOpenDialog(win,{title:'Selecionar pastas de saída',properties:['openDirectory','multiSelections','createDirectory']});return result.canceled?[]:result.filePaths;}));
  handle('projects:export',()=>operation(async()=>{requireProject();return projects.exportAll(activeProject);}));
  handle('projects:close',()=>operation(async()=>{await mobile.stop();mobileProject=null;if(activeProject)await projects.clear(activeProject);activeProject=null;pages=[];}));
@@ -129,15 +136,23 @@ app.whenReady().then(()=>{
    if(!signatures.ready(activeProject,project.signature))throw Error('Libere o certificado antes de digitalizar.');
    const warnings=[];
    const scanned=await scanConfigured(port,dpi,source,colorMode,duplex,async data=>{
+    const id=pages.length;
+    const preview=await sharp(data).resize({width:960,withoutEnlargement:true}).jpeg({quality:65}).toBuffer().catch(()=>data);
+    if(!win.isDestroyed())win.webContents.send('page',{...pageView(preview,id),projectId:activeProject,previewPending:true});
+    try{
     let image=data;const receipt=project.documentType==='receipt',processed=receipt||!!project.captureTemplate;
     if(processed){
      const result=await require('./mobile-image-rotate.cjs').enhanceImage(data,undefined,project.processingMode,{documentType:project.documentType,dpi});image=result.image;
      if(!result.cropped)warnings.push('Não foi possível recortar um dos canhotos com segurança. A imagem completa foi mantida; use Ajustar recorte.');
     }
     const page=await projects.append(activeProject,image,data,processed?project.processingMode:undefined);
-    const id=pages.push(image)-1;
-    if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),hasProcessed:processed});
+    pages.push(image);
+    if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),projectId:activeProject,hasProcessed:processed});
     const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);
+    }catch(error){
+     if(pages.length===id&&!win.isDestroyed())win.webContents.send('page',{id,url:'',projectId:activeProject,discardPreview:true});
+     throw error;
+    }
    });
    return {pages:scanned,warnings};
  }));

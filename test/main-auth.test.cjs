@@ -53,7 +53,7 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  await assert.rejects(invoke('pages:ocr-save',0,'text','revision','other-project'),/projeto mudou/);
  await invoke('scan',{port:12345,dpi:600,source:'Platen',colorMode:'RGB24'});
  assert.deepEqual(scanOptions[0],{port:9880,dpi:300,source:'Feeder',colorMode:'BlackAndWhite1',duplex:true});
- assert.equal(sent.length,1);
+ assert.equal(sent.length,2);assert.equal(sent[0].previewPending,true);assert.equal(sent[1].previewPending,undefined);
  const files=await fs.readdir(output);assert.equal(files.length,1);assert.equal(await fs.readFile(path.join(output,files[0]),'utf8'),'test-jpeg');
  assert.equal((await invoke('projects:export')).pages,1);
  await invoke('projects:close');

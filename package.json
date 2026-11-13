@@ -65,6 +65,7 @@
     "@signpdf/signpdf": "^4.0.0",
     "@techstark/opencv-js": "^5.0.0-release.1",
     "@tesseract.js-data/por": "^1.0.0",
+    "framer-motion": "^14.14.0",
     "jscanify": "^1.4.3",
     "node-forge": "^1.4.3",
     "pdf-lib": "^1.17.1",

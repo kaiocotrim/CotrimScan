@@ -11,9 +11,10 @@ for (const extension of ['.ts', '.tsx']) {
 function mount(t, node, setup) {
   const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { url: 'https://localhost/', pretendToBeVisual: true });
   const { window } = dom;
-  for (const key of ['window', 'document', 'navigator', 'HTMLElement', 'HTMLInputElement', 'HTMLTextAreaElement', 'HTMLSelectElement', 'HTMLImageElement', 'SVGSVGElement', 'Image', 'MouseEvent', 'Event']) global[key] = window[key];
+  for (const key of ['window', 'document', 'navigator', 'Element', 'HTMLElement', 'SVGElement', 'HTMLInputElement', 'HTMLTextAreaElement', 'HTMLSelectElement', 'HTMLImageElement', 'SVGSVGElement', 'Image', 'MouseEvent', 'Event']) global[key] = window[key];
   global.IS_REACT_ACT_ENVIRONMENT = true;
   global.requestAnimationFrame = callback => callback();
+  global.getComputedStyle = window.getComputedStyle.bind(window);
   global.ResizeObserver = class { observe() {} disconnect() {} };
   setup?.(window);
   const React = require('react'), { createRoot } = require('react-dom/client');

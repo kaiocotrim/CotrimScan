@@ -11,12 +11,13 @@ export function useCertificate(): CertificateContextValue {
 }
 export function CertificateDialogs({ children }: { children: ReactNode }) {
   const pending = useRef<Pending | null>(null);
-  const [open, setOpen] = useState(false), [password, setPassword] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false), [password, setPassword] = useState(''), [remember, setRemember] = useState(false), [canRemember, setCanRemember] = useState(false), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   async function ensure(): Promise<void> {
     const certificate = await window.certificates.status();
     if (certificate.ready) return;
     if (certificate.type === 'a3') { await window.certificates.prepare(''); return; }
     if (certificate.type !== 'a1') return;
+    setCanRemember(!!certificate.canRemember);setRemember(false);
     if (pending.current) throw new Error('A liberação do certificado já está em andamento.');
     setPassword(''); setError(''); setOpen(true);
     return new Promise<void>((resolve, reject) => { pending.current = { resolve, reject }; });
@@ -30,7 +31,7 @@ export function CertificateDialogs({ children }: { children: ReactNode }) {
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError('Conferindo certificado…');
     try {
-      await window.certificates.prepare(password);
+      await window.certificates.prepare(password,remember);
       setPassword(''); setOpen(false); setError('');
       pending.current?.resolve(); pending.current = null;
     } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
@@ -45,6 +46,7 @@ export function CertificateDialogs({ children }: { children: ReactNode }) {
           <label className="block text-[11px] font-normal text-[#ccc]">Senha do certificado
             <input className="mt-2 block w-full rounded-sm border border-[#454545] bg-[#191919] p-2.5 font-[Arial] text-[13px] text-[#eee] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="password" autoComplete="off" value={password} onChange={event => setPassword(event.target.value)} autoFocus required disabled={busy} />
           </label>
+          {canRemember && <label className="mt-3 flex items-center gap-2 text-[11px] text-[#ccc]"><input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} disabled={busy} /> Lembrar senha neste computador</label>}
           <p className="my-3 text-[11px] leading-[1.8] text-[#eee] [overflow-wrap:anywhere]" role="status" aria-live="polite">{error}</p>
           <div className="mt-[22px] flex justify-end gap-2.5">
             <button className="m-0 w-auto rounded-sm border border-[#444] bg-transparent px-3.5 py-2.5 font-[Arial] text-xs text-[#ccc] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="button" onClick={cancel} disabled={busy}>Cancelar</button>

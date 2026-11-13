@@ -41,7 +41,7 @@ function AppContent() {
     }).catch(error => { if (active) { setAuthError(errorText(error)); setAuthLoading(false); } });
     const unsubscribePage = window.scanner.onPage(page => {
       if (page.projectId && page.projectId !== projectRef.current?.id) return;
-      setPages(previous => previous.some(item => item.id === page.id) ? previous : [...previous, page]);
+      setPages(previous => page.discardPreview ? previous.filter(item => item.id !== page.id || !item.previewPending) : previous.some(item => item.id === page.id) ? previous.map(item => item.id === page.id ? page : item) : [...previous, page]);
     });
     const unsubscribeMobile = window.mobile.onReceived(data => {
       if (data.projectId === projectRef.current?.id) setStatus(data.warning ? `Foto recebida e preservada no projeto. ${data.warning}` : `Página ${data.pageNumber} recebida do celular.`);
