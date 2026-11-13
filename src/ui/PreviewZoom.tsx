@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent, type ReactNode } from 'react';
 import type { Page, Region } from './types';
 
 const GUTTER = 24;
@@ -7,6 +7,7 @@ const MAX = 4;
 const LENS = 190;
 const MAGNIFICATION = 3;
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const zoomButton = 'm-0 w-auto rounded-sm border border-[#555] bg-[#292929] px-2.5 py-1.5 text-[11px] text-[#ddd] hover:bg-[#333] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ddd]';
 
 interface Props { page?: Page; pageIndex: number; locked?: boolean; children?: ReactNode; contentClassName?: string; highlight?: Region | null }
 export function PreviewZoom({ page, pageIndex, locked = false, children, contentClassName = '', highlight }: Props) {
@@ -27,7 +28,7 @@ export function PreviewZoom({ page, pageIndex, locked = false, children, content
   const canPan = stageWidth > viewportSize.width + 1 || stageHeight > viewportSize.height + 1;
   const disabled = !loaded || locked;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setNatural({ width: 0, height: 0 }); setScale(1); setFit(true); setLoupe(false); setLens(null);
     pan.current = null; setPanning(false);
     if (viewport.current) { viewport.current.scrollLeft = 0; viewport.current.scrollTop = 0; }
@@ -101,23 +102,23 @@ export function PreviewZoom({ page, pageIndex, locked = false, children, content
     }
   }
   return <>
-    <div className="zoom-toolbar" role="group" aria-label="Zoom do documento">
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[#363636] px-[18px] py-[9px] text-[11px] text-[#bbb] max-[700px]:gap-1.5 max-[700px]:p-2" role="group" aria-label="Zoom do documento">
       <span>Zoom</span>
-      <button type="button" aria-label="Diminuir zoom" title="Diminuir zoom" disabled={disabled || actual <= MIN} onClick={() => zoom(actual / 1.25)}>−</button>
-      <select aria-label="Nível de zoom" disabled={disabled} value={fit ? 'fit' : String(scale)} onChange={event => event.target.value === 'fit' ? fitToScreen() : zoom(Number(event.target.value))}>
+      <button id="zoom-out" className={`${zoomButton} min-w-[30px] text-[17px] leading-[17px]`} type="button" aria-label="Diminuir zoom" title="Diminuir zoom" disabled={disabled || actual <= MIN} onClick={() => zoom(actual / 1.25)}>−</button>
+      <select className="m-0 w-auto max-w-[220px] rounded-sm border border-[#555] bg-[#202020] px-2 py-1.5 text-[11px] text-[#eee]" aria-label="Nível de zoom" disabled={disabled} value={fit ? 'fit' : String(scale)} onChange={event => event.target.value === 'fit' ? fitToScreen() : zoom(Number(event.target.value))}>
         <option value="fit">Ajustar ({Math.round(fitScale * 100)}%)</option>
         {[.25, .5, .75, 1, 1.5, 2, 3, 4].map(value => <option key={value} value={String(value)}>{value * 100}%</option>)}
         {!fit && ![.25, .5, .75, 1, 1.5, 2, 3, 4].includes(scale) && <option value={String(scale)}>{Math.round(scale * 100)}%</option>}
       </select>
-      <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" disabled={disabled || actual >= MAX} onClick={() => zoom(actual * 1.25)}>+</button>
-      <button type="button" disabled={disabled} onClick={fitToScreen}>Ajustar à tela</button>
-      <button type="button" disabled={disabled} aria-pressed={loupe} onClick={() => { setLoupe(!loupe); setLens(null); }}>Lupa 3×</button>
-      <span className="zoom-hint">Arraste para mover · Ctrl + rolagem para ampliar</span>
+      <button id="zoom-in" className={`${zoomButton} min-w-[30px] text-[17px] leading-[17px]`} type="button" aria-label="Aumentar zoom" title="Aumentar zoom" disabled={disabled || actual >= MAX} onClick={() => zoom(actual * 1.25)}>+</button>
+      <button className={zoomButton} type="button" disabled={disabled} onClick={fitToScreen}>Ajustar à tela</button>
+      <button id="zoom-loupe" className={`${zoomButton} ${loupe ? 'border-[#72b9ed] bg-[#234968] text-white' : ''}`} type="button" disabled={disabled} aria-pressed={loupe} onClick={() => { setLoupe(value => !value); setLens(null); }}>Lupa 3×</button>
+      <span className="ml-auto text-[#999] max-[700px]:hidden">Arraste para mover · Ctrl + rolagem para ampliar</span>
       <span className="visually-hidden" role="status" aria-live="polite">{fit ? `Documento ajustado à tela, ${Math.round(actual * 100)}%.` : `Zoom de ${Math.round(actual * 100)}%.`}</span>
     </div>
-    <div className={`preview-content ${contentClassName}`}><div ref={viewport} className={`preview-canvas ${canPan ? 'can-pan' : ''} ${panning ? 'is-panning' : ''} ${loupe ? 'has-loupe' : ''}`} tabIndex={0} aria-label="Prévia do documento com zoom. Use mais, menos ou zero para ajustar." onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onLostPointerCapture={pointerUp} onPointerLeave={() => setLens(null)} onScroll={() => setLens(null)} onWheel={wheel} onDoubleClick={event => { if (event.target === image.current && !disabled) { if (fit) zoom(1, { x: event.clientX, y: event.clientY }); else fitToScreen(); } }} onKeyDown={keydown}>
-      {page ? <div className="zoom-stage" style={{ width: stageWidth, height: stageHeight, position: 'relative' }}><img ref={image} src={page.url} alt={`Prévia da página ${pageIndex + 1}`} draggable={false} style={{ width, height }} onLoad={event => setNatural({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} onError={() => setNatural({ width: 0, height: 0 })} />{highlight && loaded && <div className="capture-highlight" style={{ left: (stageWidth - width) / 2 + highlight.x * width, top: (stageHeight - height) / 2 + highlight.y * height, width: highlight.width * width, height: highlight.height * height }} />}</div> : <div className="preview-empty"><h3>Seus documentos, em detalhe</h3><p>Digitalize ou escolha uma página ao lado para visualizar.</p></div>}
+    <div className={`grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(0,1fr)] overflow-hidden ${contentClassName}`}><div id="document-viewport" ref={viewport} className={`relative block min-h-0 min-w-0 flex-1 overflow-auto bg-[#161616] p-0 [overscroll-behavior:contain] [touch-action:pan-x_pan-y] ${canPan ? 'can-pan' : ''} ${panning ? 'is-panning' : ''} ${loupe ? 'has-loupe' : ''}`} tabIndex={0} aria-label="Prévia do documento com zoom. Use mais, menos ou zero para ajustar." onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onLostPointerCapture={pointerUp} onPointerLeave={() => setLens(null)} onScroll={() => setLens(null)} onWheel={wheel} onDoubleClick={event => { if (event.target === image.current && !disabled) { if (fit) zoom(1, { x: event.clientX, y: event.clientY }); else fitToScreen(); } }} onKeyDown={keydown}>
+      {page ? <div className="relative grid min-h-0 min-w-0 place-items-center" style={{ width: stageWidth, height: stageHeight }}><img id="document-preview" ref={image} src={page.url} alt={`Prévia da página ${pageIndex + 1}`} draggable={false} style={{ width, height }} onLoad={event => setNatural({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} onError={() => setNatural({ width: 0, height: 0 })} />{highlight && loaded && <div className="capture-highlight" style={{ left: (stageWidth - width) / 2 + highlight.x * width, top: (stageHeight - height) / 2 + highlight.y * height, width: highlight.width * width, height: highlight.height * height }} />}</div> : <div className="flex h-full min-h-[180px] flex-col items-center justify-center p-6 text-center text-[#888]"><h3 className="mb-2.5 mt-[22px] text-[15px] font-normal text-[#ccc]">Seus documentos, em detalhe</h3><p className="m-0 text-[11px] leading-[1.8]">Digitalize ou escolha uma página ao lado para visualizar.</p></div>}
     </div>{children}</div>
-    {lens && page && <div className="document-loupe" role="img" aria-label="Detalhe ampliado do documento" style={{ position: 'fixed', left: lens.left, top: lens.top, backgroundImage: `url("${page.url}")`, backgroundSize: `${width * MAGNIFICATION}px ${height * MAGNIFICATION}px`, backgroundPosition: lens.backgroundPosition }} />}
+    {lens && page && <div className="pointer-events-none fixed z-[10000] size-[190px] rounded-full border-2 border-[#78bfff] bg-white bg-no-repeat shadow-[0_5px_28px_#000b]" role="img" aria-label="Detalhe ampliado do documento" style={{ left: lens.left, top: lens.top, backgroundImage: `url("${page.url}")`, backgroundSize: `${width * MAGNIFICATION}px ${height * MAGNIFICATION}px`, backgroundPosition: lens.backgroundPosition }} />}
   </>;
 }

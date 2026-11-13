@@ -8,9 +8,9 @@ test('editar nome dos arquivos reutiliza o A1 já liberado na sessão',async t=>
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-settings-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
  const handlers=new Map(),sessions=new Map();let win,preparations=0;
  const signatures={ready:(id,signature)=>sessions.get(id)===JSON.stringify(signature),prepare:async(id,signature,password)=>{preparations++;if(password!=='validada')throw Error('Senha incorreta');sessions.set(id,JSON.stringify(signature));},transfer:(a,b)=>{sessions.set(b,sessions.get(a));sessions.delete(a);},forget:id=>sessions.delete(id),clear:()=>sessions.clear()};
- class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}}};}loadFile(){}}
+ class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}}};}removeMenu(){}loadFile(){}}
  const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
- vm.runInNewContext(await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8'),{__dirname:path.join(__dirname,'../src'),require(name){if(name==='electron')return electron;if(name==='./signatures.cjs')return {createSignatures:()=>signatures};return name.startsWith('./')?require(path.join(__dirname,'../src',name)):require(name);}});
+ vm.runInNewContext(await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8'),{__dirname:path.join(__dirname,'../src'),require(name){if(name==='electron')return electron;if(name==='./wia-scanner.cjs')return {available:async()=>false};if(name==='./signatures.cjs')return {createSignatures:()=>signatures};return name.startsWith('./')?require(path.join(__dirname,'../src',name)):require(name);}});
  await new Promise(resolve=>setImmediate(resolve));const event={sender:win.webContents,senderFrame:win.webContents.mainFrame};
  const invoke=(name,...args)=>Promise.resolve().then(()=>handlers.get(name)(event,...args));
  await invoke('auth:register','usuario','senha-segura');

@@ -11,9 +11,9 @@ test('painel React salva revisão de campos', async t => {
   const capture = { read: async () => data, save: async (...args) => { saved = args; return { ...data, revision: 'r2', fields: [{ ...data.fields[0], value: args[1][0].value }] }; } };
   const f = mount(t, React.createElement(CapturePanel, { page: { id: 0, url: 'sample', captureData: data }, project: { id: 'projeto', captureTemplate: model }, onUpdate() {}, setStatus() {} }), window => { window.capture = capture; });
   await f.act(async () => { await Promise.resolve(); });
-  const input = f.document.querySelector('.capture-value input[type=text]');
+  const input = f.document.querySelector('[aria-labelledby="capture-panel-title"] input[type=text]');
   f.act(() => { Object.getOwnPropertyDescriptor(f.window.HTMLInputElement.prototype, 'value').set.call(input, '00125473'); input.dispatchEvent(new f.window.Event('input', { bubbles: true })); });
-  const button = [...f.document.querySelectorAll('.capture-panel button')].find(item => item.textContent === 'Salvar revisão');
+  const button = [...f.document.querySelectorAll('[aria-labelledby="capture-panel-title"] button')].find(item => item.textContent === 'Salvar revisão');
   await f.act(async () => { button.click(); await Promise.resolve(); });
   assert.equal(saved[1][0].value, '00125473');
   assert.equal(saved[2], 'r1');
@@ -23,9 +23,9 @@ test('editor React digitaliza amostra com configuração do projeto', async t =>
   const capture = { models: async () => [model], sample: async input => { settings = input; return { url: 'data:image/jpeg;base64,YQ==' }; } };
   const f = mount(t, React.createElement(CaptureEditor, { settings: { port: 9880, dpi: 300, source: 'Feeder', processingMode: 'auto' }, selected: model, onSave: async () => {}, onClose: () => {} }), window => { window.capture = capture; });
   await f.act(async () => { await Promise.resolve(); });
-  const button = [...f.document.querySelectorAll('.capture-editor button')].find(item => item.textContent === 'Digitalizar amostra');
+  const button = [...f.document.querySelectorAll('[aria-label="Modelo de captura"] button')].find(item => item.textContent === 'Digitalizar amostra');
   await f.act(async () => { button.click(); await Promise.resolve(); });
   assert.equal(settings.port, 9880);
   assert.equal(settings.source, 'Feeder');
-  assert.ok(f.document.querySelector('.capture-surface img').src.startsWith('data:image/jpeg'));
+  assert.ok(f.document.querySelector('[aria-label="Modelo de captura"] img').src.startsWith('data:image/jpeg'));
 });

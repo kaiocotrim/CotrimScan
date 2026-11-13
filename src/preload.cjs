@@ -46,7 +46,6 @@ contextBridge.exposeInMainWorld('certificates',{
  status:()=>ipcRenderer.invoke('certificates:status'),
  prepare:password=>ipcRenderer.invoke('certificates:prepare',password)
 });
-
 contextBridge.exposeInMainWorld('mobile',{
  addresses:()=>ipcRenderer.invoke('mobile:addresses'),
  copyLink:()=>ipcRenderer.invoke('mobile:copyLink'),

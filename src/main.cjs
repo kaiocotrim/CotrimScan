@@ -7,6 +7,7 @@ const userDataPath=path.join(app.getPath('appData'),'naps2-desktop');
 require('node:fs').mkdirSync(userDataPath,{recursive:true,mode:0o700});
 app.setPath('userData',userDataPath);
 const scanner=require('./scanner.cjs');
+const wiaScanner=require('./wia-scanner.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
 const {createSignatures}=require('./signatures.cjs');
@@ -23,6 +24,10 @@ let pages=[];
 async function operation(fn){if(busy) throw Error('Aguarde a operação em andamento.'); busy=true; try{return await fn();}finally{busy=false;}}
 function requireProject(){if(!activeProject)throw Error('Abra um projeto para digitalizar.');}
 function pageView(data,id){return {id,url:'data:image/jpeg;base64,'+data.toString('base64')};}
+async function scanConfigured(port,dpi,source,colorMode,duplex,onPage,maxPages=200){
+ if(await wiaScanner.available())return wiaScanner.scan(dpi,source,colorMode,duplex,onPage,maxPages);
+ return scanner.scan(port,dpi,source,onPage,colorMode,duplex,maxPages);
+}
 function handle(name,fn,protectedAction=true){ipcMain.handle(name,(event,...args)=>{if(event.sender!==win.webContents || event.senderFrame!==win.webContents.mainFrame) throw Error('Solicitação inválida.'); if(protectedAction) auth.requireSession(); return fn(...args);});}
 app.whenReady().then(()=>{
  auth=createAuth(path.join(app.getPath('userData'),'account.json'));
@@ -34,7 +39,7 @@ app.whenReady().then(()=>{
   const modes=require('./mobile-image-modes.cjs');
   const mode=modes.scanMode(processingMode,colorMode),type=modes.documentType(documentType);
   let sample;
-  await scanner.scan(port,dpi,source,async image=>{sample=image;},colorMode,false,1);
+  await scanConfigured(port,dpi,source,colorMode,false,async image=>{sample=image;},1);
   if(!sample)throw Error('Nenhuma folha foi recebida.');
   const result=await require('./mobile-image-rotate.cjs').enhanceImage(sample,undefined,mode,{documentType:type,dpi});
   return {url:pageView(result.image,0).url};
@@ -104,7 +109,7 @@ app.whenReady().then(()=>{
  handle('projects:open',id=>operation(async()=>{const data=await projects.open(id); await mobile.stop();mobileProject=null;activeProject=data.project.id; pages=data.pages;return {project:data.project,pages:pages.map((buffer,index)=>({...pageView(buffer,index),hasOcr:!!data.ocr[index],hasProcessed:!!data.processed[index]}))};}));
  handle('projects:pickOutputs',()=>operation(async()=>{const result=await dialog.showOpenDialog(win,{title:'Selecionar pastas de saída',properties:['openDirectory','multiSelections','createDirectory']});return result.canceled?[]:result.filePaths;}));
  handle('projects:export',()=>operation(async()=>{requireProject();return projects.exportAll(activeProject);}));
- handle('projects:close',()=>operation(async()=>{await mobile.stop();mobileProject=null;activeProject=null;pages=[];}));
+ handle('projects:close',()=>operation(async()=>{await mobile.stop();mobileProject=null;if(activeProject)await projects.clear(activeProject);activeProject=null;pages=[];}));
  handle('auth:status',()=>auth.status(),false);
  handle('auth:register',(username,password)=>auth.register(username,password),false);
  handle('auth:login',(username,password)=>auth.login(username,password),false);
@@ -123,7 +128,7 @@ app.whenReady().then(()=>{
    await projects.checkOutputs(activeProject);
    if(!signatures.ready(activeProject,project.signature))throw Error('Libere o certificado antes de digitalizar.');
    const warnings=[];
-   const scanned=await scanner.scan(port,dpi,source,async data=>{
+   const scanned=await scanConfigured(port,dpi,source,colorMode,duplex,async data=>{
     let image=data;const receipt=project.documentType==='receipt',processed=receipt||!!project.captureTemplate;
     if(processed){
      const result=await require('./mobile-image-rotate.cjs').enhanceImage(data,undefined,project.processingMode,{documentType:project.documentType,dpi});image=result.image;
@@ -133,7 +138,7 @@ app.whenReady().then(()=>{
     const id=pages.push(image)-1;
     if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),hasProcessed:processed});
     const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);
-   },colorMode,duplex);
+   });
    return {pages:scanned,warnings};
  }));
  handle('pages:rotate',(index,angle)=>operation(async()=>{requireProject();const buffer=await projects.rotate(activeProject,index,angle);pages[index]=buffer;return pageView(buffer,index);}));

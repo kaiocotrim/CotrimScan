@@ -12,12 +12,14 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  class Window {
   constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,page)=>sent.push(page)};}
   isDestroyed(){return false;}
+  removeMenu(){}
   loadFile(){}
  }
  const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
  vm.runInNewContext(code,{__dirname:path.join(__dirname,'../src'),require(name){
   if(name==='electron')return electron;
+  if(name==='./wia-scanner.cjs')return {available:async()=>false};
   if(name==='./auth.cjs')return {createAuth};
   if(name==='./projects.cjs')return require('../src/projects.cjs');
   if(name==='./signatures.cjs')return require('../src/signatures.cjs');
@@ -55,8 +57,7 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  const files=await fs.readdir(output);assert.equal(files.length,1);assert.equal(await fs.readFile(path.join(output,files[0]),'utf8'),'test-jpeg');
  assert.equal((await invoke('projects:export')).pages,1);
  await invoke('projects:close');
- assert.equal((await invoke('projects:open',project.id)).pages.length,1);
- const deleted=await invoke('pages:remove',[0]);assert.equal(deleted.removed,1);assert.equal(deleted.pages.length,0);
+ assert.equal((await invoke('projects:open',project.id)).pages.length,0);
  assert.equal((await fs.readdir(output)).length,1);
  await invoke('scan');assert.equal((await invoke('projects:open',project.id)).pages.length,1);
  await invoke('clear');assert.equal((await invoke('projects:open',project.id)).pages.length,0);

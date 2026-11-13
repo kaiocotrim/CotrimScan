@@ -15,8 +15,8 @@ test('diálogo React mantém QR ao receber atualizações da conexão', async t 
     };
   });
   await f.act(async () => { await Promise.resolve(); });
-  assert.equal(f.document.querySelector('.mobile-qr-box img').src, state.qr);
+  assert.equal(f.document.querySelector('[aria-labelledby="mobile-title"] img').src, state.qr);
   f.act(() => notify({ ...state, qr: undefined, connected: { name: 'Celular' } }));
-  assert.equal(f.document.querySelector('.mobile-qr-box img').src, state.qr);
-  assert.match(f.document.querySelector('.mobile-dialog').textContent, /Celular/);
+  assert.equal(f.document.querySelector('[aria-labelledby="mobile-title"] img').src, state.qr);
+  assert.match(f.document.querySelector('[aria-labelledby="mobile-title"]').textContent, /Celular/);
 });

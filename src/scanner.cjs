@@ -11,7 +11,7 @@ function settings(dpi, source, colorMode='RGB24',duplex=false) {
 }
 async function request(url, init = {}) {
   try { return await fetch(url, {...init, redirect:'error', signal:AbortSignal.timeout(120000)}); }
-  catch { throw Error('Não foi possível acessar o serviço local. Verifique se ele está ativo e se a porta está correta.'); }
+  catch { throw Error(`Serviço de digitalização indisponível em ${new URL(url).origin}. Inicie o NAPS2.WebScan.LocalService ou corrija a porta nas configurações do projeto.`); }
 }
 async function connect(port) {
   const r = await request(endpoint(port)+'ScannerCapabilities');

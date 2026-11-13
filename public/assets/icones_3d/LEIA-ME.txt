@@ -1,0 +1,14 @@
+PACOTE DE ICONES 3D - DIGITALIZACAO
+
+Sete icones em arquivos PNG independentes, com fundo transparente.
+Cada PNG: 1024 x 1024 pixels, canal alpha RGBA.
+
+01 Impressora
+02 Pagina digitalizada
+03 Documentos
+04 Upload para nuvem
+05 Arquivo salvo
+06 Seguranca
+07 Tudo organizado
+
+Inclui PREVIA_ICONES.png para visualizacao.

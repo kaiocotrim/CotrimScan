@@ -10,11 +10,12 @@ test('fotos entram no projeto, falha na saída preserva a página e troca de pro
  const handlers=new Map(),events=[];let win,callbacks,session=null,sequence=0;
  const controller={addresses:()=>[{address:'127.0.0.1',name:'Teste'}],snapshot:()=>session||{active:false},isActive:(id,client)=>session?.sessionId===id&&client==='approved',start:async options=>{session={active:true,sessionId:String(++sequence),projectName:options.projectName,url:'http://127.0.0.1:12345/#token='+('a'.repeat(64))};return session;},stop:async()=>{session=null;},decide(){}};
  controller.setReceivingStage=()=>{};
- class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,data)=>events.push({name,data})};}isDestroyed(){return false;}loadFile(){}}
+ class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,data)=>events.push({name,data})};}isDestroyed(){return false;}removeMenu(){}loadFile(){}}
  const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){},quit(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
  vm.runInNewContext(code,{__dirname:path.join(__dirname,'../src'),require(name){
   if(name==='electron')return electron;
+  if(name==='./wia-scanner.cjs')return {available:async()=>false};
   if(name==='./mobile-server.cjs')return {createMobileServer:options=>{callbacks=options;return controller;}};
   return name.startsWith('./')?require(path.join(__dirname,'../src',name)):require(name);
  }});

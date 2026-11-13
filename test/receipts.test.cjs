@@ -44,11 +44,12 @@ test('scanner recebe lote de canhotos, recorta cada pagina e salva PDFs preserva
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-receipt-ipc-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
  const original=await sharp(await fixture()).jpeg({quality:98}).toBuffer();
  const handlers=new Map(),sent=[];let win;
- class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,page)=>sent.push(page)};}isDestroyed(){return false;}loadFile(){}}
+ class Window{constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,page)=>sent.push(page)};}isDestroyed(){return false;}removeMenu(){}loadFile(){}}
  const electron={app:{whenReady:()=>Promise.resolve(),getPath:()=>dir,setName(){},setPath(){},on(){}},BrowserWindow:Window,ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},dialog:{}};
  const src=path.join(__dirname,'../src');
  require('node:vm').runInNewContext(await fs.readFile(path.join(src,'main.cjs'),'utf8'),{__dirname:src,require(name){
   if(name==='electron')return electron;
+  if(name==='./wia-scanner.cjs')return {available:async()=>false};
   if(name==='./scanner.cjs')return {...require('../src/scanner.cjs'),scan:async(port,dpi,source,onPage)=>{await onPage(original);await onPage(original);return 2;}};
   return name.startsWith('./')?require(path.join(src,name)):require(name);
  }});

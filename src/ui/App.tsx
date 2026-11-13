@@ -17,6 +17,8 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
+  const projectsRef = useRef<Project[]>([]);
+  projectsRef.current = projects;
   const [project, setProject] = useState<Project | null>(null);
   const projectRef = useRef<Project | null>(null);
   projectRef.current = project;

@@ -19,5 +19,5 @@ export function ModalBackdrop({ children, onClose, className = '' }: Props) {
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
-  return <div ref={ref} className={`modal-backdrop ${className}`} onKeyDown={keydown}>{children}</div>;
+  return <div ref={ref} className={`fixed inset-0 z-[1000] grid place-items-center overflow-auto bg-[#080c14b8] p-4 backdrop-blur-[5px] ${className}`} onKeyDown={keydown}>{children}</div>;
 }
