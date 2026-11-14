@@ -112,3 +112,52 @@
 #document-viewport{position:relative}
 /* Settings use a single tab panel with label/control rows and a fixed footer. */
 }
+
+/* Keep interface labels from behaving like selectable web page text. */
+#root { user-select: none; -webkit-user-select: none; }
+#root :is(input, textarea, [contenteditable="true"], [data-selectable="true"]) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+#root img { -webkit-user-drag: none; }
+
+/* Discreet scrollbars in the document preview. */
+#document-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: #555 transparent;
+}
+#document-viewport::-webkit-scrollbar { width: 7px; height: 7px; }
+#document-viewport::-webkit-scrollbar-track { background: transparent; }
+#document-viewport::-webkit-scrollbar-thumb { background: #555; border-radius: 8px; }
+#document-viewport::-webkit-scrollbar-thumb:hover { background: #777; }
+
+#scanner-view aside[aria-label="Ferramentas"] .MuiSvgIcon-root {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px;
+  min-height: 14px;
+  font-size: 14px !important;
+  flex: 0 0 14px;
+  color: #ccc !important;
+  fill: #ccc !important;
+}
+#scanner-view aside[aria-label="Ferramentas"] button:disabled .MuiSvgIcon-root {
+  color: #666 !important;
+  fill: #666 !important;
+}
+#scanner-view aside[aria-label="Ferramentas"] button:not(:disabled):hover .MuiSvgIcon-root {
+  color: #eee !important;
+  fill: #eee !important;
+}
+
+#scanner-view aside[aria-label="Ferramentas"] > div {
+  scrollbar-width: thin;
+  scrollbar-color: #666 transparent;
+}
+#scanner-view aside[aria-label="Ferramentas"] > div::-webkit-scrollbar { width: 7px; }
+#scanner-view aside[aria-label="Ferramentas"] > div::-webkit-scrollbar-track { background: transparent; }
+#scanner-view aside[aria-label="Ferramentas"] > div::-webkit-scrollbar-thumb { background: #666; border-radius: 8px; }
+#scanner-view aside[aria-label="Ferramentas"] > div::-webkit-scrollbar-thumb:hover { background: #888; }
+
+#projects-view .account-logout { background: #3287dc; color: #fff; }
+#projects-view .account-logout:hover { background: #4397ea; }

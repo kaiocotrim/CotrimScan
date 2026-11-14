@@ -4,7 +4,7 @@ import { cpSync } from 'node:fs';
 
 export default defineConfig({
   root: 'src',
-  publicDir: false,
+  publicDir: '../public',
   base: './',
   build: {
     outDir: '../dist',
@@ -15,6 +15,9 @@ export default defineConfig({
   },
   server: { fs: { allow: ['..'] } },
   plugins: [{
+    transformIndexHtml(html, context) {
+      return context.server ? html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*\/>/, '') : html;
+    },
     name: 'copy-static-assets',
     closeBundle() {
       cpSync(resolve(__dirname, 'src/assets'), resolve(__dirname, 'dist/assets'), { recursive: true });

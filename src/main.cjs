@@ -102,9 +102,15 @@ app.whenReady().then(()=>{
    const savedPassword=id&&signature.type==='a1'&&(password===undefined||password==='')?await credentials.get(id,signature):null;
    if(signature.type==='a1'&&remember&&(savedPassword??password)==='')throw Error('Informe a senha do certificado para lembrá-la neste computador.');
    const reuse=!!id&&signature.type==='a1'&&(password===undefined||password==='')&&signatures.ready(id,signature);
-   if(signature.type==='a1'&&!reuse)await signatures.prepare(pending,signature,savedPassword??password);
-   const saved=id?await projects.update(id,input):await projects.create(input);
-   if(signature.type==='a1'&&!reuse)signatures.transfer(pending,saved.id);
+   let certificateInfo=null;
+   if(signature.type==='a1'){
+    if(reuse)certificateInfo=signatures.get(id,signature).metadata;
+    else if(before?.signature?.type==='a1'&&before.signature.filePath===signature.filePath&&(savedPassword??password)==='')certificateInfo=before.certificateInfo;
+    else certificateInfo=await signatures.prepare(pending,signature,savedPassword??password);
+   }
+   const projectInput={...input,certificateInfo:signature.type==='a1'?certificateInfo:null};
+   const saved=id?await projects.update(id,projectInput):await projects.create(projectInput);
+   if(signature.type==='a1'&&!reuse&&signatures.ready(pending,signature))signatures.transfer(pending,saved.id);
    else if(before&&JSON.stringify(before.signature)!==JSON.stringify(saved.signature))signatures.forget(id);
    if(signature.type!=='a1'||(before&&JSON.stringify(before.signature)!==JSON.stringify(saved.signature)))await credentials.remove(saved.id);
    if(signature.type==='a1'&&remember)await credentials.set(saved.id,signature,savedPassword??password);

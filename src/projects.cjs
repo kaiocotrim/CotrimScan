@@ -19,7 +19,7 @@ function createProjects(root,{signatures}={}) {
   const captureTemplate=require('./capture.cjs').template(input.captureTemplate);
   const namingFieldId=input.namingFieldId??null;
   if(namingMode==='ocr'&&(!captureTemplate||!captureTemplate.fields.some(f=>f.id===namingFieldId)))throw Error('Selecione um campo do modelo para nomear os arquivos pelo OCR.');
-  return {namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature:normalizeSignature(input.signature),signatureStamp:input.signatureStamp===true};
+  return {namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature:normalizeSignature(input.signature),certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
  }
  async function read(id) {
   const data=JSON.parse(await fs.readFile(path.join(directory(id),'project.json'),'utf8'));

@@ -3,15 +3,15 @@ import type { Project } from './types';
 
 interface Props { username: string; projects: Project[]; status: string; busy: boolean; onLogout(): void; onNew(): void; onOpen(project: Project): void; onEdit(project: Project): void }
 
-const quietButton = 'm-0 w-auto rounded-md border border-[#ffffff12] bg-transparent px-4 py-2.5 text-xs text-[#a6b4c4] hover:border-[#5b9de34d] hover:bg-[#ffffff06] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#75baff]';
 const primaryButton = 'm-0 w-auto shrink-0 rounded-md border border-[#61acfa70] bg-[#3287dc] px-[18px] py-3 text-xs text-white hover:bg-[#4397ea] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#75baff]';
 
 export function ProjectsView({ username, projects, status, busy, onLogout, onNew, onOpen, onEdit }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   return <div id="projects-view" className="min-h-dvh bg-[#181818] font-[Arial,Helvetica,sans-serif] text-[#e8e8e8]">
     <header className="flex items-center justify-between gap-6 border-b border-[#ffffff0d] bg-[#181818] px-10 py-[22px] max-[900px]:px-6 max-[900px]:py-[18px] max-[600px]:gap-3">
-      <div className="flex min-w-0 items-center gap-4 max-[600px]:gap-2"><img className="block h-auto w-32 shrink-0 object-contain" src="assets/icones_3d/download.png" width={128} height={30} alt="CotrimScan" /><span className="text-xs tracking-[2px] text-[#a2bad3] max-[600px]:text-[10px] max-[600px]:tracking-[1px]">COTRIMSCAN</span></div>
-      <div className="flex min-w-0 items-center gap-4 max-[600px]:gap-2"><span className="text-xs text-[#929ba6]">{username}</span><button className={quietButton} onClick={onLogout} disabled={busy}>Sair</button></div>
+      <img className="block h-auto w-32 shrink-0 object-contain" src="assets/icones_3d/download.png" width={128} height={30} alt="CotrimScan" />
+      <div className="relative"><button type="button" className="m-0 flex w-auto items-center gap-2 rounded-full border-0 bg-transparent px-2 py-1 text-[#dce7f3] hover:bg-[#ffffff08]" aria-haspopup="menu" aria-expanded={userMenuOpen} onClick={() => setUserMenuOpen(value => !value)}><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ffffff12] text-xs font-semibold uppercase">{username.charAt(0)}</span><span className="max-w-36 truncate text-xs">{username}</span></button>{userMenuOpen && <div className="absolute right-0 top-full z-20 mt-2 min-w-36 rounded-md border border-[#ffffff20] bg-[#252525] p-1 shadow-xl" role="menu"><button type="button" role="menuitem" className="account-logout m-0 w-full rounded px-3 py-2 text-left text-xs" onClick={onLogout} disabled={busy}>Sair da conta</button></div>}</div>
     </header>
     <main className="mx-auto block max-w-[1600px] px-14 py-[50px] max-[900px]:px-6 max-[900px]:py-8">
       <div className="flex items-center justify-between gap-7 max-[600px]:flex-col max-[600px]:items-start">
