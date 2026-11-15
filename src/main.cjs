@@ -133,6 +133,8 @@ app.whenReady().then(()=>{
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
  handle('connect',port=>scanner.connect(port));
+ handle('blank:sample',async(url,sensitivity)=>{if(typeof url!=='string'||url.length>30000000||!url.startsWith('data:image/'))throw Error('Imagem inválida.');const buffer=Buffer.from(url.split(',')[1],'base64');return {id:0,url,...await require('./blank-pages.cjs').inspect(buffer,sensitivity)};});
+ handle('blank:preview',async(id,sensitivity)=>{const data=id?await projects.open(id):{pages:[]};return Promise.all(data.pages.slice(0,20).map(async(buffer,index)=>({...pageView(buffer,index),...await require('./blank-pages.cjs').inspect(buffer,sensitivity)})));});
  handle('scan',()=>operation(async()=>{
    requireProject();
    const project=await projects.info(activeProject);
@@ -140,9 +142,11 @@ app.whenReady().then(()=>{
    scanner.settings(dpi,source,colorMode,duplex);
    await projects.checkOutputs(activeProject);
    if(!signatures.ready(activeProject,project.signature))throw Error('Libere o certificado antes de digitalizar.');
-   const warnings=[];
+   const warnings=[];let ignored=0;const suspects=[];const blankSettings=require('./blank-pages.cjs').settings(project.blankPages);
    const scanned=await scanConfigured(port,dpi,source,colorMode,duplex,async data=>{
-    const id=pages.length;
+    const detected=blankSettings.enabled&&(await require('./blank-pages.cjs').inspect(data,blankSettings.sensitivity)).blank;
+    if(detected&&blankSettings.action==='auto'){ignored++;return;}
+    const id=pages.length;if(detected)suspects.push(id);
     const preview=await sharp(data).resize({width:960,withoutEnlargement:true}).jpeg({quality:65}).toBuffer().catch(()=>data);
     if(!win.isDestroyed())win.webContents.send('page',{...pageView(preview,id),projectId:activeProject,previewPending:true});
     try{
@@ -154,13 +158,14 @@ app.whenReady().then(()=>{
     const page=await projects.append(activeProject,image,data,processed?project.processingMode:undefined);
     pages.push(image);
     if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),projectId:activeProject,hasProcessed:processed});
-    const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);
+    if(!detected){const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);}
     }catch(error){
      if(pages.length===id&&!win.isDestroyed())win.webContents.send('page',{id,url:'',projectId:activeProject,discardPreview:true});
      throw error;
     }
    });
-   return {pages:scanned,warnings};
+   if(suspects.length)warnings.push('Revise as páginas possivelmente em branco antes de enviar para as saídas.');
+   return {blankCandidates:suspects,pages:scanned-ignored,warnings:[...warnings,`${ignored} página(s) em branco ignorada(s).`],refreshed:pages.map((buffer,id)=>({...pageView(buffer,id),projectId:activeProject}))};
  }));
  handle('pages:rotate',(index,angle)=>operation(async()=>{requireProject();const buffer=await projects.rotate(activeProject,index,angle);pages[index]=buffer;return pageView(buffer,index);}));
  handle('pages:enhance',(index,corners,mode)=>operation(async()=>{requireProject();const result=await projects.enhance(activeProject,index,corners,mode);pages[index]=result.image;return {...pageView(result.image,index),cropped:result.cropped,cropMethod:result.cropMethod,mode:result.mode,hasProcessed:true};}));

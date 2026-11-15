@@ -1,3 +1,4 @@
+import { ModalBackdrop } from './ModalBackdrop';
 import { useEffect, useState } from 'react';
 import type { Page, Project } from './types';
 import { PreviewPanel } from './PreviewPanel';
@@ -20,6 +21,8 @@ const buttonBase = 'm-0 w-auto rounded-sm border border-[#444] bg-[#262626] px-4
 const quietButton = `${buttonBase} bg-transparent`;
 const menuButton = 'm-0 block w-full rounded-sm border-0 bg-transparent px-3.5 py-3 text-left text-xs text-[#eee] hover:bg-[#444] focus-visible:bg-[#444]';
 export function ScannerView({ project, pages, status, busy, setStatus, setPages, run, onBack }: Props) {
+  const [blankReview,setBlankReview]=useState<number[]>([]);
+  const [blankSelected,setBlankSelected]=useState<number[]>([]);
   const certificate = useCertificate();
   const [active, setActive] = useState<number | null>(pages[0]?.id ?? null);
   const [selected, setSelected] = useState<number[]>([]);
@@ -67,7 +70,7 @@ export function ScannerView({ project, pages, status, busy, setStatus, setPages,
   }
   function scan() {
     if (!canLeave()) return;
-    void run(async () => { await certificate.ensure(); setStatus('Digitalizando… aguarde.'); const result = await window.scanner.scan(); setStatus(`${typeof result === 'number' ? result : result.pages} página(s) adicionada(s) ao projeto. ${typeof result === 'number' ? '' : [...new Set(result.warnings || [])].join(' ')}`); });
+    void run(async () => { await certificate.ensure(); setStatus('Digitalizando… aguarde.'); const result = await window.scanner.scan(); if(typeof result !== 'number'){if(result.refreshed)setPages(result.refreshed);if(result.blankCandidates?.length){setBlankReview(result.blankCandidates);setBlankSelected(result.blankCandidates);}} setStatus(`${typeof result === 'number' ? result : result.pages} página(s) adicionada(s) ao projeto. ${typeof result === 'number' ? '' : [...new Set(result.warnings || [])].join(' ')}`); });
   }
   return <div id="scanner-view" className="flex h-dvh min-h-0 flex-col bg-[#191919] font-[Arial,Helvetica,sans-serif] text-[#eee]" onKeyDown={keydown}>
     <header className="relative flex shrink-0 items-center justify-between gap-6 border-b border-[#333] bg-[#191919] px-7 py-[18px] max-[600px]:gap-3">
@@ -90,6 +93,7 @@ export function ScannerView({ project, pages, status, busy, setStatus, setPages,
       </div>
     </main>
     {rotation && <div className="fixed z-[1000] min-w-[200px] rounded border border-[#555] bg-[#292929] p-[5px] shadow-[0_8px_24px_#0008]" role="menu" style={{ left: rotation.x, top: rotation.y }} onKeyDown={event => { if (event.key === 'Escape') setRotation(null); }}><button className={menuButton} role="menuitem" onClick={() => void rotate(rotation.id, 270)}>Girar 90° à esquerda</button><button className={menuButton} role="menuitem" onClick={() => void rotate(rotation.id, 90)}>Girar 90° à direita</button><button className={menuButton} role="menuitem" onClick={() => void rotate(rotation.id, 180)}>Girar 180°</button></div>}
+    {!!blankReview.length && <ModalBackdrop onClose={()=>setBlankReview([])}><div className="w-[680px] max-w-[94vw] rounded border border-[#444] bg-[#222] p-6 text-[#eee]" role="dialog" aria-modal="true" aria-label="Revisar páginas em branco"><h2 className="m-0 text-lg">Páginas possivelmente em branco</h2><p className="text-xs text-[#aaa]">Selecione as páginas que deseja excluir. As outras serão mantidas. Use Enviar para saídas após a revisão.</p><div className="grid max-h-[50vh] grid-cols-3 gap-3 overflow-auto">{blankReview.map(id=><label key={id} className="m-0 rounded border border-[#444] p-2"><img className="h-40 w-full object-contain" src={pages.find(p=>p.id===id)?.url} alt={`Página ${id+1}`}/><span className="flex items-center gap-2 text-xs"><input style={{width:16,margin:0}} type="checkbox" checked={blankSelected.includes(id)} onChange={e=>setBlankSelected(old=>e.target.checked?[...old,id]:old.filter(i=>i!==id))}/>Página {id+1}</span></label>)}</div><div className="mt-5 flex justify-end gap-3"><button className={quietButton} onClick={()=>setBlankReview([])}>Manter todas</button><button className={quietButton} disabled={busy||!blankSelected.length} onClick={()=>void run(async()=>{const result=await window.scanner.remove(blankSelected);setPages(result.pages);setBlankReview([]);setSelected([]);setStatus(`${result.removed} página(s) em branco excluída(s).`);})}>Excluir selecionadas</button></div></div></ModalBackdrop>}
     {mobile && <MobileDialog project={project} onClose={() => setMobile(false)} />}
   </div>;
 }
