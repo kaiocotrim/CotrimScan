@@ -92,6 +92,9 @@ app.whenReady().then(()=>{
  handle('certificates:pickFile',()=>operation(async()=>{const result=await dialog.showOpenDialog(win,{title:'Selecionar certificado A1',properties:['openFile'],filters:[{name:'Certificado A1',extensions:['pfx','p12']}]});return result.canceled?null:result.filePaths[0];}));
  handle('certificates:status',async()=>{requireProject();const project=await projects.info(activeProject);if(project.signature.type==='a1'&&!signatures.ready(activeProject,project.signature)){const saved=await credentials.get(activeProject,project.signature);if(saved!==null)try{await signatures.prepare(activeProject,project.signature,saved);}catch{await credentials.remove(activeProject);}}return {type:project.signature.type,ready:signatures.ready(activeProject,project.signature),remembered:project.signature.type==='a1'&&await credentials.has(activeProject,project.signature),canRemember:credentials.available()};});
  handle('certificates:prepare',(password,remember=false)=>operation(async()=>{requireProject();const project=await projects.info(activeProject);const result=await signatures.prepare(activeProject,project.signature,password);if(project.signature.type==='a1'&&remember)await credentials.set(activeProject,project.signature,password);return result;}));
+ handle('projects:rename',(id,name)=>operation(()=>projects.rename(id,name)));
+ handle('projects:duplicate',id=>operation(()=>projects.duplicate(id)));
+ handle('projects:delete',id=>operation(async()=>{if(activeProject===id)throw Error('Feche o projeto antes de excluir.');await projects.delete(id);}));
  handle('projects:list',()=>operation(()=>projects.list()));
  async function saveProject(id,input,password,remember=false){
   // Validate into a temporary memory session before changing any project data.

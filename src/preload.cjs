@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld('localAuth',{
 });
 
 contextBridge.exposeInMainWorld('projects',{
+ rename:(id,name)=>ipcRenderer.invoke('projects:rename',id,name),
+ duplicate:id=>ipcRenderer.invoke('projects:duplicate',id),
+ delete:id=>ipcRenderer.invoke('projects:delete',id),
  list:()=>ipcRenderer.invoke('projects:list'),
  pickOutputs:()=>ipcRenderer.invoke('projects:pickOutputs'),
  export:()=>ipcRenderer.invoke('projects:export'),

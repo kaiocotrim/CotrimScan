@@ -72,7 +72,7 @@ function AppContent() {
       try { const session = creating ? await window.localAuth.register(username, password) : await window.localAuth.login(username, password); await showProjects(session.username); }
       catch (error) { setAuthError(errorText(error)); }
     }} />}
-    {view === 'projects' && <ProjectsView username={account} projects={projects} status={status} busy={busy} onLogout={logout} onNew={() => setEditing(null)} onOpen={openProject} onEdit={setEditing} />}
+    {view === 'projects' && <ProjectsView onRefresh={refreshProjects} username={account} projects={projects} status={status} busy={busy} onLogout={logout} onNew={() => setEditing(null)} onOpen={openProject} onEdit={setEditing} />}
     {view === 'scanner' && project && <ScannerView username={account} project={project} pages={pages} status={status} busy={busy} setStatus={setStatus} setPages={setPages} run={run} onBack={back} onLogout={logout} />}
     {editing !== undefined && <ProjectEditor project={editing} onClose={() => setEditing(undefined)} onSaved={async saved => { await refreshProjects(); if (project?.id === saved.id) setProject(saved); }} />}
   </>;

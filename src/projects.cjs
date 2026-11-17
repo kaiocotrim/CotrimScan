@@ -98,6 +98,15 @@ function createProjects(root,{signatures}={}) {
    const projects=await Promise.all(dirs.filter(d=>d.isDirectory()&&uuid.test(d.name)).map(d=>read(d.name)));
    return projects.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).map(summary);
   },
+  async rename(id,name) { return this.update(id,{name}); },
+  async duplicate(id) {
+   const original=await read(id),existing=await this.list();let suffix=2;
+   while(existing.some(item=>item.name===original.name.slice(0,75)+' '+suffix))suffix++;
+   const data={...original,id:randomUUID(),name:original.name.slice(0,75)+' '+suffix,createdAt:new Date().toISOString()};
+   await fs.cp(directory(id),directory(data.id),{recursive:true,errorOnExist:true,force:false});
+   await write(data);return summary(data);
+  },
+  async delete(id) { await read(id);await fs.rm(directory(id),{recursive:true,force:true}); },
   async create(input) {
    const data={version:1,id:randomUUID(),...validateInput(input),createdAt:new Date().toISOString(),pages:[]};
    await fs.mkdir(directory(data.id),{recursive:true,mode:0o700});await write(data);return summary(data);
