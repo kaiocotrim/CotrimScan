@@ -16,7 +16,8 @@ async function cropPolygon(image,points,width,height){
 async function run(image,model,dpi,{calibrate=false}={}){
  const meta=await sharp(image,{limitInputPixels:40000000}).metadata(),aspect=meta.height/meta.width;
  const {createWorker,PSM}=require('tesseract.js'),language=require('@tesseract.js-data/por');
- const worker=await createWorker('por',1,{langPath:language.langPath,gzip:true,cacheMethod:'none'});
+ const needsOcr=calibrate||model.autoAlign||model.fields.some(f=>f.anchor||!['qr','barcode'].includes(f.type));
+ const worker=needsOcr?await createWorker('por',1,{langPath:language.langPath,gzip:true,cacheMethod:'none'}):null;
  try{
   let words=[];
   if(calibrate||model.autoAlign||model.fields.some(f=>f.anchor)){
@@ -45,13 +46,19 @@ async function run(image,model,dpi,{calibrate=false}={}){
     const width=Math.max(1,Math.round(expanded.width*meta.width*size)),height=Math.max(1,Math.round(expanded.height*meta.height*size));
     try{
      const crop=transform?await cropPolygon(image,points,width,height):await sharp(image).extract({left:Math.floor(expanded.x*meta.width),top:Math.floor(expanded.y*meta.height),width:Math.min(meta.width-Math.floor(expanded.x*meta.width),Math.ceil(expanded.width*meta.width)),height:Math.min(meta.height-Math.floor(expanded.y*meta.height),Math.ceil(expanded.height*meta.height))}).flatten({background:'white'}).resize(width,height).png().toBuffer();
+     if(['qr','barcode'].includes(field.type)){
+      const code=await require('./document-codes.cjs').readDocumentCode(crop,field.type);
+      if(code.status==='found'){value=code.text;confidence=100;}
+      else warning=code.status==='ambiguous'?'Mais de um código encontrado. Marque uma área com apenas um código.':'Nenhum código encontrado na área marcada.';
+     }else{
      await worker.setParameters({user_defined_dpi:String(dpi||300),tessedit_pageseg_mode:PSM.SINGLE_BLOCK,tessedit_char_whitelist:field.type==='identifier'?'0123456789':field.type==='cpf'?'0123456789.-':field.type==='date'?'0123456789/':'',preserve_interword_spaces:'1'});
      const {data}=await worker.recognize(crop,{}, {text:true});value=data.text.trim().replace(/\s+/g,' ');confidence=data.confidence;
+     }
     }catch{warning='Não foi possível ler a região localizada. Confira o campo.';}
    }
    fields.push({...field,recognized:value,value,confidence,corrected:false,reviewed:false,warning,error:warning,resolvedRegion:points?g.bounds(points):null,location:{aligned:!!transform,angle:transform?.angle||0,matches:transform?.matches||0,anchorFound}});
   }
   return {fields};
- }finally{await worker.terminate();}
+ }finally{if(worker)await worker.terminate();}
 }
 module.exports={run,cropPolygon};

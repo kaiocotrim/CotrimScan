@@ -50,6 +50,7 @@ test('scanner recebe lote de canhotos, recorta cada pagina e salva PDFs preserva
  require('node:vm').runInNewContext(await fs.readFile(path.join(src,'main.cjs'),'utf8'),{__dirname:src,require(name){
   if(name==='electron')return electron;
   if(name==='./wia-scanner.cjs')return {available:async()=>false};
+  if(name==='./naps2-twain.cjs')return {device:async()=>null};
   if(name==='./scanner.cjs')return {...require('../src/scanner.cjs'),scan:async(port,dpi,source,onPage)=>{await onPage(original);await onPage(original);return 2;}};
   return name.startsWith('./')?require(path.join(src,name)):require(name);
  }});

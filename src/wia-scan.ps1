@@ -29,6 +29,13 @@ if ($handling) {
 }
 $item.Properties.Item('Horizontal Resolution').Value = $Dpi
 $item.Properties.Item('Vertical Resolution').Value = $Dpi
+if ($Source -eq 'Feeder' -and $MaxPages -eq 1 -and $Duplex -ne 'true') {
+  $pageLimit = $null
+  try { $pageLimit = $item.Properties.Item('Pages') } catch { }
+  if (-not $pageLimit) { try { $pageLimit = $device.Properties.Item('Pages') } catch { } }
+  if (-not $pageLimit) { throw 'O driver WIA nao permite limitar a amostra a uma folha.' }
+  $pageLimit.Value = 1
+}
 Add-Type -AssemblyName System.Drawing
 $format = '{B96B3CAB-0728-11D3-9D7B-0000F81EF32E}'
 $files = New-Object System.Collections.Generic.List[string]
@@ -48,7 +55,7 @@ for ($page = 1; $page -le $MaxPages; $page++) {
     $paperEmpty = $_.Exception.Message -match '80210003|alimentador de documentos|document feeder'
     if ($paperEmpty -and $files.Count -gt 0) { break }
     if ($paperEmpty) { throw 'WIA_PAPER_EMPTY' }
-    throw
+    throw ('Falha WIA ao receber a pagina {0} (apos {1} pagina(s)): {2}' -f $page, $files.Count, $_.Exception.Message)
   }
 }
 if ($files.Count -eq 0) { throw 'Nenhuma pagina foi recebida do scanner.' }

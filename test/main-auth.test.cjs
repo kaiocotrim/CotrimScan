@@ -8,7 +8,7 @@ const {createAuth}=require('../src/auth.cjs');
 test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'naps2-ipc-'));
  t.after(()=>fs.rm(dir,{recursive:true,force:true}));
- const handlers=new Map();let win,connected=0;const sent=[],scanOptions=[];
+ const handlers=new Map();let win,connected=0,singleSample=false,sampleFailure=false;const sent=[],scanOptions=[],sampleOptions=[];
  class Window {
   constructor(){win=this;this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){},session:{setPermissionRequestHandler(){}},send:(name,page)=>sent.push(page)};}
   isDestroyed(){return false;}
@@ -19,7 +19,8 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
  vm.runInNewContext(code,{__dirname:path.join(__dirname,'../src'),require(name){
   if(name==='electron')return electron;
-  if(name==='./wia-scanner.cjs')return {available:async()=>false};
+  if(name==='./wia-scanner.cjs')return {available:async()=>singleSample,scan:async(dpi,source,colorMode,duplex,onPage,maxPages)=>{sampleOptions.push({dpi,source,colorMode,duplex,maxPages});if(sampleFailure)throw Error('sample failed');await onPage(Buffer.from('sample-jpeg'));return 1;}};
+  if(name==='./naps2-twain.cjs')return {device:async()=>{assert.equal(singleSample,false,'Single-sheet samples must not start the batch backend');return null;}};
   if(name==='./auth.cjs')return {createAuth};
   if(name==='./projects.cjs')return require('../src/projects.cjs');
   if(name==='./signatures.cjs')return require('../src/signatures.cjs');
@@ -40,6 +41,13 @@ test('IPC protege scanner, rejeita outras janelas e encerra sessão',async t=>{
  await assert.rejects(invoke('capture:preview','not-an-image',{},300),/folha de exemplo/);
  const sample=await invoke('capture:sample',{port:9880,dpi:300,source:'Feeder',colorMode:'RGB24',processingMode:'auto',documentType:'document'});
  assert.ok(sample.url.startsWith('data:image/jpeg;base64,'));assert.equal(sent.length,0);assert.equal((await invoke('projects:list')).length,0);scanOptions.length=0;
+ singleSample=true;
+ const boundedSample=await invoke('capture:sample',{port:9880,dpi:300,source:'Feeder',colorMode:'RGB24'});
+ assert.equal(boundedSample.url,'data:image/jpeg;base64,'+Buffer.from('sample-jpeg').toString('base64'));
+ assert.deepEqual(sampleOptions[0],{dpi:300,source:'Feeder',colorMode:'RGB24',duplex:false,maxPages:1});
+ sampleFailure=true;
+ await assert.rejects(invoke('capture:sample',{port:9880,dpi:300,source:'Feeder',colorMode:'RGB24'}),/sample failed/);
+ singleSample=false;
  await assert.rejects(invoke('scan',{port:9880,dpi:300,source:'Feeder'}),/Abra um projeto/);
  const output=path.join(dir,'output');await fs.mkdir(output);
  const project=await invoke('projects:create',{name:'Teste',port:9880,dpi:300,source:'Feeder',duplex:true,outputs:[output],colorMode:'BlackAndWhite1'});

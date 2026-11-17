@@ -6,6 +6,20 @@ const { CapturePanel } = require('../src/ui/CapturePanel.tsx');
 const { CaptureEditor } = require('../src/ui/CaptureEditor.tsx');
 const model = { id: 'modelo', name: 'Ficha', version: 1, fields: [{ id: 'matricula', name: 'Matrícula', type: 'identifier', required: true, region: { x: .1, y: .1, width: .4, height: .2 } }] };
 const data = { template: model, revision: 'r1', needsReview: true, fields: [{ id: 'matricula', name: 'Matrícula', value: '00125478', recognized: '00125478', confidence: 90, reviewed: false, region: model.fields[0].region }] };
+
+test('editor offers QR and barcode presets alongside saved models', async t => {
+  const f = mount(t, React.createElement(CaptureEditor, { settings: {}, selected: null, onSave: async () => {}, onClose() {} }), window => { window.capture = { models: async () => [model] }; });
+  await f.act(async () => { await Promise.resolve(); });
+  const select = f.document.querySelector('select');
+  assert.ok([...select.options].some(option => option.text === 'QR Code'));
+  assert.ok([...select.options].some(option => option.text === 'Código de barras'));
+  for (const [value, name] of [['preset:qr', 'QR Code'], ['preset:barcode', 'Código de barras'], ['modelo', 'Ficha']]) {
+    f.act(() => { select.value = value; select.dispatchEvent(new f.window.Event('change', { bubbles: true })); });
+    const label = [...f.document.querySelectorAll('label')].find(item => item.textContent === 'Nome do modelo');
+    assert.equal(label.querySelector('input').value, name);
+    assert.equal(select.value, value);
+  }
+});
 test('painel React salva revisão de campos', async t => {
   let saved;
   const capture = { read: async () => data, save: async (...args) => { saved = args; return { ...data, revision: 'r2', fields: [{ ...data.fields[0], value: args[1][0].value }] }; } };

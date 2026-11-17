@@ -9,7 +9,7 @@ function template(input){
   const {id,name,type,required,region,digits}=field;
   if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||ids.has(id)||typeof name!=='string'||!name.trim()||name.length>80||names.has(name.trim().toLowerCase()))throw Error('Campos devem ter nomes e identificadores únicos.');
   ids.add(id);names.add(name.trim().toLowerCase());
-  if(!['text','identifier','cpf','date'].includes(type)||typeof required!=='boolean'||!region||!['x','y','width','height'].every(k=>Number.isFinite(region[k]))||region.x<0||region.y<0||region.width<.005||region.height<.005||region.x+region.width>1.000001||region.y+region.height>1.000001)throw Error('Tipo ou região do campo inválido.');
+  if(!['text','identifier','cpf','date','qr','barcode'].includes(type)||typeof required!=='boolean'||!region||!['x','y','width','height'].every(k=>Number.isFinite(region[k]))||region.x<0||region.y<0||region.width<.005||region.height<.005||region.x+region.width>1.000001||region.y+region.height>1.000001)throw Error('Tipo ou região do campo inválido.');
   if(digits!=null&&(!Number.isInteger(digits)||digits<1||digits>100))throw Error('Quantidade de dígitos inválida.');
   const margin=field.margin??0;
   if(!Number.isFinite(margin)||margin<0||margin>.1)throw Error('A margem deve ficar entre 0 e 10% da página.');

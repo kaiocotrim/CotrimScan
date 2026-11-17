@@ -1,2 +1,5 @@
 node_modules/
 dist/
+.local/naps2-cli/
+.local/naps2-8.6.0-win-x64.zip
+.local/naps2-cli-check/

@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('capture',{
  read:(index,projectId)=>ipcRenderer.invoke('capture:read',index,projectId),extract:(index,projectId)=>ipcRenderer.invoke('capture:extract',index,projectId),
  save:(index,values,revision,projectId)=>ipcRenderer.invoke('capture:save',index,values,revision,projectId)
 });
-contextBridge.exposeInMainWorld('blankPages',{sample:(url,sensitivity)=>ipcRenderer.invoke('blank:sample',url,sensitivity),preview:(id,sensitivity)=>ipcRenderer.invoke('blank:preview',id,sensitivity)});
+contextBridge.exposeInMainWorld('blankPages',{sample:(url,sensitivity)=>ipcRenderer.invoke('blank:sample',url,sensitivity),scan:input=>ipcRenderer.invoke('blank:scan',input),preview:(id,sensitivity)=>ipcRenderer.invoke('blank:preview',id,sensitivity)});
 contextBridge.exposeInMainWorld('scanner',{
  connect:port=>ipcRenderer.invoke('connect',port),
  scan:()=>ipcRenderer.invoke('scan'),

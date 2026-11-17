@@ -9,6 +9,7 @@ require('node:fs').mkdirSync(userDataPath,{recursive:true,mode:0o700});
 app.setPath('userData',userDataPath);
 const scanner=require('./scanner.cjs');
 const wiaScanner=require('./wia-scanner.cjs');
+const twainScanner=require('./naps2-twain.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
 const {createSignatures}=require('./signatures.cjs');
@@ -28,6 +29,11 @@ async function operation(fn){if(busy) throw Error('Aguarde a operação em andam
 function requireProject(){if(!activeProject)throw Error('Abra um projeto para digitalizar.');}
 function pageView(data,id){return {id,url:'data:image/jpeg;base64,'+data.toString('base64')};}
 async function scanConfigured(port,dpi,source,colorMode,duplex,onPage,maxPages=200){
+ // The console backend drains the feeder before reporting its page count.
+ // Use a bounded WIA transfer for single-page samples instead.
+ if(maxPages===1 && !duplex && await wiaScanner.available())return wiaScanner.scan(dpi,source,colorMode,false,onPage,1);
+ const twain=await twainScanner.device();
+ if(twain)return twainScanner.scan(twain,dpi,source,colorMode,duplex,onPage,maxPages);
  if(await wiaScanner.available())return wiaScanner.scan(dpi,source,colorMode,duplex,onPage,maxPages);
  return scanner.scan(port,dpi,source,onPage,colorMode,duplex,maxPages);
 }
@@ -137,6 +143,14 @@ app.whenReady().then(()=>{
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
  handle('connect',port=>scanner.connect(port));
  handle('blank:sample',async(url,sensitivity)=>{if(typeof url!=='string'||url.length>30000000||!url.startsWith('data:image/'))throw Error('Imagem inválida.');const buffer=Buffer.from(url.split(',')[1],'base64');return {id:0,url,...await require('./blank-pages.cjs').inspect(buffer,sensitivity)};});
+ handle('blank:scan',input=>operation(async()=>{
+  const {port,dpi,source,colorMode,duplex}=input||{};
+  scanner.endpoint(port);scanner.settings(dpi,source,colorMode,duplex);
+  const images=[];
+  await scanConfigured(port,dpi,source,colorMode,duplex,async image=>{images.push(pageView(image,images.length));},source==='Feeder'&&duplex?2:1);
+  if(!images.length)throw Error('Nenhuma página foi recebida.');
+  return images;
+ }));
  handle('blank:preview',async(id,sensitivity)=>{const data=id?await projects.open(id):{pages:[]};return Promise.all(data.pages.slice(0,20).map(async(buffer,index)=>({...pageView(buffer,index),...await require('./blank-pages.cjs').inspect(buffer,sensitivity)})));});
  handle('scan',()=>operation(async()=>{
    requireProject();
