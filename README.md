@@ -87,7 +87,7 @@ npm run dist:win
 npm run dist:linux
 ```
 
-Gere preferencialmente o instalador Windows no Windows e os pacotes Linux no Linux. Os arquivos serão criados em `dist/`. A entrega é código-fonte, sem instaladores compilados ou assinatura de código dos instaladores.
+Gere preferencialmente o instalador Windows no Windows e os pacotes Linux no Linux. Os arquivos serão criados em `apps/desktop/dist/`. A entrega é código-fonte, sem instaladores compilados ou assinatura de código dos instaladores.
 
 ## Validação e limites
 

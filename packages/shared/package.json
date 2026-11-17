@@ -1,0 +1,10 @@
+{
+  "name": "@cotrimscan/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tipos compartilhados entre a interface web e o aplicativo desktop",
+  "types": "./src/types.ts",
+  "exports": {
+    ".": "./src/types.ts"
+  }
+}

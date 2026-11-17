@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui":"tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "renderer/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "dist:win": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "dist:linux": {
+      "dependsOn": ["build"],
+      "cache": false
+    }
+  }
+}

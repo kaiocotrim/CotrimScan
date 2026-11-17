@@ -1,81 +1,22 @@
 {
-  "name": "naps2-desktop",
+  "name": "cotrimscan",
   "version": "0.1.0",
   "private": true,
-  "description": "CotrimScan — digitalização de documentos com NAPS2 WebScan",
-  "main": "src/main.cjs",
+  "packageManager": "npm@12.1.0",
+  "description": "CotrimScan — monorepo: interface web (apps/web) e aplicativo desktop Electron (apps/desktop)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "start": "npm run build && electron .",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "test": "node --test",
-    "dist:win": "electron-builder --win nsis",
-    "dist:linux": "electron-builder --linux AppImage deb"
+    "dev": "turbo run dev --filter=@cotrimscan/web",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "start": "turbo run start --filter=@cotrimscan/desktop",
+    "dist:win": "turbo run dist:win --filter=@cotrimscan/desktop",
+    "dist:linux": "turbo run dist:linux --filter=@cotrimscan/desktop"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.5",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "electron": "^42.0.0",
-    "electron-builder": "^26.0.0",
-    "postcss": "^8.5.32",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "tailwindcss": "^4.3.5",
-    "typescript": "~5.9.3",
-    "vite": "^7.3.8"
-  },
-  "build": {
-    "appId": "com.local.naps2desktop",
-    "productName": "CotrimScan",
-    "files": [
-      "src/**/*",
-      "dist/**/*"
-    ],
-    "directories": {
-      "output": "dist"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Office"
-    },
-    "asarUnpack": [
-      "node_modules/sharp/**/*",
-      "node_modules/@img/**/*",
-      "node_modules/detect-libc/**/*",
-      "node_modules/semver/**/*",
-      "src/mobile-image-*.cjs",
-      "src/document*.cjs",
-      "node_modules/tesseract.js/**/*",
-      "node_modules/tesseract.js-core/**/*",
-      "node_modules/@tesseract.js-data/**/*",
-      "node_modules/zxing-wasm/**/*"
-    ]
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.5.0",
-    "@mui/material": "^9.5.0",
-    "@signpdf/placeholder-pdf-lib": "^4.0.0",
-    "@signpdf/signer-p12": "^4.0.0",
-    "@signpdf/signpdf": "^4.0.0",
-    "@techstark/opencv-js": "^5.0.0-release.1",
-    "@tesseract.js-data/por": "^1.0.0",
-    "framer-motion": "^14.14.0",
-    "jscanify": "^1.4.3",
-    "node-forge": "^1.4.3",
-    "pdf-lib": "^1.17.1",
-    "qrcode": "^1.5.4",
-    "sharp": "^0.35.5",
-    "tesseract.js": "^7.0.0",
-    "zxing-wasm": "^3.1.6"
+    "turbo": "^2.5.0"
   }
 }
