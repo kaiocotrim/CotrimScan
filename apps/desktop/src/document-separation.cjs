@@ -1,4 +1,4 @@
-const modes=['none','count','barcode'];
+const modes=['none','count','barcode','blank'];
 const actions=['discard','keep'];
 function normalizeSeparation(input){
  const value=input??{};
@@ -8,7 +8,9 @@ function normalizeSeparation(input){
  if(mode==='count'&&(!Number.isInteger(pagesPerDocument)||pagesPerDocument<1||pagesPerDocument>200))throw Error('Informe de 1 a 200 páginas por documento.');
  const separatorAction=value.separatorAction??'discard';
  if(!actions.includes(separatorAction))throw Error('Ação do separador inválida.');
- return {mode,pagesPerDocument:mode==='count'?pagesPerDocument:1,separatorAction};
+ const sensitivity=value.sensitivity??50;
+ if(mode==='blank'&&(!Number.isInteger(sensitivity)||sensitivity<0||sensitivity>100))throw Error('Informe uma sensibilidade de 0 a 100.');
+ return {mode,pagesPerDocument:mode==='count'?pagesPerDocument:1,separatorAction,sensitivity:mode==='blank'?sensitivity:50};
 }
 // separators[i] is true when page i carries the separator code.
 function groupDocuments(separators,separation){
@@ -20,7 +22,7 @@ function groupDocuments(separators,separation){
   }
   return groups;
  }
- if(separation.mode==='barcode'){
+ if(separation.mode==='barcode'||separation.mode==='blank'){
   let current=[];
   separators.forEach((isSeparator,index)=>{
    if(!isSeparator){current.push(index);return;}

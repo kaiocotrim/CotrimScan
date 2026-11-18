@@ -23,6 +23,7 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   if(namingMode==='ocr'&&(!captureTemplate||!captureTemplate.fields.some(f=>f.id===namingFieldId)))throw Error('Selecione um campo do modelo para nomear os arquivos pelo OCR.');
   const signature=normalizeSignature(input.signature),separation=normalizeSeparation(input.separation);
   if(separation.mode!=='none'&&namingMode!=='default')throw Error('Na separação por documento, use o nome padrão. A nomenclatura por código ainda não se aplica a documentos com várias páginas.');
+  if(separation.mode==='blank'&&input.blankPages?.enabled===true&&input.blankPages.action==='auto')throw Error('Para separar por página em branco, mantenha as páginas em branco durante a digitalização.');
   if(separation.mode!=='none'&&signature.type!=='none')throw Error('Na separação por documento, desative a assinatura digital. Ela ainda não se aplica a documentos com várias páginas.');
   return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
  }
@@ -98,9 +99,13 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
  async function exportDocuments(data){
   const separators=[];
   for(const page of data.pages){
-   if(data.separation.mode!=='barcode'){separators.push(false);continue;}
-   const result=await readSeparator(await sourceImage(data.id,page));
-   separators.push(result.status==='found');
+   if(data.separation.mode==='barcode'){
+    const result=await readSeparator(await sourceImage(data.id,page));
+    separators.push(result.status==='found');
+   }else if(data.separation.mode==='blank'){
+    const result=await require('./blank-pages.cjs').inspect(await sourceImage(data.id,page),data.separation.sensitivity);
+    separators.push(result.blank);
+   }else separators.push(false);
   }
   const groups=groupDocuments(separators,data.separation);
   for(const [index,group] of groups.entries()){
@@ -255,7 +260,7 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   async info(id){return summary(await read(id));},
   async pageOutput(id,index){const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index];return outputPage(data,page,await fs.readFile(path.join(directory(id),page+'.jpg')));},
   async checkOutputs(id){await checkOutputs((await read(id)).outputs);},
-  async sendPage(id,page,buffer){const data=await read(id),output=await outputPage(data,page,buffer);await writeOutput(data,output);return {filename:output.filename,warning:output.warning};},
+  async sendPage(id,page,buffer){const data=await read(id);if(data.separation.mode!=='none')return {filename:null,warning:''};const output=await outputPage(data,page,buffer);await writeOutput(data,output);return {filename:output.filename,warning:output.warning};},
   async exportAll(id){
    const data=await read(id);
    if(!data.outputs.length)throw Error('Configure pelo menos uma pasta de saída no projeto.');
