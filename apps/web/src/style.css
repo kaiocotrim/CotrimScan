@@ -216,6 +216,33 @@
 .capture-editor-fields .capture-editor-field-card > div > button { display: inline-block; width: calc(50% - 5px) !important; margin: 8px 5px 0 0 !important; padding: 9px 8px !important; }
 .capture-editor-fields .capture-editor-field-card > div > button:last-child { margin-right: 0 !important; }
 
+/* Capture model editor: keep the page preview prominent and the controls calm. */
+.capture-editor-shell { border-radius: 12px; background: #222; box-shadow: 0 24px 80px #0008; }
+.capture-editor-header { padding: 2px 2px 16px; border-bottom: 1px solid #ffffff12; }
+.capture-editor-header h2 { font-size: 19px; font-weight: 500; letter-spacing: -.02em; }
+.capture-editor-toolbar { min-height: 50px; gap: 8px 12px; padding: 6px 2px; }
+.capture-editor-toolbar button { min-height: 34px; border-radius: 5px !important; }
+.capture-editor-toolbar label { color: #c8c8c8; font-size: 12px; }
+.capture-editor-toolbar input[type=range] { accent-color: #5fa4e8; }
+.capture-editor-viewport { border-radius: 8px; box-shadow: inset 0 0 0 1px #ffffff08; }
+.capture-editor-settings { margin-left: 2px !important; padding-left: 22px !important; }
+.capture-editor-sidebar-heading { margin: 2px 0 18px; padding-bottom: 12px; border-bottom: 1px solid #ffffff18; color: #eee; font-size: 13px; font-weight: 600; }
+.capture-editor-settings > label { margin: 0 0 16px !important; color: #cfcfcf; font-size: 12px !important; font-weight: 500; }
+.capture-editor-settings > label > select,
+.capture-editor-settings > label > input:not([type=checkbox]) { display: block; width: 100%; min-height: 38px; margin-top: 7px; border: 1px solid #555 !important; border-radius: 5px !important; background: #191919 !important; color: #eee !important; }
+.capture-editor-settings > label:has(input[type=checkbox]) { display: flex !important; align-items: center; gap: 9px; margin-top: 18px !important; line-height: 1.45; }
+.capture-editor-settings input[type=checkbox] { width: 16px !important; height: 16px; margin: 0 !important; accent-color: #3287dc; }
+.capture-editor-modal [role="dialog"] .capture-editor-new-model { width: 100%; min-height: 36px; margin: -4px 0 18px !important; border: 1px solid #555 !important; border-radius: 5px; background: #303030 !important; color: #e5e5e5; font-size: 12px; }
+.capture-editor-modal [role="dialog"] .capture-editor-new-model:hover { background: #3b3b3b !important; }
+.capture-editor-help { margin: 12px 0 18px; padding: 11px 12px; border: 1px solid #ffffff12; border-radius: 6px; background: #ffffff05; color: #aaa; font-size: 11px; line-height: 1.6; }
+.capture-editor-help span { display: inline-block; margin-left: 5px; color: #90c2ef; white-space: nowrap; }
+.capture-editor-status { padding: 10px 13px; font-size: 12px; font-weight: 400; }
+.capture-editor-status.is-busy { border-left-color: #6aa8e9; }
+.capture-editor-footer { margin-top: 4px; padding-top: 14px; border-top: 1px solid #ffffff12; }
+.capture-editor-modal [role="dialog"] .capture-editor-footer > button:last-child:not(:disabled) { border-color: #61acfa70 !important; background: #3287dc !important; color: white !important; }
+.capture-editor-modal [role="dialog"] .capture-editor-footer > button:last-child:not(:disabled):hover { background: #4397ea !important; }
+@media (max-width: 750px) { .capture-editor-settings { margin-left: 0 !important; padding-left: 0 !important; } }
+
 #projects-view .account-logout { background: #3287dc; color: #fff; }
 #projects-view .account-logout:hover { background: #4397ea; }
 
@@ -301,6 +328,7 @@ html.app-light #projects-view [class*="text-[#7d91a7]"],html.app-light #projects
 .scanner-picker-row{display:flex;align-items:stretch;gap:10px}
 .scanner-control,html.app-light .scanner-dialog .scanner-control{min-width:0;min-height:42px;margin:0;padding:9px 12px;border:1px solid #bcbcbc!important;border-radius:7px;background:#f7f7f7!important;color:#303030!important;font:12px Arial,Helvetica,sans-serif}
 .scanner-picker-row>.scanner-control{flex:1}
+.scanner-control:not(:disabled){cursor:pointer}
 .scanner-control:focus-visible,.scanner-action:focus-visible{outline:2px solid #666;outline-offset:2px}
 .scanner-action,html.app-light .scanner-dialog .scanner-action,html.app-light .scanner-dialog button:not(.scanner-dialog-close):not([class*="bg-[#3287dc]"]){width:auto;min-height:42px;margin:0;padding:9px 14px;border:1px solid #bcbcbc!important;border-radius:7px;background:#dedede!important;color:#303030!important;font:12px Arial,Helvetica,sans-serif;white-space:nowrap}
 .scanner-action:hover,html.app-light .scanner-dialog .scanner-action:hover{background:#d2d2d2!important}
@@ -324,9 +352,17 @@ html:not(.app-light) .scanner-dialog{background:#353535;color:#f0f0f0;border-col
 html:not(.app-light) .scanner-dialog-heading h2{color:#f0f0f0!important}
 html:not(.app-light) .scanner-dialog-close{color:#d2d2d2}
 html:not(.app-light) .scanner-dialog-close:hover{background:#4a4a4a;color:#fff}
+.app-close-button,.scanner-dialog .app-close-button,html.app-light .scanner-dialog .app-close-button{display:flex;align-items:center;justify-content:center;flex:none;width:32px!important;height:32px!important;margin:0!important;padding:0!important;border:0!important;border-radius:4px!important;background:transparent!important;color:#eee!important;cursor:pointer}
+.app-close-button:hover,.scanner-dialog .app-close-button:hover,html.app-light .scanner-dialog .app-close-button:hover{background:#ffffff12!important;color:#fff!important}
+.app-close-button:focus-visible{outline:2px solid #ddd;outline-offset:2px}
 html:not(.app-light) .scanner-dialog>.scanner-selector{color:#f0f0f0}
 html:not(.app-light) .scanner-picker-label,html:not(.app-light) .scanner-manual-field{color:#c8c8c8}
 html:not(.app-light) .scanner-control{background:#454545!important;color:#f0f0f0!important;border-color:#666!important}
+.name-template-modal,.name-template-modal [role="listbox"]{scrollbar-width:thin;scrollbar-color:#666 #252525}
+.name-template-modal::-webkit-scrollbar,.name-template-modal [role="listbox"]::-webkit-scrollbar{width:8px}
+.name-template-modal::-webkit-scrollbar-track,.name-template-modal [role="listbox"]::-webkit-scrollbar-track{background:#252525}
+.name-template-modal::-webkit-scrollbar-thumb,.name-template-modal [role="listbox"]::-webkit-scrollbar-thumb{background:#666;border:2px solid #252525;border-radius:10px}
+.name-template-modal::-webkit-scrollbar-thumb:hover,.name-template-modal [role="listbox"]::-webkit-scrollbar-thumb:hover{background:#888}
 html:not(.app-light) .scanner-action{background:#4b4b4b!important;color:#f0f0f0!important;border-color:#666!important}
 html:not(.app-light) .scanner-action:hover{background:#575757!important}
 html:not(.app-light) .scanner-secondary-actions .scanner-action{background:transparent!important;border:0!important;color:#d0d0d0!important}

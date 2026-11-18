@@ -2,7 +2,7 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const {createHash,randomUUID}=require('node:crypto');
 function namingMode(value='default'){
- if(!['default','qr','barcode','ocr'].includes(value))throw Error('Opção de nome dos arquivos inválida.');return value;
+ if(!['default','qr','barcode','ocr','custom'].includes(value))throw Error('Opção de nome dos arquivos inválida.');return value;
 }
 function safeCodeName(value){
  if(typeof value!=='string')return null;
@@ -18,7 +18,7 @@ async function writeJson(file,data){
  try{await fs.writeFile(temp,JSON.stringify(data),{flag:'wx',mode:0o600});await fs.rename(temp,file);}finally{await fs.rm(temp,{force:true});}
 }
 async function documentFilename(data,page,output,dir){
- if(data.namingMode==='default')return output;
+ if(data.namingMode==='default'||data.namingMode==='custom')return output;
  const file=path.join(dir,page+'-name.json');
  const previous=await readJson(file);
  let result;

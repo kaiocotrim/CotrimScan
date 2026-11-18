@@ -17,15 +17,17 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   endpoint(input.port); settings(input.dpi,input.source,colorMode,duplex);
   const processingMode=require('./mobile-image-modes.cjs').scanMode(input.processingMode,colorMode);
   const namingMode=require('./document-naming.cjs').namingMode(input.namingMode);
+  const nameTemplate=require('./name-template.cjs').validateTemplate(input.nameTemplate);
+  if(namingMode==='custom'&&!nameTemplate)throw Error('Configure os nomes personalizados antes de selecionar essa opção.');
   const documentType=require('./mobile-image-modes.cjs').documentType(input.documentType);
   const captureTemplate=require('./capture.cjs').template(input.captureTemplate);
   const namingFieldId=input.namingFieldId??null;
   if(namingMode==='ocr'&&(!captureTemplate||!captureTemplate.fields.some(f=>f.id===namingFieldId)))throw Error('Selecione um campo do modelo para nomear os arquivos pelo OCR.');
   const signature=normalizeSignature(input.signature),separation=normalizeSeparation(input.separation);
-  if(separation.mode!=='none'&&namingMode!=='default')throw Error('Na separação por documento, use o nome padrão. A nomenclatura por código ainda não se aplica a documentos com várias páginas.');
+  if(separation.mode!=='none'&&namingMode!=='default'&&namingMode!=='custom')throw Error('Na separação por documento, use o nome padrão ou personalizado.');
   if(separation.mode==='blank'&&input.blankPages?.enabled===true&&input.blankPages.action==='auto')throw Error('Para separar por página em branco, mantenha as páginas em branco durante a digitalização.');
   if(separation.mode!=='none'&&signature.type!=='none')throw Error('Na separação por documento, desative a assinatura digital. Ela ainda não se aplica a documentos com várias páginas.');
-  return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),namingFieldId,name:input.name.trim(),port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
+  return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),namingFieldId,name:input.name.trim(),nameTemplate,port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
  }
  async function read(id) {
   const data=JSON.parse(await fs.readFile(path.join(directory(id),'project.json'),'utf8'));
@@ -38,15 +40,38 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   finally {await fs.rm(temp,{force:true});}
  }
  function summary(data){const {pages,...rest}=data;return {...rest,pageCount:pages.length};}
+ async function applyNameTemplate(data,page,output,context){
+  if(data.namingMode!=='custom'||!data.nameTemplate)return output;
+  const {renderTemplate}=require('./name-template.cjs');
+  const template=data.nameTemplate;
+  const codes={};
+  for(const kind of ['qr','barcode'])if([...template.file,...template.folder].some(item=>item.kind===kind)){
+   const result=await require('./document-codes.cjs').readDocumentCode(await sourceImage(data.id,page),kind);
+   if(result.status==='found')codes[kind]=result.text;
+  }
+  context.codes=codes;
+  const folderParts=[[]];
+  for(const item of template.folder){
+   if(item.kind==='text'&&item.text.includes('/')){
+    const pieces=item.text.split('/');
+    folderParts[folderParts.length-1].push({...item,text:pieces.shift()});
+    for(const piece of pieces)folderParts.push([{...item,text:piece}]);
+   }else folderParts[folderParts.length-1].push(item);
+  }
+  const subfolder=template.folder.length?folderParts.filter(parts=>parts.length).map(parts=>renderTemplate(parts,context)).join(path.sep):'';
+  return {...output,filename:template.file.length?`${renderTemplate(template.file,context)}.${output.extension}`:output.filename,subfolder};
+ }
  async function outputPage(data,page,buffer){
   const capture=await readCapture(data.id,page);
   const indexBuffer=capture?Buffer.from(JSON.stringify({schema:'cotrimscan.capture.v1',projectId:data.id,pageId:page,...capture},null,2)):null;
   const output=await pageContent(data,page,buffer,indexBuffer);
-  const named=await require('./document-naming.cjs').documentFilename(data,page,output,directory(data.id));
-  if(!capture)return named;
+  const named=data.namingMode==='custom'&&data.nameTemplate?.file.length?output:await require('./document-naming.cjs').documentFilename(data,page,output,directory(data.id));
+  const context={project:data.name,documentId:page,documentNumber:data.pages.indexOf(page)+1,page:data.pages.indexOf(page)+1,sequence:data.pages.indexOf(page)+1,fields:capture?.fields};
+  const custom=await applyNameTemplate(data,page,named,context);
+  if(!capture)return custom;
   const hash=createHash('sha256').update(indexBuffer).digest('hex').slice(0,12);
-  const filename=data.namingMode==='ocr'?named.filename:named.filename.replace(/\.[^.]+$/,`-idx-${hash}.${named.extension}`);
-  return {...named,filename,warning:[named.warning,capture.error,capture.needsReview||capture.fields.some(f=>!f.reviewed||f.error)?'Campos de captura pendentes de revisão.':''].filter(Boolean).join(' ')};
+  const filename=data.namingMode==='ocr'||data.namingMode==='custom'&&data.nameTemplate?.file.length?custom.filename:custom.filename.replace(/\.[^.]+$/,`-idx-${hash}.${custom.extension}`);
+  return {...custom,filename,warning:[custom.warning,capture.error,capture.needsReview||capture.fields.some(f=>!f.reviewed||f.error)?'Campos de captura pendentes de revisão.':''].filter(Boolean).join(' ')};
  }
  async function readCapture(id,page){return require('./document-naming.cjs').readJson(path.join(directory(id),page+'-capture.json'));}
  async function copyCapture(id,previous,page,changed=false){
@@ -55,7 +80,7 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   await require('./document-naming.cjs').writeJson(path.join(directory(id),page+'-capture.json'),capture);
  }
  async function writeOutput(data,output){
-  await writeOutputs(data.outputs,output.filename,output.buffer);
+  await writeOutputs(data.outputs,output.filename,output.buffer,output.subfolder);
  }
  async function pageContent(data,page,buffer,indexBuffer=null){
   if(!data.pages.includes(page))throw Error('Página inválida.');
@@ -113,7 +138,10 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
    for(const i of group)images.push(await fs.readFile(path.join(directory(data.id),data.pages[i]+'.jpg')));
    const buffer=await documentPdf(images,{dpi:data.dpi,name:`${data.name} ${index+1}`});
    const hash=createHash('sha256').update(buffer).digest('hex').slice(0,8);
-   await writeOutput(data,{filename:`documento-${String(index+1).padStart(3,'0')}-${hash}.pdf`,buffer});
+   const firstPage=data.pages[group[0]];
+   const capture=await readCapture(data.id,firstPage);
+   const output=await applyNameTemplate(data,firstPage,{filename:`documento-${String(index+1).padStart(3,'0')}-${hash}.pdf`,extension:'pdf',buffer},{project:data.name,documentId:firstPage,documentNumber:index+1,page:group[0]+1,sequence:index+1,fields:capture?.fields});
+   await writeOutput(data,output);
   }
   return {pages:data.pages.length,documents:groups.length,outputs:data.outputs.length};
  }

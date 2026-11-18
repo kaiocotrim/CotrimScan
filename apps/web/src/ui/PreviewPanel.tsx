@@ -1,3 +1,4 @@
+import { CloseButton } from './CloseButton';
 import { useEffect, useState } from 'react';
 import PhoneAndroidOutlined from '@mui/icons-material/PhoneAndroidOutlined';
 import CompareOutlined from '@mui/icons-material/CompareOutlined';
@@ -82,7 +83,7 @@ export function PreviewPanel({ page, pageIndex, pageCount, project, busy, onConn
     <PreviewZoom page={page} pageIndex={pageIndex} locked={busy} highlight={highlight} contentClassName={ocrOpen ? 'grid-cols-[minmax(0,1fr)_minmax(360px,1fr)] max-[1000px]:grid-cols-[minmax(0,1fr)] max-[1000px]:grid-rows-[minmax(220px,35vh)_minmax(380px,1fr)] max-[1000px]:overflow-auto' : captureOpen ? 'grid-cols-[minmax(0,1fr)_minmax(280px,.65fr)] max-[1000px]:grid-cols-[minmax(0,1fr)] max-[1000px]:grid-rows-[minmax(250px,1fr)_minmax(250px,1fr)] max-[1000px]:overflow-auto' : ''}>
       {captureOpen && page && <CapturePanel page={page} project={project} onUpdate={updatePage} setStatus={setStatus} onDirtyChange={setCaptureDirty} onHighlight={setHighlight} />}
       {ocrOpen && <aside className="flex min-h-0 min-w-0 flex-col gap-3.5 overflow-auto border-l border-[#444] bg-[#252525] p-[22px] max-[1000px]:border-l-0 max-[1000px]:border-t max-[1000px]:p-5" aria-label="Texto reconhecido">
-        <div className="flex items-center justify-between gap-3"><h2 className="m-0 flex-1 text-[22px] font-semibold text-[#eee]">Texto reconhecido</h2><button type="button" className={actionButton} aria-label="Ocultar texto" onClick={() => { if (!ocrDirty || window.confirm('Há texto não salvo. Fechar e descartar as alterações?')) setOcrOpen(false); }}>×</button></div>
+        <div className="flex items-center justify-between gap-3"><h2 className="m-0 flex-1 text-[22px] font-semibold text-[#eee]">Texto reconhecido</h2><CloseButton label="Ocultar texto" onClick={() => { if (!ocrDirty || window.confirm('Há texto não salvo. Fechar e descartar as alterações?')) setOcrOpen(false); }} /></div>
         <p className="m-0 text-sm leading-[1.6] text-[#bbb]" role="status">{ocrDirty ? 'Alterações ainda não salvas.' : 'Texto salvo no projeto.'}</p>
         <label className="m-0 text-sm leading-[1.6] text-[#bbb]" htmlFor="ocr-text">Revise e edite o texto desta página</label>
         <textarea id="ocr-text" className="m-0 block min-h-[max(260px,45vh)] w-full flex-1 resize-y whitespace-pre-wrap rounded border border-[#555] bg-[#fafafa] p-4 font-[Segoe_UI,Arial,sans-serif] text-base leading-[1.65] text-[#202020] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#66aaff] max-[1000px]:min-h-[300px]" value={ocrText} onChange={event => setOcrText(event.target.value)} spellCheck lang="pt-BR" />

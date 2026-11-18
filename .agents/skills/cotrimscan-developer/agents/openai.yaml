@@ -1,0 +1,14 @@
+interface:
+  display_name: CotrimScan Developer
+  short_description: Desenvolva e teste funcionalidades no CotrimScan
+  default_prompt: Use $cotrimscan-developer para implementar a tarefa no CotrimScan,
+    aproveitando o código existente e verificando os testes.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

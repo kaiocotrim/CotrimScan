@@ -76,7 +76,7 @@ export function ScannerView({ project, pages, status, busy, setStatus, setPages,
     <header className="relative flex shrink-0 items-center justify-between gap-6 border-b border-[#333] bg-[#191919] px-7 py-[18px] max-[600px]:gap-3">
       <img className="block h-auto w-[110px] shrink-0 object-contain" src="assets/icones_3d/download.png" width={110} height={26} alt="CotrimScan" />
       <span className="pointer-events-none absolute left-1/2 max-w-[35%] -translate-x-1/2 truncate text-center text-[15px] font-medium text-[#eee]" title={project.name}>{project.name}</span>
-      <button className={quietButton} onClick={() => { if (canLeave()) onBack(); }} disabled={busy}>← Voltar</button>
+      <button className={`${quietButton} border-[#a84249] bg-[#722a31] text-white hover:border-[#df6871] hover:bg-[#973943]`} onClick={() => { if (canLeave()) onBack(); }} disabled={busy}>← Voltar</button>
     </header>
     <main className="flex min-h-0 flex-1 flex-col gap-[22px] p-7 max-[900px]:gap-[18px] max-[900px]:p-5 max-[600px]:p-3.5">
       {status !== 'Pronto para digitalizar.' && <p className="m-0 max-w-[900px] text-[11px] leading-[1.6] text-[#aaa] wrap-anywhere" role="status" aria-live="polite">{status}</p>}

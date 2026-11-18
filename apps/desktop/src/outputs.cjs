@@ -16,13 +16,15 @@ async function checkOutputs(outputs){
   catch{throw Error(`A pasta de saída não está disponível para gravação: ${folder}`);}
  }
 }
-async function writeOutputs(outputs,filename,buffer){
+async function writeOutputs(outputs,filename,buffer,subfolder=''){
  const failures=[];
  for(const folder of outputs){
-  try{await fs.writeFile(path.join(folder,filename),buffer,{flag:'wx'});}
+  const target=path.join(folder,subfolder,filename);
+  if(!target.startsWith(path.resolve(folder)+path.sep))throw Error('Pasta de saída inválida.');
+  try{if(subfolder)await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,buffer,{flag:'wx'});}
   catch(error){
    if(error.code==='EEXIST'){
-    try{if((await fs.readFile(path.join(folder,filename))).equals(buffer))continue;}catch{}
+    try{if((await fs.readFile(target)).equals(buffer))continue;}catch{}
    }
    failures.push(folder);
   }

@@ -1,3 +1,4 @@
+import { CloseButton } from './CloseButton';
 import { useEffect, useState } from 'react';
 import type { MobileState, Project } from '@cotrimscan/shared';
 import { ModalBackdrop } from './ModalBackdrop';
@@ -32,7 +33,7 @@ export function MobileDialog({ project, onClose }: Props) {
     <div className="relative m-0 max-h-[calc(100dvh-32px)] w-[min(820px,calc(100vw-32px))] overflow-auto rounded-sm border border-[#444] bg-[#202020] p-[26px] font-[Arial,Helvetica,sans-serif] text-xs text-[#eee] shadow-[0_24px_100px_#0008] [color-scheme:dark] max-[600px]:p-5" role="dialog" aria-modal="true" aria-labelledby="mobile-title">
       <div className="-mx-[26px] -mt-[26px] mb-5 flex items-start justify-between gap-4 border-b border-[#333] px-7 py-6 max-[600px]:-mx-5 max-[600px]:-mt-5 max-[600px]:px-5 max-[600px]:py-5">
         <div><h2 id="mobile-title" className="m-0 mb-2 text-2xl font-normal max-[600px]:text-[21px]">Conectar celular</h2><p className="m-0 [overflow-wrap:anywhere] text-[#aaa]">{project.name}</p></div>
-        <button className={buttonClass} type="button" onClick={onClose} aria-label="Fechar">×</button>
+        <CloseButton onClick={onClose} />
       </div>
       <p className="my-3 leading-relaxed text-[#ccc]">Conecte o computador e o celular à mesma rede Wi-Fi.</p>
       <label className="my-4 block text-[11px] font-normal text-[#bbb]">Rede local
