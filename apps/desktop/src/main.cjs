@@ -216,7 +216,10 @@ app.whenReady().then(()=>{
     const page=await projects.append(activeProject,image,data,processed?project.processingMode:undefined);
     pages.push(image);
     if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),projectId:activeProject,hasProcessed:processed});
-    if(!detected){const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);}
+    if(!detected){
+     try{const output=await projects.sendPage(activeProject,page,image);if(output.warning)warnings.push(output.warning);}
+     catch(error){warnings.push(error.message||'A página foi preservada no projeto, mas não foi enviada para as saídas.');}
+    }
     }catch(error){
      if(pages.length===id&&!win.isDestroyed())win.webContents.send('page',{id,url:'',projectId:activeProject,discardPreview:true});
      throw error;
