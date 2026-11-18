@@ -8,6 +8,7 @@ import TextSnippetOutlined from '@mui/icons-material/TextSnippetOutlined';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import SaveAltOutlined from '@mui/icons-material/SaveAltOutlined';
 import DriveFolderUploadOutlined from '@mui/icons-material/DriveFolderUploadOutlined';
+import QrCodeScannerOutlined from '@mui/icons-material/QrCodeScannerOutlined';
 import type { Page, Project, Region } from '@cotrimscan/shared';
 import { CapturePanel } from './CapturePanel';
 import { CropEditor } from './CropEditor';
@@ -44,11 +45,13 @@ export function PreviewPanel({ page, pageIndex, pageCount, project, busy, onConn
   const [highlight, setHighlight] = useState<Region | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [cropImage, setCropImage] = useState('');
+  const [manualNameMode, setManualNameMode] = useState(false);
+  const [manualName, setManualName] = useState('');
   const ocrDirty = ocrOpen && ocrText !== ocrSaved;
   function canReplaceImage() {
     return (!ocrDirty && !captureDirty) || window.confirm('Alterações de texto ou campos não salvas serão descartadas. Continuar?');
   }
-  useEffect(() => { setOcrOpen(false); setOcrText(''); setOcrSaved(''); setCaptureOpen(false); setCaptureDirty(false); setHighlight(null); }, [page?.id]);
+  useEffect(() => { setOcrOpen(false); setOcrText(''); setOcrSaved(''); setCaptureOpen(false); setCaptureDirty(false); setHighlight(null); setManualNameMode(false); setManualName(''); }, [page?.id]);
   useEffect(() => { onDirtyChange?.(ocrDirty || captureDirty); }, [ocrDirty, captureDirty, onDirtyChange]);
   async function loadOcr() {
     if (!page) return;
@@ -107,6 +110,12 @@ export function PreviewPanel({ page, pageIndex, pageCount, project, busy, onConn
         <button className={`${actionButton} w-full text-left`} disabled={!page || busy} onClick={() => void run(async () => { if (!page || !canReplaceImage()) return; setCropImage(await window.scanner.original(page.id)); setCropOpen(true); })}><CropOutlined sx={{ fontSize: '14px', width: '14px', height: '14px', color: 'inherit' }} aria-hidden="true" />Ajustar recorte</button>
         <button className={`${actionButton} w-full text-left`} disabled={!page || busy} onClick={() => void run(() => enhance())}><AutoFixHighOutlined sx={{ fontSize: '14px', width: '14px', height: '14px', color: 'inherit' }} aria-hidden="true" />Melhorar PDF</button>
         <div className="mt-3 border-t border-[#ffffff16] pt-4 text-[9px] tracking-[1.5px] text-[#aaa]">RECONHECIMENTO</div>
+        <button className={`${actionButton} w-full text-left`} type="button" disabled={!page || busy} onClick={() => void run(async () => {
+          if (!page) return;
+          setStatus('Lendo QR Code e código de barras…');
+          const result = await window.scanner.readCode(page.id, project.id);
+          setStatus(result.status === 'found' ? `${result.format}: ${result.text}` : result.status === 'ambiguous' ? 'Mais de um código encontrado. Não foi possível determinar qual valor usar.' : 'Não foi possível ler um QR Code ou código de barras neste documento.');
+        })}><QrCodeScannerOutlined sx={{ fontSize: '14px', width: '14px', height: '14px', color: 'inherit' }} aria-hidden="true" />Ler código de barras / QR Code</button>
         <button className={`${actionButton} w-full text-left`} disabled={!page || busy} onClick={() => void run(async () => {
           if (!page || !canReplaceImage()) return;
           if (page.hasOcr) await loadOcr();
@@ -116,12 +125,18 @@ export function PreviewPanel({ page, pageIndex, pageCount, project, busy, onConn
         <div className="mt-3 border-t border-[#ffffff16] pt-4 text-[9px] tracking-[1.5px] text-[#aaa]">EXPORTAÇÃO</div>
         <button className={`${actionButton} w-full text-left`} disabled={!page || busy} onClick={() => void run(async () => {
           if (!page) return;
+          if (manualNameMode) {
+            const output = await window.scanner.name(page.id, manualName, project.id);
+            setStatus(`Nome definido: ${output.filename}. Use Enviar para saídas para exportar.`);
+            return;
+          }
           if (captureDirty) { setStatus('Salve a revisão dos campos antes de exportar.'); return; }
           if (ocrDirty) await saveOcr();
           await certificate.ensure();
           const result = await window.scanner.save(page.id);
           setStatus(`Documento salvo${result.filename ? ': ' + result.filename : '.'} ${result.warning || ''}`);
         })}><SaveAltOutlined sx={{ fontSize: '14px', width: '14px', height: '14px', color: 'inherit' }} aria-hidden="true" />Salvar documento</button>
+        {project.namingMode === 'qr' || project.namingMode === 'barcode' ? <><label className="block text-[10px] leading-5 text-[#aaa]"><input type="checkbox" className="mr-2 align-middle" checked={manualNameMode} onChange={event => setManualNameMode(event.target.checked)} />Informar nome manualmente</label>{manualNameMode && <label className="block text-[10px] leading-5 text-[#aaa]">Nome do arquivo<input className="mt-1 block w-full rounded-sm border border-[#444] bg-[#191919] px-2.5 py-2 text-[11px] text-[#eee] placeholder:text-[#777] focus-visible:outline-2 focus-visible:outline-[#ddd]" value={manualName} onChange={event => setManualName(event.target.value)} placeholder="Digite o nome desejado" maxLength={180} /></label>}</> : null}
         <button className={`${actionButton} w-full text-left`} type="button" disabled={busy || !pageCount || !project.outputs.length} onClick={onExport}><DriveFolderUploadOutlined sx={{ fontSize: '14px', width: '14px', height: '14px', color: 'inherit' }} aria-hidden="true" />Enviar para saídas</button>
       </div>
     </div>

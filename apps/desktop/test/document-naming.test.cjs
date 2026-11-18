@@ -27,6 +27,15 @@ test('lê QR e barras giradas separadamente, mantendo zeros à esquerda',async()
  assert.equal((await readDocumentCode(bars,'qr')).status,'not-found');
  const ean=await barcode('5901234123457','EAN13');assert.equal((await readDocumentCode(ean,'barcode')).text,'5901234123457');
 });
+test('manual code reading tries both formats against the preserved source image',async t=>{
+ const f=await fixture(t),image=Buffer.from('original image');
+ await f.store.append(f.project.id,Buffer.from('processed image'),image,'auto');
+ const calls=[];
+ const result=await f.store.readCode(f.project.id,0,async(buffer,mode)=>{calls.push({buffer:buffer.toString(),mode});return mode==='barcode'?{status:'found',text:'001234',format:'Code128'}:{status:'not-found'};});
+ assert.deepEqual(calls,[{buffer:'original image',mode:'qr'},{buffer:'original image',mode:'barcode'}]);
+ assert.deepEqual(result,{status:'found',text:'001234',format:'Code128'});
+ await assert.rejects(f.store.readCode(f.project.id,4,async()=>({status:'not-found'})),/Página inválida/);
+});
 test('QR diferente na mesma folha não escolhe um nome arbitrário',async()=>{
  const a=await QR.toBuffer('111',{width:250}),b=await QR.toBuffer('222',{width:250});
  const image=await sharp({create:{width:650,height:400,channels:3,background:'white'}}).composite([{input:a,left:30,top:40},{input:b,left:350,top:40}]).png().toBuffer();
@@ -60,4 +69,31 @@ test('projeto escolhe QR ou barras e avisa quando não há código válido',asyn
  await f.store.update(f.project.id,{namingMode:'qr'});const missing=await f.store.pageOutput(f.project.id,0);assert.match(missing.filename,/^pagina-/);assert.match(missing.warning,/QR Code/);
  const result=await f.store.exportAll(f.project.id);assert.equal(result.warnings.length,1);assert.equal(result.pages,1);
  await assert.rejects(f.store.update(f.project.id,{namingMode:'unsupported'}),/nome dos arquivos/);
+});
+test('indexed documents use barcode as the filename when it is readable',async t=>{
+ const f=await fixture(t,'barcode'),image=await sharp(await barcode('0019295')).jpeg().toBuffer();
+ await f.store.update(f.project.id,{captureTemplate:{id:'modelo',name:'Modelo',fields:[{id:'x',name:'Código',type:'barcode',required:false,region:{x:0,y:0,width:.5,height:.5}}]}});
+ await f.store.append(f.project.id,image,image,'auto');
+ const stored=await f.store.captureData(f.project.id,0);
+ await f.store.saveCapture(f.project.id,0,[{id:'x',value:'ok',reviewed:true}],stored.revision);
+ const output=await f.store.pageOutput(f.project.id,0);
+ assert.equal(output.filename,'0019295.pdf');
+});
+test('document naming reads the preserved source before the processed page',async t=>{
+ const f=await fixture(t,'qr'),qr=await QR.toBuffer('35261161087367000693550020020354721547610414',{width:400});
+ await f.store.update(f.project.id,{captureTemplate:{id:'modelo',name:'Modelo',fields:[{id:'x',name:'Campo',type:'text',required:false,region:{x:0,y:0,width:.5,height:.5}}]}});
+ const blank=await sharp({create:{width:800,height:600,channels:3,background:'white'}}).jpeg().toBuffer();
+ await f.store.append(f.project.id,blank,qr,'auto');
+ const stored=await f.store.captureData(f.project.id,0);
+ await f.store.saveCapture(f.project.id,0,[{id:'x',value:'teste',reviewed:true}],stored.revision);
+ const output=await f.store.pageOutput(f.project.id,0);
+ assert.equal(output.filename,'35261161087367000693550020020354721547610414.pdf');
+ assert.equal(output.warning,'');
+});
+test('fixed project name is reused for documents and adds suffixes safely',async t=>{
+ const f=await fixture(t,'default'),image=await sharp({create:{width:200,height:300,channels:3,background:'white'}}).jpeg().toBuffer();
+ await f.store.update(f.project.id,{namingMode:'fixed',fixedName:'sasa'});
+ await f.store.append(f.project.id,image,image);await f.store.append(f.project.id,image,image);
+ assert.equal((await f.store.pageOutput(f.project.id,0)).filename,'sasa.jpg');
+ assert.equal((await f.store.pageOutput(f.project.id,1)).filename,'sasa-2.jpg');
 });

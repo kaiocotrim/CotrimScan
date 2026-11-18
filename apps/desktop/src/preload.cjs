@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('scanner',{
  rotate:(index,angle)=>ipcRenderer.invoke('pages:rotate',index,angle),
  enhance:(index,corners,mode)=>ipcRenderer.invoke('pages:enhance',index,corners,mode),
  original:index=>ipcRenderer.invoke('pages:original',index),
+ readCode:(index,projectId)=>ipcRenderer.invoke('pages:read-code',index,projectId),
+ name:(index,name,projectId)=>ipcRenderer.invoke('pages:name',index,name,projectId),
  ocr:index=>ipcRenderer.invoke('pages:ocr',index),
  readOcr:(index,projectId)=>ipcRenderer.invoke('pages:ocr-text',index,projectId),
  saveOcr:(index,text,revision,projectId)=>ipcRenderer.invoke('pages:ocr-save',index,text,revision,projectId),

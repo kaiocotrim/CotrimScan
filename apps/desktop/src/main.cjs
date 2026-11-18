@@ -243,6 +243,11 @@ app.whenReady().then(()=>{
  handle('pages:rotate',(index,angle)=>operation(async()=>{requireProject();const buffer=await projects.rotate(activeProject,index,angle);pages[index]=buffer;return pageView(buffer,index);}));
  handle('pages:enhance',(index,corners,mode)=>operation(async()=>{requireProject();const result=await projects.enhance(activeProject,index,corners,mode);pages[index]=result.image;return {...pageView(result.image,index),cropped:result.cropped,cropMethod:result.cropMethod,mode:result.mode,hasProcessed:true};}));
  handle('pages:original',index=>operation(async()=>{requireProject();const buffer=await projects.original(activeProject,index);const mime=buffer[0]===137?'image/png':buffer.toString('ascii',0,4)==='RIFF'?'image/webp':'image/jpeg';return `data:${mime};base64,${buffer.toString('base64')}`;}));
+ handle('pages:read-code',(index,projectId)=>operation(async()=>{
+  requireProject();if(projectId!==activeProject)throw Error('O projeto mudou. Abra a página novamente.');
+  return projects.readCode(activeProject,index);
+ }));
+ handle('pages:name',(index,name,projectId)=>operation(async()=>{requireProject();if(projectId!==activeProject)throw Error('O projeto mudou. Abra a página novamente.');return projects.namePage(activeProject,index,name);}));
  handle('pages:ocr',index=>operation(async()=>{requireProject();const result=await projects.recognize(activeProject,index);pages[index]=result.image;return {...pageView(result.image,index),hasOcr:true,text:result.text,confidence:result.confidence,warning:result.warning};}));
  handle('pages:ocr-text',async(index,projectId)=>{requireProject();if(projectId!==activeProject)throw Error('O projeto mudou. Abra a página novamente.');const text=await projects.ocrText(projectId,index);if(projectId!==activeProject)throw Error('O projeto mudou. Abra a página novamente.');return text;});
  handle('pages:ocr-save',(index,text,revision,projectId)=>operation(async()=>{requireProject();if(projectId!==activeProject)throw Error('O projeto mudou. Abra a página novamente.');const result=await projects.saveOcrText(activeProject,index,text,revision);return {...result,image:undefined,...pageView(result.image,index),hasOcr:true};}));

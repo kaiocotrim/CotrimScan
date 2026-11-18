@@ -19,15 +19,17 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   const namingMode=require('./document-naming.cjs').namingMode(input.namingMode);
   const nameTemplate=require('./name-template.cjs').validateTemplate(input.nameTemplate);
   if(namingMode==='custom'&&!nameTemplate)throw Error('Configure os nomes personalizados antes de selecionar essa opção.');
+  const fixedName=typeof input.fixedName==='string'?input.fixedName.trim().slice(0,100):'';
+  if(namingMode==='fixed'&&!require('./document-naming.cjs').safeCodeName(fixedName))throw Error('Informe um nome fixo válido para os documentos.');
   const documentType=require('./mobile-image-modes.cjs').documentType(input.documentType);
   const captureTemplate=require('./capture.cjs').template(input.captureTemplate);
   const namingFieldId=input.namingFieldId??null;
   if(namingMode==='ocr'&&(!captureTemplate||!captureTemplate.fields.some(f=>f.id===namingFieldId)))throw Error('Selecione um campo do modelo para nomear os arquivos pelo OCR.');
   const signature=normalizeSignature(input.signature),separation=normalizeSeparation(input.separation);
-  if(separation.mode!=='none'&&namingMode!=='default'&&namingMode!=='custom')throw Error('Na separação por documento, use o nome padrão ou personalizado.');
+  if(separation.mode!=='none'&&namingMode!=='default'&&namingMode!=='custom'&&namingMode!=='fixed')throw Error('Na separação por documento, use o nome padrão, fixo ou personalizado.');
   if(separation.mode==='blank'&&input.blankPages?.enabled===true&&input.blankPages.action==='auto')throw Error('Para separar por página em branco, mantenha as páginas em branco durante a digitalização.');
   if(separation.mode!=='none'&&signature.type!=='none')throw Error('Na separação por documento, desative a assinatura digital. Ela ainda não se aplica a documentos com várias páginas.');
-  return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),namingFieldId,name:input.name.trim(),nameTemplate,port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
+  return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),fixedName,namingFieldId,name:input.name.trim(),nameTemplate,port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
  }
  async function read(id) {
   const data=JSON.parse(await fs.readFile(path.join(directory(id),'project.json'),'utf8'));
@@ -65,12 +67,13 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   const capture=await readCapture(data.id,page);
   const indexBuffer=capture?Buffer.from(JSON.stringify({schema:'cotrimscan.capture.v1',projectId:data.id,pageId:page,...capture},null,2)):null;
   const output=await pageContent(data,page,buffer,indexBuffer);
-  const named=data.namingMode==='custom'&&data.nameTemplate?.file.length?output:await require('./document-naming.cjs').documentFilename(data,page,output,directory(data.id));
+  const named=data.namingMode==='custom'&&data.nameTemplate?.file.length?output:await require('./document-naming.cjs').documentFilename(data,page,output,directory(data.id),(image,mode)=>require('./document-codes.cjs').readDocumentCode(image,mode),await sourceImage(data.id,page));
   const context={project:data.name,documentId:page,documentNumber:data.pages.indexOf(page)+1,page:data.pages.indexOf(page)+1,sequence:data.pages.indexOf(page)+1,fields:capture?.fields};
   const custom=await applyNameTemplate(data,page,named,context);
   if(!capture)return custom;
   const hash=createHash('sha256').update(indexBuffer).digest('hex').slice(0,12);
-  const filename=data.namingMode==='ocr'||data.namingMode==='custom'&&data.nameTemplate?.file.length?custom.filename:custom.filename.replace(/\.[^.]+$/,`-idx-${hash}.${custom.extension}`);
+  const codeNamed=['qr','barcode'].includes(data.namingMode)&&custom.code;
+  const filename=data.namingMode==='ocr'||data.namingMode==='fixed'||data.namingMode==='custom'&&data.nameTemplate?.file.length||codeNamed?custom.filename:custom.filename.replace(/\.[^.]+$/,`-idx-${hash}.${custom.extension}`);
   return {...custom,filename,warning:[custom.warning,capture.error,capture.needsReview||capture.fields.some(f=>!f.reviewed||f.error)?'Campos de captura pendentes de revisão.':''].filter(Boolean).join(' ')};
  }
  async function readCapture(id,page){return require('./document-naming.cjs').readJson(path.join(directory(id),page+'-capture.json'));}
@@ -287,6 +290,8 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   },
   async info(id){return summary(await read(id));},
   async pageOutput(id,index){const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index];return outputPage(data,page,await fs.readFile(path.join(directory(id),page+'.jpg')));},
+  async readCode(id,index,reader=require('./document-codes.cjs').readDocumentCode){const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index],source=await sourceImage(id,page);let last={status:'not-found'};for(const mode of ['qr','barcode']){const result=await reader(source,mode);if(result.status==='found')return result;if(result.status==='ambiguous')last=result;}return last;},
+  async namePage(id,index,value){if(typeof value!=='string'||!value.trim())throw Error('Informe o nome que deseja usar.');const stem=require('./document-naming.cjs').safeCodeName(value.trim());if(!stem)throw Error('Informe um nome de arquivo válido.');const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index];await require('./document-naming.cjs').writeJson(path.join(directory(id),page+'-name.json'),{mode:'manual',status:'found',text:value.trim(),stem});return this.pageOutput(id,index);},
   async checkOutputs(id){await checkOutputs((await read(id)).outputs);},
   async sendPage(id,page,buffer){const data=await read(id);if(data.separation.mode!=='none')return {filename:null,warning:''};const output=await outputPage(data,page,buffer);await writeOutput(data,output);return {filename:output.filename,warning:output.warning};},
   async exportAll(id){

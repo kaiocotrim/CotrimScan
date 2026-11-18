@@ -2,7 +2,7 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const {createHash,randomUUID}=require('node:crypto');
 function namingMode(value='default'){
- if(!['default','qr','barcode','ocr','custom'].includes(value))throw Error('Opção de nome dos arquivos inválida.');return value;
+ if(!['default','qr','barcode','ocr','custom','fixed'].includes(value))throw Error('Opção de nome dos arquivos inválida.');return value;
 }
 function safeCodeName(value){
  if(typeof value!=='string')return null;
@@ -17,10 +17,20 @@ async function writeJson(file,data){
  const temp=file+'.'+randomUUID()+'.tmp';
  try{await fs.writeFile(temp,JSON.stringify(data),{flag:'wx',mode:0o600});await fs.rename(temp,file);}finally{await fs.rm(temp,{force:true});}
 }
-async function documentFilename(data,page,output,dir){
+async function documentFilename(data,page,output,dir,reader=require('./document-codes.cjs').readDocumentCode,sourceOverride){
  if(data.namingMode==='default'||data.namingMode==='custom')return output;
  const file=path.join(dir,page+'-name.json');
  const previous=await readJson(file);
+ if(previous?.mode==='manual'&&typeof previous.stem==='string')return {...output,filename:`${previous.stem}.${output.extension}`,code:previous.text};
+ if(data.namingMode==='fixed'){
+  const base=safeCodeName(data.fixedName);
+  if(!base)return {...output,warning:'Informe um nome fixo válido para os documentos.'};
+  const reserved=new Set();
+  for(const other of data.pages){if(other===page)continue;const name=await readJson(path.join(dir,other+'-name.json'));if(name?.mode==='fixed'&&name.text===data.fixedName&&name.stem)reserved.add(name.stem.toLocaleLowerCase('en-US'));}
+  async function occupied(stem){if(reserved.has(stem.toLocaleLowerCase('en-US')))return true;for(const folder of data.outputs){try{if(!(await fs.readFile(path.join(folder,`${stem}.${output.extension}`))).equals(output.buffer))return true;}catch(error){if(error.code!=='ENOENT')throw error;}}return false;}
+  let stem=base;if(await occupied(stem)){let suffix=2;while(await occupied(`${base}-${suffix}`)){suffix++;if(suffix>10000)throw Error('Há muitos arquivos com esse nome. Escolha outra pasta de saída.');}stem=`${base}-${suffix}`;}
+  await writeJson(file,{mode:'fixed',status:'found',text:data.fixedName,stem});return {...output,filename:`${stem}.${output.extension}`};
+ }
  let result;
  if(data.namingMode==='ocr'){
   const capture=await readJson(path.join(dir,page+'-capture.json'));
@@ -28,15 +38,15 @@ async function documentFilename(data,page,output,dir){
   if(!field||!field.value.trim()||field.error||capture.imageChanged&&!field.reviewed)return {...output,warning:'O campo OCR escolhido está vazio, inválido ou precisa de revisão. O nome padrão foi mantido.'};
   result={mode:'ocr',status:'found',text:field.value,fieldId:field.id};
  }else{
-  let source;try{source=await fs.readFile(path.join(dir,page+'.source'));}catch(error){if(error.code!=='ENOENT')throw error;source=await fs.readFile(path.join(dir,page+'.jpg'));}
+  let source=sourceOverride; if(!source)try{source=await fs.readFile(path.join(dir,page+'.source'));}catch(error){if(error.code!=='ENOENT')throw error;source=await fs.readFile(path.join(dir,page+'.jpg'));}
   const image=await fs.readFile(path.join(dir,page+'.jpg'));
   const hash=createHash('sha256').update(source).update(image).digest('hex');
   result=previous?.mode===data.namingMode&&previous.hash===hash?previous:null;
   if(!result){
    try{
     let decoded;
-    try{decoded=await require('./document-codes.cjs').readDocumentCode(source,data.namingMode);}catch(error){if(image.equals(source))throw error;decoded={status:'not-found'};}
-    if(decoded.status==='not-found'&&!image.equals(source))decoded=await require('./document-codes.cjs').readDocumentCode(image,data.namingMode);
+    try{decoded=await reader(source,data.namingMode);}catch(error){if(image.equals(source))throw error;decoded={status:'not-found'};}
+    if(decoded.status==='not-found'&&!image.equals(source))decoded=await reader(image,data.namingMode);
     result={mode:data.namingMode,hash,...decoded};
    }catch{return {...output,warning:'Não foi possível ler o código. O documento foi salvo com o nome padrão.'};}
   }
