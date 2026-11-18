@@ -1,7 +1,9 @@
-const BASE = 'http://127.0.0.1';
-function endpoint(port) {
+const DEFAULT_HOST = '127.0.0.1';
+const HOST_PATTERN = /^[A-Za-z0-9.-]{1,253}$/;
+function endpoint(port, host = DEFAULT_HOST) {
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw Error('Porta inválida.');
-  return `${BASE}:${port}/eSCL/`;
+  if (typeof host !== 'string' || !HOST_PATTERN.test(host)) throw Error('Endereço do scanner inválido.');
+  return `http://${host}:${port}/eSCL/`;
 }
 function settings(dpi, source, colorMode='RGB24',duplex=false) {
   if (![150, 300, 600].includes(dpi) || !['Platen','Feeder'].includes(source) || !['RGB24','Grayscale8','BlackAndWhite1'].includes(colorMode)) throw Error('Configuração inválida.');
@@ -13,16 +15,16 @@ async function request(url, init = {}) {
   try { return await fetch(url, {...init, redirect:'error', signal:AbortSignal.timeout(120000)}); }
   catch { throw Error(`Serviço de digitalização indisponível em ${new URL(url).origin}. Inicie o NAPS2.WebScan.LocalService ou corrija a porta nas configurações do projeto.`); }
 }
-async function connect(port) {
-  const r = await request(endpoint(port)+'ScannerCapabilities');
+async function connect(port, host = DEFAULT_HOST) {
+  const r = await request(endpoint(port, host)+'ScannerCapabilities');
   if (!r.ok) throw Error(`Serviço respondeu com erro ${r.status}.`);
   const xml = await r.text();
   if (!xml.includes('ScannerCapabilities')) throw Error('O serviço não retornou capacidades eSCL.');
   return true;
 }
-async function scan(port, dpi, source, onPage, colorMode='RGB24',duplex=false,maxPages=200) {
+async function scan(port, dpi, source, onPage, colorMode='RGB24',duplex=false,maxPages=200,host=DEFAULT_HOST) {
   if(!Number.isInteger(maxPages)||maxPages<1||maxPages>200)throw Error('Limite de páginas inválido.');
-  const base = endpoint(port);
+  const base = endpoint(port, host);
   const r = await request(base+'ScanJobs', {method:'POST',headers:{'Content-Type':'text/xml'},body:settings(dpi,source,colorMode,duplex)});
   if (!r.ok) throw Error(`Não foi possível iniciar: erro ${r.status}. Confira papel e configurações suportadas.`);
   const location = r.headers.get('location');

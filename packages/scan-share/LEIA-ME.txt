@@ -1,0 +1,201 @@
+====================================================
+        NAPS2 WebScan LocalService v2.0.0
+         Scanner TWAIN to HTTP/eSCL Bridge
+====================================================
+
+BEM-VINDO!
+==========
+
+Este pacote transforma seus scanners TWAIN em scanners
+acessiveis via HTTP, permitindo scan direto do navegador.
+
+
+INSTALACAO RAPIDA (3 PASSOS)
+=============================
+
+1. EXECUTAR INSTALADOR
+   - Clique com botao direito em "instalador.bat"
+   - Selecione "Executar como administrador"
+
+2. INSTALAR SERVICO
+   - Digite 1 e pressione ENTER
+
+3. INICIAR SERVICO  
+   - Digite 3 e pressione ENTER
+
+PRONTO! Seus scanners agora estao acessiveis via HTTP.
+
+
+VERIFICAR INSTALACAO
+=====================
+
+Abra seu navegador em:
+  http://localhost:5000/api/scanners
+
+Deve retornar uma lista JSON com seus scanners.
+
+
+ARQUIVOS INCLUIDOS
+==================
+
+instalador.bat              <- Use este para instalar (Windows)
+instalador.ps1              <- Ou este (PowerShell avancado)
+NAPS2.WebScan.LocalService.exe  <- Executavel principal
+README_INSTALACAO.txt       <- Guia rapido (este arquivo)
+README.md                   <- Documentacao completa
+API_DOCUMENTATION.md        <- Como usar a API
+INSTALACAO_SERVICO.md       <- Guia detalhado de instalacao
+
+
+COMANDOS DO INSTALADOR
+======================
+
+instalador.bat (Menu):
+  1. Instalar como servico
+  2. Desinstalar servico
+  3. Iniciar servico
+  4. Parar servico
+  5. Ver scanners disponiveis
+  6. Abrir API no navegador
+  0. Sair
+
+
+API REST
+========
+
+Quando o servico estiver rodando, use:
+
+Listar scanners:
+  GET http://localhost:5000/api/scanners
+
+Scanner atual:
+  GET http://localhost:5000/api/scanners/current
+
+Selecionar scanner:
+  POST http://localhost:5000/api/scanners/{id}/select
+
+
+PROTOCOLO eSCL
+==============
+
+Cada scanner recebe sua propria porta eSCL:
+
+Scanner 1: http://localhost:9880/eSCL/
+Scanner 2: http://localhost:9881/eSCL/
+Scanner 3: http://localhost:9882/eSCL/
+
+Use essas URLs para fazer scan via protocolo eSCL
+(compativel com AirPrint).
+
+
+REQUISITOS
+==========
+
+- Windows 10/11 ou Windows Server 2016+
+- .NET 8.0 Runtime (https://dotnet.microsoft.com/download/dotnet/8.0)
+- Drivers TWAIN dos scanners instalados
+- Permissoes de Administrador (para instalar servico)
+
+
+SOLUCAO DE PROBLEMAS
+=====================
+
+Scanners nao aparecem:
+  1. Verifique se drivers TWAIN estao instalados
+  2. Teste scanner no software nativo
+  3. Reinicie o servico (opcao 2 depois opcao 1)
+
+Servico nao inicia:
+  1. Verifique se porta 5000 esta livre
+  2. Veja logs: Event Viewer > Application
+  3. Execute: netstat -ano | findstr 5000
+
+Erro ao instalar:
+  1. Execute instalador.bat como Administrador
+  2. Verifique se .NET 8 Runtime esta instalado
+  3. Tente instalacao manual (veja INSTALACAO_SERVICO.md)
+
+
+DESINSTALAR
+===========
+
+1. Executar instalador.bat como Administrador
+2. Opcao 2 - Desinstalar servico
+3. Deletar esta pasta
+
+
+PROXIMOS PASSOS
+===============
+
+Apos instalacao bem-sucedida:
+
+1. Teste a API:
+   http://localhost:5000/api/scanners
+
+2. Se tiver o WebServer instalado:
+   http://localhost:5154
+
+3. Integre com seu sistema usando a API REST
+
+4. Consulte API_DOCUMENTATION.md para exemplos
+
+
+DOCUMENTACAO COMPLETA
+======================
+
+Todos os arquivos .md podem ser abertos em:
+- Bloco de Notas
+- Notepad++
+- Visual Studio Code
+- Navegador (com extensao Markdown)
+
+OU leia online em:
+- README.md - Visao geral completa
+- API_DOCUMENTATION.md - Exemplos de codigo
+- INSTALACAO_SERVICO.md - Troubleshooting
+
+
+SUPORTE TECNICO
+===============
+
+1. Verifique README.md incluido
+2. Veja logs: Event Viewer > Application > NAPS2.WebScan Service
+3. Execute em modo console: NAPS2.WebScan.LocalService.exe
+4. Consulte INSTALACAO_SERVICO.md para troubleshooting
+
+
+ARQUITETURA
+===========
+
+LocalService (esta aplicacao)
+  ↓
+Detecta scanners TWAIN automaticamente
+  ↓
+Cria servidor eSCL para cada scanner
+  ↓
+Expoe via HTTP nas portas 9880+
+  ↓
+API REST centralizada na porta 5000
+
+
+VERSAO
+======
+
+Versao: 2.0.0
+Data: 2026-02-27
+Plataforma: Windows 10/11, Server 2016+
+.NET: 8.0
+NAPS2 SDK: 1.2.1
+
+
+====================================================
+           OBRIGADO POR USAR NAPS2 WEBSCAN!
+====================================================
+
+Para comecar: Execute instalador.bat como Administrador
+
+Documentacao: README.md
+Suporte: INSTALACAO_SERVICO.md
+API: API_DOCUMENTATION.md
+
+====================================================

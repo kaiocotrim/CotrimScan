@@ -7,15 +7,16 @@ app.setName('CotrimScan');
 const userDataPath=path.join(app.getPath('appData'),'naps2-desktop');
 require('node:fs').mkdirSync(userDataPath,{recursive:true,mode:0o700});
 app.setPath('userData',userDataPath);
-const scanner=require('./scanner.cjs');
-const wiaScanner=require('./wia-scanner.cjs');
-const twainScanner=require('./naps2-twain.cjs');
+const scanner=require('@cotrimscan/scan-core/scanner');
+const escl=require('@cotrimscan/scan-core/escl-client');
+const scannerConfig=require('./scanner-config.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
 const {createDiagnosticLog}=require('./diagnostic-log.cjs');
 const {createSignatures}=require('./signatures.cjs');
 const {createCertificateCredentials}=require('./certificate-credentials.cjs');
 const {createMobileServer}=require('./mobile-server.cjs');
+const {loadAgentConfig,createScanAgent}=require('./scan-agent.cjs');
 const {normalizeMobileImage}=require('./mobile-images.cjs');
 const QRCode=require('qrcode');
 let mobile,mobileProject=null;
@@ -29,28 +30,58 @@ let pages=[];
 async function operation(fn){if(busy) throw Error('Aguarde a operação em andamento.'); busy=true; try{return await fn();}finally{busy=false;}}
 function requireProject(){if(!activeProject)throw Error('Abra um projeto para digitalizar.');}
 function pageView(data,id){return {id,url:'data:image/jpeg;base64,'+data.toString('base64')};}
-async function scanConfigured(port,dpi,source,colorMode,duplex,onPage,maxPages=200){
- // The console backend drains the feeder before reporting its page count.
- // Use a bounded WIA transfer for single-page samples instead.
- if(maxPages===1 && !duplex && await wiaScanner.available())return wiaScanner.scan(dpi,source,colorMode,false,onPage,1);
- const twain=await twainScanner.device();
- if(twain)return twainScanner.scan(twain,dpi,source,colorMode,duplex,onPage,maxPages);
- if(await wiaScanner.available())return wiaScanner.scan(dpi,source,colorMode,duplex,onPage,maxPages);
- return scanner.scan(port,dpi,source,onPage,colorMode,duplex,maxPages);
+// Scanner selection is stored per computer in scanner.json. Devices come from the NAPS2 WebScan service (TWAIN via eSCL) and manual eSCL entries.
+const scannerConfigFile=()=>path.join(app.getPath('userData'),'scanner.json');
+async function listScanners(){
+ const config=await scannerConfig.loadScannerConfig(scannerConfigFile());
+ const {devices,forkError}=await escl.listDevices({manual:config.manual});
+ return {config,devices,forkError};
+}
+async function selectedScanner(){
+ const {config,devices,forkError}=await listScanners();
+ if(config.selected&&forkError&&!devices.some(device=>device.id===config.selected))throw Error(forkError+' Verifique se o NAPS2 WebScan está em execução.');
+ return scannerConfig.resolveSelected(config,devices);
+}
+async function scanConfigured(device,dpi,source,colorMode,duplex,onPage,maxPages=200){
+ return escl.scanDevice(device,{dpi,source,colorMode,duplex,maxPages},onPage);
 }
 const log=createDiagnosticLog(userDataPath);
 function handle(name,fn,protectedAction=true){ipcMain.handle(name,(event,...args)=>{if(event.sender!==win.webContents || event.senderFrame!==win.webContents.mainFrame) throw Error('Solicitação inválida.'); if(protectedAction) auth.requireSession(); const fail=error=>{log.error(name,error);throw error;};let result;try{result=fn(...args);}catch(error){fail(error);}return result&&typeof result.then==='function'?result.catch(fail):result;});}
+// Local scan agent for other apps (DocReport). It shares the same acquisition path and busy lock as the app UI.
+let scanAgent=null,scanAgentConfig=null;
+async function startScanAgent(){
+ try{
+  scanAgentConfig=await loadAgentConfig(path.join(app.getPath('userData'),'agent.json'));
+  scanAgent=createScanAgent({
+   config:scanAgentConfig,
+   isBusy:()=>busy,
+   log:(name,error)=>log.error(name,error),
+   listDevices:listScanners,
+   acquire:(options,onPage)=>operation(async()=>{
+    scanner.settings(options.dpi,options.source,options.colorMode,options.duplex);
+    return scanConfigured(options.device,options.dpi,options.source,options.colorMode,options.duplex,onPage,options.maxPages);
+   })
+  });
+  await scanAgent.start();
+ }catch(error){
+  log.error('scan-agent',error);
+  scanAgent=null;
+ }
+}
 app.whenReady().then(()=>{
  auth=createAuth(path.join(app.getPath('userData'),'account.json'));
  projects=createProjects(path.join(app.getPath('userData'),'projects'),{signatures});
  captureModels=require('./capture.cjs').createTemplates(app.getPath('userData'));
+ handle('agent:info',()=>({running:scanAgent!==null,port:scanAgent?.address()??scanAgentConfig?.port??null,token:scanAgentConfig?.token??null,allowedOrigins:scanAgentConfig?.allowedOrigins??[]}));
+ startScanAgent();
  handle('capture:sample',input=>operation(async()=>{
-  const {port,dpi,source,colorMode,processingMode,documentType}=input||{};
-  scanner.endpoint(port);scanner.settings(dpi,source,colorMode,false);
+  const {dpi,source,colorMode,processingMode,documentType}=input||{};
+  const device=await selectedScanner();
+  scanner.settings(dpi,source,colorMode,false);
   const modes=require('./mobile-image-modes.cjs');
   const mode=modes.scanMode(processingMode,colorMode),type=modes.documentType(documentType);
   let sample;
-  await scanConfigured(port,dpi,source,colorMode,false,async image=>{sample=image;},1);
+  await scanConfigured(device,dpi,source,colorMode,false,async image=>{sample=image;},1);
   if(!sample)throw Error('Nenhuma folha foi recebida.');
   const result=await require('./mobile-image-rotate.cjs').enhanceImage(sample,undefined,mode,{documentType:type,dpi});
   return {url:pageView(result.image,0).url};
@@ -143,13 +174,20 @@ app.whenReady().then(()=>{
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
- handle('connect',port=>scanner.connect(port));
+ async function scannersState(){const {config,devices,forkError}=await listScanners();return {devices,selected:config.selected,manual:config.manual,forkError};}
+ handle('scanners:list',()=>scannersState());
+ handle('scanners:select',id=>operation(async()=>{const {config,devices}=await listScanners();await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.selectDevice(config,devices,id===null?null:String(id)));return scannersState();}));
+ handle('scanners:refresh',()=>operation(async()=>{await escl.refreshDevices();return scannersState();}));
+ handle('scanners:manual-add',input=>operation(async()=>{const config=await scannerConfig.loadScannerConfig(scannerConfigFile());await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.addManual(config,input));return scannersState();}));
+ handle('scanners:manual-remove',id=>operation(async()=>{const config=await scannerConfig.loadScannerConfig(scannerConfigFile());await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.removeManual(config,String(id)));return scannersState();}));
+ handle('scanners:connect',id=>operation(async()=>{const {devices}=await listScanners();const device=devices.find(item=>item.id===id);if(!device)throw Error('Scanner não encontrado. Atualize a lista de scanners.');await escl.connectDevice(device);return true;}));
  handle('blank:sample',async(url,sensitivity)=>{if(typeof url!=='string'||url.length>30000000||!url.startsWith('data:image/'))throw Error('Imagem inválida.');const buffer=Buffer.from(url.split(',')[1],'base64');return {id:0,url,...await require('./blank-pages.cjs').inspect(buffer,sensitivity)};});
  handle('blank:scan',input=>operation(async()=>{
-  const {port,dpi,source,colorMode,duplex}=input||{};
-  scanner.endpoint(port);scanner.settings(dpi,source,colorMode,duplex);
+  const {dpi,source,colorMode,duplex}=input||{};
+  const device=await selectedScanner();
+  scanner.settings(dpi,source,colorMode,duplex);
   const images=[];
-  await scanConfigured(port,dpi,source,colorMode,duplex,async image=>{images.push(pageView(image,images.length));},source==='Feeder'&&duplex?2:1);
+  await scanConfigured(device,dpi,source,colorMode,duplex,async image=>{images.push(pageView(image,images.length));},source==='Feeder'&&duplex?2:1);
   if(!images.length)throw Error('Nenhuma página foi recebida.');
   return images;
  }));
@@ -157,12 +195,13 @@ app.whenReady().then(()=>{
  handle('scan',()=>operation(async()=>{
    requireProject();
    const project=await projects.info(activeProject);
-   const {port,dpi,source,colorMode,duplex}=project;
+   const device=await selectedScanner();
+   const {dpi,source,colorMode,duplex}=project;
    scanner.settings(dpi,source,colorMode,duplex);
    await projects.checkOutputs(activeProject);
    if(!signatures.ready(activeProject,project.signature))throw Error('Libere o certificado antes de digitalizar.');
    const warnings=[];let ignored=0;const suspects=[];const blankSettings=require('./blank-pages.cjs').settings(project.blankPages);
-   const scanned=await scanConfigured(port,dpi,source,colorMode,duplex,async data=>{
+   const scanned=await scanConfigured(device,dpi,source,colorMode,duplex,async data=>{
     const detected=blankSettings.enabled&&(await require('./blank-pages.cjs').inspect(data,blankSettings.sensitivity)).blank;
     if(detected&&blankSettings.action==='auto'){ignored++;return;}
     const id=pages.length;if(detected)suspects.push(id);
@@ -209,5 +248,5 @@ app.whenReady().then(()=>{
  });
  win.loadFile(path.join(__dirname,'../renderer/index.html'));
 });
-app.on('before-quit',()=>{mobile?.stop().catch(()=>{});signatures.clear();});
+app.on('before-quit',()=>{mobile?.stop().catch(()=>{});scanAgent?.stop().catch(()=>{});signatures.clear();});
 app.on('window-all-closed',async()=>{await mobile?.stop();signatures.clear();app.quit();});

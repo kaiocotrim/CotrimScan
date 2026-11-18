@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const {randomUUID,createHash} = require('node:crypto');
-const {endpoint, settings} = require('./scanner.cjs');
+const {endpoint, settings} = require('@cotrimscan/scan-core/scanner');
 const {normalizeOutputs,checkOutputs,writeOutputs}=require('./outputs.cjs');
 const {normalizeSignature}=require('./signatures.cjs');
 const {signedPage,documentPdf}=require('./pdf.cjs');

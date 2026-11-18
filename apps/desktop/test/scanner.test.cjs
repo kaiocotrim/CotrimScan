@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {endpoint,settings,connect,scan}=require('../src/scanner.cjs');
+const {endpoint,settings,connect,scan}=require('@cotrimscan/scan-core/scanner');
 test('rejeita portas e opções inválidas',()=>{
  assert.throws(()=>endpoint(80));assert.throws(()=>endpoint('9880'));
  assert.throws(()=>settings(72,'Platen'));assert.throws(()=>settings(300,'<invalid>'));

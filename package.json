@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev --filter=@cotrimscan/web",
+    "dev": "turbo run dev --filter=@cotrimscan/web --filter=@cotrimscan/scan-share",
     "build": "turbo run build",
     "test": "turbo run test",
     "start": "turbo run start --filter=@cotrimscan/desktop",

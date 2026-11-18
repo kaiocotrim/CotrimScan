@@ -49,9 +49,7 @@ test('scanner recebe lote de canhotos, recorta cada pagina e salva PDFs preserva
  const src=path.join(__dirname,'../src');
  require('node:vm').runInNewContext(await fs.readFile(path.join(src,'main.cjs'),'utf8'),{__dirname:src,require(name){
   if(name==='electron')return electron;
-  if(name==='./wia-scanner.cjs')return {available:async()=>false};
-  if(name==='./naps2-twain.cjs')return {device:async()=>null};
-  if(name==='./scanner.cjs')return {...require('../src/scanner.cjs'),scan:async(port,dpi,source,onPage)=>{await onPage(original);await onPage(original);return 2;}};
+  if(name==='@cotrimscan/scan-core/escl-client')return {...require('@cotrimscan/scan-core/escl-client'),listDevices:async()=>({devices:[{id:'escl:127.0.0.1:9880',name:'Teste',driver:'escl-local',host:'127.0.0.1',port:9880}],forkError:null}),scanDevice:async(device,options,onPage)=>{await onPage(original);await onPage(original);return 2;}};
   return name.startsWith('./')?require(path.join(src,name)):require(name);
  }});
  await new Promise(resolve=>setImmediate(resolve));const event={sender:win.webContents,senderFrame:win.webContents.mainFrame};
@@ -59,6 +57,7 @@ test('scanner recebe lote de canhotos, recorta cada pagina e salva PDFs preserva
  await invoke('auth:register','usuario','senha-segura');
  const output=path.join(dir,'outputs');await fs.mkdir(output);
  const project=await invoke('projects:create',{name:'Canhotos',port:9880,dpi:300,source:'Feeder',documentType:'receipt',outputs:[output]});
+ await invoke('scanners:select','escl:127.0.0.1:9880');
  await invoke('projects:open',project.id);const result=await invoke('scan');assert.equal(result.pages,2);assert.equal(result.warnings.length,0);assert.equal(sent.length,2);
  for(const page of sent){assert.equal(page.hasProcessed,true);const meta=await sharp(Buffer.from(page.url.split(',')[1],'base64')).metadata();assert.ok(meta.height<350);}
  const files=await fs.readdir(output);assert.equal(files.length,2);assert.ok(files.every(file=>file.endsWith('.pdf')));

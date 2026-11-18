@@ -1,12 +1,13 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { Project } from '@cotrimscan/shared';
+import { ScannerSelector } from './ScannerSelector';
 
-interface Props { onRefresh(): Promise<void>; username: string; projects: Project[]; status: string; busy: boolean; onLogout(): void; onNew(): void; onOpen(project: Project): void; onEdit(project: Project): void }
+interface Props { onRefresh(): Promise<void>; username: string; projects: Project[]; status: string; setStatus(text: string): void; busy: boolean; onLogout(): void; onNew(): void; onOpen(project: Project): void; onEdit(project: Project): void }
 
 const primaryButton = 'm-0 w-auto shrink-0 rounded-md border border-[#61acfa70] bg-[#3287dc] px-[18px] py-3 text-xs text-white hover:bg-[#4397ea] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#75baff]';
 
-export function ProjectsView({ onRefresh, username, projects, status, busy, onLogout, onNew, onOpen, onEdit }: Props) {
+export function ProjectsView({ onRefresh, username, projects, status, setStatus, busy, onLogout, onNew, onOpen, onEdit }: Props) {
   const [menu,setMenu]=useState<{project:Project;x:number;y:number}|null>(null);
   const [renaming,setRenaming]=useState<Project|null>(null),[name,setName]=useState(''),[error,setError]=useState('');
   const reduceMotion=useReducedMotion();
@@ -24,7 +25,8 @@ export function ProjectsView({ onRefresh, username, projects, status, busy, onLo
         <div><span className="text-[9px] tracking-[2px] text-[#73a8d9]">SEU ESPAÇO DE TRABALHO</span><h1 className="my-3 text-[28px] font-medium tracking-[-.6px]">Meus projetos</h1><p className="m-0 text-xs leading-[1.7] text-[#89929f]">Organize suas digitalizações. Dê dois cliques em uma pasta para começar.</p></div>
         <button className={primaryButton} onClick={onNew} disabled={busy}>+ Novo projeto</button>
       </div>
-      {status && <p className="text-xs leading-[1.6] text-[#e4acb6] wrap-anywhere" role="status" aria-live="polite">{status}</p>}
+      <div className="mt-8"><ScannerSelector busy={busy} setStatus={setStatus} /></div>
+      {status && <p className="mt-4 text-xs leading-[1.6] text-[#e4acb6] wrap-anywhere" role="status" aria-live="polite">{status}</p>}
       <div className="mt-[42px] grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-6 max-[900px]:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] max-[900px]:gap-3 max-[600px]:grid-cols-2 max-[600px]:gap-1.5" aria-label="Projetos">
         {projects.map(project => <article className={`relative min-w-0 rounded-xl border px-3 pb-[18px] pt-4 transition-colors hover:bg-[#ffffff03] ${selected === project.id ? 'border-[#65adf638] bg-[#2472bd0b]' : 'border-transparent'}`} key={project.id} onContextMenu={event=>{event.preventDefault();if(busy)return;setSelected(project.id);setMenu({project,x:Math.min(event.clientX,window.innerWidth-190),y:Math.min(event.clientY,window.innerHeight-160)});}}>
           <h2 className="m-0 min-h-[42px] py-0 pl-1.5 pr-[30px] text-sm leading-normal font-normal text-[#dce7f3] wrap-anywhere">{project.name}</h2>

@@ -46,6 +46,8 @@ if (import.meta.env.DEV && !window.localAuth) Object.assign(window, {
   },
   scanner: {
     onPage: () => () => {}, connect: unavailable, scan: unavailable,
+    list: async () => ({ devices: [], selected: null, manual: [], forkError: null }),
+    select: unavailable, refresh: unavailable, addManual: unavailable, removeManual: unavailable,
     remove: unavailable, rotate: unavailable, enhance: unavailable,
     original: unavailable, ocr: unavailable, readOcr: unavailable,
     saveOcr: unavailable, save: unavailable, clear: unavailable,

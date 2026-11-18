@@ -1,0 +1,17 @@
+{
+  "name": "@cotrimscan/scan-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aquisição de documentos via eSCL (scanners TWAIN expostos pelo NAPS2 WebScan e scanners eSCL nativos) compartilhada entre o CotrimScan e outros aplicativos",
+  "main": "./src/scanner.cjs",
+  "exports": {
+    "./scanner": "./src/scanner.cjs",
+    "./escl-client": "./src/escl-client.cjs"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

@@ -15,8 +15,6 @@ test('fotos entram no projeto, falha na saída preserva a página e troca de pro
  const code=await fs.readFile(path.join(__dirname,'../src/main.cjs'),'utf8');
  vm.runInNewContext(code,{__dirname:path.join(__dirname,'../src'),require(name){
   if(name==='electron')return electron;
-  if(name==='./wia-scanner.cjs')return {available:async()=>false};
-  if(name==='./naps2-twain.cjs')return {device:async()=>null};
   if(name==='./mobile-server.cjs')return {createMobileServer:options=>{callbacks=options;return controller;}};
   return name.startsWith('./')?require(path.join(__dirname,'../src',name)):require(name);
  }});

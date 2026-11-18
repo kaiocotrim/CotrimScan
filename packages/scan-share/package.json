@@ -1,0 +1,9 @@
+{
+  "name": "@cotrimscan/scan-share",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Serviço NAPS2 WebScan (fork) que expõe scanners TWAIN como eSCL e API REST na porta 5000",
+  "scripts": {
+    "dev": "dotnet run --project NAPS2.WebScan.LocalService.csproj"
+  }
+}

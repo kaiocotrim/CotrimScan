@@ -5,3 +5,7 @@ apps/desktop/renderer/
 .local/naps2-8.6.0-win-x64.zip
 .local/naps2-cli-check/
 .turbo/
+
+packages/scan-share/bin/
+packages/scan-share/obj/
+.vs/
