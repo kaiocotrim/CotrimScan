@@ -4,6 +4,8 @@ interface Props { creating: boolean; loading: boolean; error: string; onSubmit(u
 export function AuthView({ creating, loading, error, onSubmit }: Props) {
   const [username, setUsername] = useState(''), [password, setPassword] = useState(''), [confirmation, setConfirmation] = useState(''), [showPassword, setShowPassword] = useState(false), [showConfirmation, setShowConfirmation] = useState(false), [about, setAbout] = useState(false), [busy, setBusy] = useState(false);
   const [validation, setValidation] = useState('');
+  const [lightTheme, setLightTheme] = useState(() => localStorage.getItem('cotrimscan-login-theme') === 'light');
+  function toggleTheme() { setLightTheme(value => { const next = !value; localStorage.setItem('cotrimscan-login-theme', next ? 'light' : 'dark'); document.documentElement.classList.toggle('app-light', next); return next; }); }
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (creating && password !== confirmation) { setValidation('As senhas não coincidem.'); return; }
@@ -13,7 +15,7 @@ export function AuthView({ creating, loading, error, onSubmit }: Props) {
   const field = 'm-0 block h-[30px] w-full rounded border border-[#262626] bg-[#181818] px-2.5 py-2 text-[11px] text-[#eee] placeholder:text-[#858585] transition-colors focus:border-[#589fe8] focus:bg-[#182331] focus:outline-2 focus:outline-offset-1 focus:outline-[#509cff2b] min-[1450px]:h-10 min-[1450px]:text-[13px] max-[650px]:h-[42px] max-[650px]:text-[13px]';
   const eye = (visible: boolean) => <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>{!visible && <path d="M3 21 21 3"/>}</svg>;
   const button = 'mt-1 h-[30px] w-full rounded-[5px] px-2.5 py-0 text-xs font-normal transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#75baff] min-[1450px]:h-10 min-[1450px]:text-[13px] max-[650px]:h-[42px] max-[650px]:text-[13px]';
-  return <div id="auth-view" className="auth-view flex min-h-dvh items-stretch bg-[#181818] p-0 font-[Arial,Helvetica,sans-serif] text-[#e8e8e8]"><div className="grid min-h-dvh w-full grid-cols-[30.5%_69.5%] bg-[#181818] p-0 max-[1000px]:grid-cols-[36%_64%] max-[650px]:block"><section className="flex min-w-0 items-center justify-center rounded-none border-0 bg-transparent p-[46px] min-[1450px]:p-14 max-[1000px]:p-6 max-[650px]:min-h-dvh max-[650px]:px-8 max-[650px]:py-[42px]" aria-labelledby="auth-title"><div className="w-full max-w-[218px] max-[650px]:max-w-[300px]">
+  return <div id="auth-view" className={`${lightTheme ? 'auth-light ' : ''}auth-view flex min-h-dvh items-stretch bg-[#181818] p-0 font-[Arial,Helvetica,sans-serif] text-[#e8e8e8]`}><div className="grid min-h-dvh w-full grid-cols-[30.5%_69.5%] bg-[#181818] p-0 max-[1000px]:grid-cols-[36%_64%] max-[650px]:block"><section className="flex min-w-0 items-center justify-center rounded-none border-0 bg-transparent p-[46px] min-[1450px]:p-14 max-[1000px]:p-6 max-[650px]:min-h-dvh max-[650px]:px-8 max-[650px]:py-[42px]" aria-labelledby="auth-title"><button type="button" className="auth-theme-toggle" onClick={toggleTheme} aria-label={lightTheme ? 'Ativar tema escuro' : 'Ativar tema claro'} title={lightTheme ? 'Ativar tema escuro' : 'Ativar tema claro'}>{lightTheme ? '☾' : '☀'}<span>{lightTheme ? 'Escuro' : 'Claro'}</span></button><div className="w-full max-w-[218px] max-[650px]:max-w-[300px]">
     <img className="mb-6 block h-auto w-[180px] object-contain" src="assets/icones_3d/download.png" alt="CotrimScan" width={180} height={43} />
     <h1 id="auth-title" className="mb-2.5 mt-0 text-[15px] leading-[1.4] font-medium tracking-[-.15px] min-[1450px]:text-lg max-[650px]:text-[19px]">{creating ? 'Comece com o CotrimScan' : 'Bem-vindo ao CotrimScan'}</h1>
     <p className="mb-6 min-h-0 text-[11px] leading-[1.7] text-[#898989] min-[1450px]:text-[13px] max-[650px]:text-xs">{loading ? 'Carregando sua conta local…' : creating ? 'Crie sua conta local para começar. Escolha um usuário e uma senha com pelo menos 8 caracteres.' : 'Entre com seu usuário e senha para acessar seus documentos e começar a digitalizar.'}</p>
@@ -28,24 +30,14 @@ export function AuthView({ creating, loading, error, onSubmit }: Props) {
   </div></section><AuthIllustration /></div></div>;
 }
 function AuthIllustration() {
-  return <div className="auth-visual" aria-hidden="true">
-    <div className="visual-grid" />
-    <div className="integration-map">
-      <svg className="connection-lines" viewBox="0 0 600 440" fill="none"><g stroke="currentColor" strokeDasharray="2 6"><path d="M300 220V68M300 220 154 145M300 220 446 145M300 220 154 295M300 220 446 295M300 220V368" /></g></svg>
-      <div className="hub-halo" />
-      <div className="integration-hub"><img className="scanner-3d" src="assets/icones_3d/01_impressora_3d.png" alt="" width={1254} height={1254} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-document"><img src="assets/icones_3d/02_pagina_digitalizada_3d.png" alt="" width={1145} height={1374} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-pages"><img src="assets/icones_3d/03_documentos_3d.png" alt="" width={1216} height={1293} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-cloud"><img src="assets/icones_3d/04_upload_nuvem_3d.png" alt="" width={1536} height={1024} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-folder"><img src="assets/icones_3d/05_arquivo_salvo_3d.png" alt="" width={1368} height={1149} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-shield"><img src="assets/icones_3d/06_seguranca_3d.png" alt="" width={1254} height={1254} decoding="sync" draggable={false} /></div>
-      <div className="integration-node node-seal"><img src="assets/icones_3d/07_tudo_organizado_3d.png" alt="" width={1254} height={1254} decoding="sync" draggable={false} /></div>
-      <span className="flow-dot dot-one" /><span className="flow-dot dot-two" /><span className="flow-dot dot-three" /><span className="flow-dot dot-four" /><span className="flow-dot dot-five" /><span className="flow-dot dot-six" />
-      <div className="event-chip chip-scanned"><i />Página digitalizada</div>
-      <div className="event-chip chip-checked"><i />Documento conferido</div>
-      <div className="event-chip chip-saved"><i />Arquivo salvo</div>
-      <div className="event-chip chip-organized"><i />Tudo organizado</div>
+  const features = ['Digitalização', 'Seus projetos', 'Fotos do celular', 'PDF pesquisável', 'Assinatura digital', 'Arquivos organizados'];
+  return <div className="auth-visual auth-orbit" aria-hidden="true">
+    <div className="orbit-scene">
+      <div className="orbit-glow" />
+      <img className="orbit-scanner" src="assets/icones_3d/01_impressora_3d.png" alt="" draggable={false} />
+      <img className="orbit-document" src="assets/icones_3d/02_pagina_digitalizada_3d.png" alt="" draggable={false} />
+      {features.map((label, index) => <div key={label} className={`orbit-feature orbit-feature-${index}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="3" width="14" height="18" rx="3"/><path d={index % 2 ? 'm8 12 3 3 5-6' : 'M9 8h6M9 12h6M9 16h4'}/></svg><span>{label}</span></div>)}
     </div>
-    <div className="visual-caption"><p>Do papel ao digital, com tudo organizado.</p><span>Digitalize, confira e salve seus documentos com o CotrimScan.</span><div className="visual-pagination"><i /><i /><i /><i /><i /></div></div>
+    <div className="orbit-caption"><p>Seus documentos organizados,<br/><span>mais tempo para você.</span></p><span>Digitalize, confira e salve. Tudo no mesmo lugar.</span><div className="orbit-marker" /></div>
   </div>;
 }

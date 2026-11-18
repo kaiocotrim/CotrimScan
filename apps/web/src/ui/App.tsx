@@ -33,6 +33,7 @@ function AppContent() {
     try { await refreshProjects(); } catch (error) { setStatus(errorText(error)); }
   }
   useEffect(() => {
+    document.documentElement.classList.toggle('app-light', localStorage.getItem('cotrimscan-login-theme') === 'light');
     let active = true;
     window.localAuth.status().then(session => {
       if (!active) return;
