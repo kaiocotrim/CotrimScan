@@ -1,83 +1,143 @@
 # NAPS2 WebScan LocalService
 
-Serviço Windows que detecta automaticamente scanners TWAIN e os expõe via protocolo eSCL (AirPrint), permitindo scan via HTTP/REST.
+Serviço local que detecta os scanners do sistema e os expõe via protocolo eSCL (compatível com AirPrint/eSCL) e por uma API REST. É um fork do NAPS2 WebScan baseado em NAPS2.Sdk 1.2.1 e é consumido pelo CotrimScan (`apps/desktop`, por meio de `packages/scan-core`).
 
-## 🎯 Recursos
+## Recursos
 
-- ✅ Detecta automaticamente **todos os scanners TWAIN** conectados
-- ✅ Expõe cada scanner via protocolo **eSCL** em portas separadas
-- ✅ API REST para gerenciamento de scanners
-- ✅ Suporte a **TWAIN 64-bit** com worker 32-bit
-- ✅ **Múltiplas páginas** (feeder/ADF)
-- ✅ Instalável como **Serviço do Windows**
-- ✅ CORS habilitado para integração web
-- ✅ Detecção automática em tempo real
+- Enumera os scanners com o driver do sistema: **TWAIN** no Windows (com worker de 32 bits) e **SANE** no Linux.
+- Expõe cada scanner em uma porta eSCL própria, a partir de **9880**. A atribuição é persistida em `ports.json`.
+- API REST em `127.0.0.1:5000` para listar, consultar, reenumerar e contar scanners.
+- Digitalização de múltiplas páginas pelo alimentador (ADF) e duplex, quando suportado pelo driver.
+- Hospedagem como **Serviço do Windows** ou unidade **systemd** no Linux (`Type=notify`).
+- CORS liberado para qualquer origem (`AllowAnyOrigin`) nas rotas REST e eSCL.
 
-## 📦 Instalação
+## Requisitos
 
-### Método 1: Instalador Batch (Recomendado)
+- .NET 8 SDK para compilar e .NET 8 runtime para executar a publicação dependente de framework.
+- Windows 10/11 x64 com o driver TWAIN do fabricante do scanner.
+- Linux x64 com `libsane1` e `sane-utils`; `sane-airscan` é opcional, para scanners de rede. A execução em scanner físico no Linux ainda não foi validada.
 
-**Windows Command Prompt:**
-```cmd
-# Como Administrador
-instalador.bat
-```
+## Estrutura
 
-**Siga o menu:**
-1. Publicar executável (primeira vez)
-2. Instalar como serviço
-3. Iniciar serviço
+| Arquivo | Função |
+| --- | --- |
+| `Program.cs` | Hospedagem (Windows Service ou systemd), CORS e registro dos serviços |
+| `Worker.cs` | `BackgroundService` que enumera os scanners ao iniciar e encerra o servidor ao parar |
+| `Services/ScanShareHost.cs` | Escolhe o driver (`Twain` no Windows, `Sane` no Linux), registra os scanners e inicia um servidor eSCL por dispositivo |
+| `Services/PortRegistryService.cs` | Associa cada scanner a uma porta a partir de 9880 e grava o mapa em `ports.json` |
+| `Services/ScannerRegistryService.cs` | Mantém em memória a lista de scanners usada pela API |
+| `Controllers/ScannersController.cs` | Rotas REST em `api/scanners` |
+| `Models/ScannerModels.cs` | DTOs da API |
+| `deploy/linux/` | `naps2-webscan.service` (unidade systemd) e `install.sh` |
+| `compilar.ps1`, `compilar.bat`, `instalador.ps1`, `instalador.bat` | Build e instalação do serviço no Windows |
 
-### Método 2: Instalador PowerShell
+O arquivo de portas fica em `%ProgramData%\NAPS2.WebScan\ports.json` no Windows e em `/var/lib/naps2-webscan/ports.json` no Linux. Para usar outro caminho, configure `ScanShare:PortsFile`.
 
-**PowerShell como Administrador:**
-```powershell
-# Interativo
-.\instalador.ps1
+## Instalação
 
-# Ou comandos diretos
-.\instalador.ps1 publish     # Publicar executável
-.\instalador.ps1 install     # Instalar serviço
-.\instalador.ps1 start       # Iniciar serviço
-.\instalador.ps1 status      # Ver status
-```
+### Windows
 
-### Método 3: Manual
+Gere a pasta de distribuição com `.\compilar.ps1` (ou `compilar.bat`) e, como administrador, use `.\instalador.ps1` (ou `instalador.bat`) para instalar, iniciar, parar, consultar o status e ver os logs do serviço **NAPS2.WebScan Service**. Detalhes na seção [Scripts](#scripts).
+
+Instalação manual, a partir de `packages/scan-share`:
 
 ```powershell
-# 1. Publicar
-dotnet publish -c Release -r win-x64 --self-contained false -o .\publish
-
-# 2. Instalar
-sc create "NAPS2.WebScan Service" binPath= "C:\caminho\completo\publish\NAPS2.WebScan.LocalService.exe" start= auto
-
-# 3. Iniciar
-sc start "NAPS2.WebScan Service"
+dotnet publish -c Release -r win-x64 --self-contained false -o .\publish\win-x64
+sc.exe create "NAPS2.WebScan Service" binPath= "C:\caminho\completo\publish\win-x64\NAPS2.WebScan.LocalService.exe" start= auto
+sc.exe start "NAPS2.WebScan Service"
 ```
 
-Veja [INSTALACAO_SERVICO.md](./INSTALACAO_SERVICO.md) para detalhes completos.
+### Linux
 
-## 🚀 Uso Rápido
+Forma recomendada: gere o pacote com `./compilar.sh` e instale com `instalador.sh` (seção [Scripts](#scripts)).
 
-### Desenvolvimento (Modo Console)
+Instalação manual, a partir de `packages/scan-share`:
+
+```sh
+sudo apt install -y libsane1 sane-utils sane-airscan
+dotnet publish -c Release -r linux-x64 --self-contained false -o publish/linux-x64
+sudo ./deploy/linux/install.sh publish/linux-x64
+sudo systemctl start naps2-webscan
+```
+
+O `install.sh` cria o usuário de serviço `naps2scan`, copia os arquivos para `/opt/naps2-webscan` e instala a unidade `naps2-webscan.service`, que inclui o grupo `scanner` para acesso a scanners USB. Comandos úteis:
+
+```sh
+sudo systemctl status naps2-webscan
+sudo journalctl -u naps2-webscan -f
+```
+
+### Desenvolvimento
+
+Na raiz do repositório, `npm run dev` inicia este serviço junto com a interface web. Também é possível executar diretamente:
+
+```sh
+dotnet run --project NAPS2.WebScan.LocalService.csproj
+```
+
+Ao executar manualmente no Linux com um usuário comum, aponte o arquivo de portas para um caminho gravável:
+
+```sh
+ScanShare__PortsFile=/tmp/naps2-ports.json dotnet run --project NAPS2.WebScan.LocalService.csproj
+```
+
+Para conferir os scanners, use `curl.exe http://127.0.0.1:5000/api/scanners` no Windows ou `curl http://127.0.0.1:5000/api/scanners` no Linux. No Linux, `scanimage -L` lista os dispositivos SANE diretamente.
+
+## Scripts
+
+Todos os scripts ficam em `packages/scan-share`. Os de Windows geram `dist\`; os de Linux geram `dist-linux/`.
+
+| Script | Plataforma | Função |
+| --- | --- | --- |
+| `compilar.bat` | Windows | Publica win-x64 dependente de framework em `dist\` |
+| `compilar.ps1` | Windows | Mesma publicação, com opções `-SelfContained`, `-SingleFile` e `-OutputDir` |
+| `compilar.sh` | Linux | Publica linux-x64 em `dist-linux/`; opção `--self-contained` |
+| `instalador.bat` | Windows | Menu: instalar, desinstalar, iniciar, parar, listar scanners e abrir a API |
+| `instalador.ps1` | Windows | Menu ou comando: `install`, `uninstall`, `start`, `stop`, `status`, `logs` |
+| `instalador.sh` | Linux | Menu ou comando: `install`, `uninstall`, `start`, `stop`, `status`, `logs`, `scanners` |
+| `deploy/linux/install.sh` | Linux | Chamado pelo `instalador.sh`; cria o usuário `naps2scan`, copia os arquivos e instala a unit systemd |
+
+### Windows
+
+Execute os scripts de compilação e instalação em um terminal como administrador, dentro de `packages/scan-share`:
+
 ```powershell
-dotnet run
+.\compilar.bat
+.\compilar.ps1 -SelfContained -SingleFile -OutputDir dist
+
+cd dist
+.\instalador.ps1 install
+.\instalador.ps1 start
+.\instalador.ps1 status
+.\instalador.ps1 logs
 ```
 
-### Como Serviço
-```powershell
-# Instalar e iniciar
-instalador.bat
+Sem argumentos, `instalador.bat` e `instalador.ps1` abrem o menu interativo. Os dois instalam o mesmo serviço, **NAPS2.WebScan Service**.
 
-# Verificar scanners
-curl http://localhost:5000/api/scanners
+### Linux
+
+Os scripts `.sh` precisam de permissão de execução e de finais de linha LF. Após clonar o repositório em Windows, o Git pode não manter o `chmod +x`; por isso rode o `chmod` no Linux:
+
+```sh
+chmod +x compilar.sh instalador.sh deploy/linux/install.sh
+
+./compilar.sh                    # dependente do .NET 8 runtime
+./compilar.sh --self-contained   # inclui o runtime
+
+cd dist-linux
+sudo ./instalador.sh install
+sudo ./instalador.sh start
+./instalador.sh status           # não exige root
+./instalador.sh scanners         # não exige root
 ```
 
-## 📡 API REST
+Rode `./instalador.sh` sem argumentos para abrir o menu. `uninstall` remove a unit e `/opt/naps2-webscan`, mas mantém `/var/lib/naps2-webscan/ports.json`. Para ajuda de qualquer script, use `-h`.
 
-**Base URL:** `http://localhost:5000`
+## API REST
 
-### Listar Scanners
+**Base URL:** `http://127.0.0.1:5000` (configurável por `Urls`). A API não tem autenticação e, na configuração padrão, só aceita conexões locais.
+
+### Listar scanners
 ```http
 GET /api/scanners
 ```
@@ -86,93 +146,72 @@ GET /api/scanners
 ```json
 [
   {
-    "id": "Canon DR-C240 TWAIN",
-    "name": "Canon DR-C240 TWAIN",
+    "id": "Canon DR-C240",
+    "name": "Canon DR-C240",
     "port": 9880,
-    "capabilitiesUrl": "http://localhost:9880/eSCL/ScannerCapabilities",
     "registeredAt": "2026-02-27T10:00:00Z"
   }
 ]
 ```
 
-### Scanner Atual
+### Consultar um scanner
 ```http
-GET /api/scanners/current
+GET /api/scanners/{id}
 ```
 
-### Selecionar Scanner
+Retorna o scanner correspondente ao `id` ou 404, se não existir.
+
+### Quantidade de scanners
 ```http
-POST /api/scanners/{id}/select
+GET /api/scanners/count
 ```
 
-Veja [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) para documentação completa.
+### Reenumerar scanners
+```http
+POST /api/scanners/refresh
+```
 
-## 🖨️ Protocolo eSCL
+Enumera os dispositivos novamente, reinicia os servidores eSCL e interrompe digitalizações em andamento. Use depois de conectar ou remover um scanner.
 
-Cada scanner detectado recebe sua própria porta eSCL:
+Veja [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) para detalhes das rotas e do protocolo eSCL.
+
+## Protocolo eSCL
+
+Cada scanner registrado recebe sua própria porta eSCL, atribuída a partir de **9880** e persistida por id do dispositivo. Por exemplo:
 
 ```
-Scanner 1 → http://localhost:9880/eSCL/
-Scanner 2 → http://localhost:9881/eSCL/
-Scanner 3 → http://localhost:9882/eSCL/
+Scanner A → http://127.0.0.1:9880/eSCL/
+Scanner B → http://127.0.0.1:9881/eSCL/
 ```
 
 ### Endpoints eSCL
 
 ```http
-GET  /eSCL/ScannerCapabilities      # Capac
-
-idades do scanner
-GET  /eSCL/ScannerStatus             # Status atual
-POST /eSCL/ScanJobs                  # Criar job de scan
-GET  /eSCL/ScanJobs/{id}             # Status do job
-GET  /eSCL/ScanJobs/{id}/NextDocument # Obter imagem
+GET  /eSCL/ScannerCapabilities        # Capacidades do scanner
+GET  /eSCL/ScannerStatus              # Status atual
+POST /eSCL/ScanJobs                   # Criar job de digitalização
+GET  /eSCL/ScanJobs/{id}              # Status do job
+GET  /eSCL/ScanJobs/{id}/NextDocument # Próxima página digitalizada
 ```
 
-## 🎨 Arquitetura
+Os servidores eSCL aceitam qualquer origem (`EsclSecurityPolicy.ServerAllowAnyOrigin`).
+
+## Arquitetura
 
 ```
-┌─────────────────────────────────────┐
-│   NAPS2.WebScan.LocalService        │
-│   (Windows Service - Porta 5000)    │
-├─────────────────────────────────────┤
-│                                     │
-│  ┌────────────────────────────────┐ │
-│  │   API REST Controller          │ │
-│  │   /api/scanners                │ │
-│  └────────────────────────────────┘ │
-│            ▼                         │
-│  ┌────────────────────────────────┐ │
-│  │   Scanner Registry Service     │ │
-│  │   (Gerencia lista de scanners) │ │
-│  └────────────────────────────────┘ │
-│            ▼                         │
-│  ┌────────────────────────────────┐ │
-│  │   NAPS2 Scan Controller        │ │
-│  │   (Detecta scanners TWAIN)     │ │
-│  └────────────────────────────────┘ │
-│            ▼                         │
-│  ┌────────────────────────────────┐ │
-│  │   eSCL Server (Multi-port)     │ │
-│  │   Scanner 1 → :9880            │ │
-│  │   Scanner 2 → :9881            │ │
-│  │   Scanner 3 → :9882            │ │
-│  └────────────────────────────────┘ │
-│            ▼                         │
-│  ┌────────────────────────────────┐ │
-│  │   TWAIN Worker (32-bit)        │ │
-│  │   (Comunicação com drivers)    │ │
-│  └────────────────────────────────┘ │
-│            ▼                         │
-└─────────────────────────────────────┘
-             ▼
-    ┌────────────────┐
-    │ Drivers TWAIN  │
-    │ (scanners)     │
-    └────────────────┘
+Worker (BackgroundService)
+  └── ScanShareHost
+        ├── Controlador NAPS2 (driver Twain no Windows, Sane no Linux) → enumera os scanners
+        ├── PortRegistryService → porta por dispositivo (9880+), persistida em ports.json
+        ├── ScannerRegistryService → lista exposta pela API REST
+        └── Servidor eSCL (uma porta por scanner)
+
+ScannersController (REST, 127.0.0.1:5000) → ScannerRegistryService
 ```
 
-## 🔧 Configuração
+A escolha do driver é feita em tempo de execução: `OperatingSystem.IsWindows() ? Driver.Twain : Driver.Sane`. O mesmo binário publicado para `win-x64` e `linux-x64` contém os dois caminhos.
+
+## Configuração
 
 ### appsettings.json
 
@@ -184,153 +223,86 @@ GET  /eSCL/ScanJobs/{id}/NextDocument # Obter imagem
       "Microsoft.Hosting.Lifetime": "Information"
     }
   },
-  "Urls": "http://localhost:5000"
+  "Urls": "http://127.0.0.1:5000"
 }
 ```
 
-### Mudar Porta da API
+| Chave | Padrão | Descrição |
+| --- | --- | --- |
+| `Urls` | `http://127.0.0.1:5000` | Endereço da API REST |
+| `ScanShare:PortsFile` | Windows: `%ProgramData%\NAPS2.WebScan\ports.json`; Linux: `/var/lib/naps2-webscan/ports.json` | Arquivo com a associação dispositivo → porta |
 
-```json
-{
-  "Urls": "http://localhost:5001"
-}
-```
+Qualquer chave pode ser sobrescrita por variável de ambiente, usando `__` como separador (por exemplo, `ScanShare__PortsFile`).
 
-### Porta Base dos Scanners eSCL
+A porta inicial dos scanners eSCL é 9880 (constante `BasePort` em `Services/PortRegistryService.cs`). Alterá-la exige recompilar o serviço.
 
-Editável em `Worker.cs`:
-```csharp
-int portBase = 9880; // Primeira porta eSCL
-```
+## Solução de problemas
 
-## 🐛 Troubleshooting
+### Nenhum scanner aparece
 
-### Scanners não aparecem
+- **Windows:** confirme que o software do fabricante reconhece o scanner e que o driver TWAIN está instalado. O serviço usa um worker TWAIN de 32 bits; verifique os logs de erro se a enumeração falhar.
+- **Linux:** execute `scanimage -L` como o usuário do serviço (`sudo -u naps2scan scanimage -L`). Confira também se o backend está habilitado em `/etc/sane.d/dll.conf`.
+- Depois de conectar ou trocar um scanner, chame `POST /api/scanners/refresh` ou reinicie o serviço.
 
-1. **Verificar drivers TWAIN:**
-   - Abra o software nativo do scanner
-   - Teste se funciona normalmente
-
-2. **Verificar arquitetura:**
-   ```powershell
-   # No console do serviço deve aparecer:
-   # "Arquitetura do processo: 64-bit"
-   # "Worker TWAIN 32-bit configurado"
-   ```
-
-3. **Reiniciar serviço:**
-   ```powershell
-   sc stop "NAPS2.WebScan Service"
-   sc start "NAPS2.WebScan Service"
-   ```
-
-### Porta em uso
-
-Se porta 5000 já estiver em uso:
-
-```json
-// appsettings.json
-{
-  "Urls": "http://localhost:5001"
-}
-```
-
-### Ver Logs
+Para reiniciar:
 
 ```powershell
-# Event Viewer
-Get-EventLog -LogName Application -Source "NAPS2.WebScan Service" -Newest 20
-
-# Ou modo console
-dotnet run
+sc.exe stop "NAPS2.WebScan Service"
+sc.exe start "NAPS2.WebScan Service"
 ```
 
-## 📚 Documentação
+```sh
+sudo systemctl restart naps2-webscan
+```
 
-- [INSTALACAO_SERVICO.md](./INSTALACAO_SERVICO.md) - Guia completo de instalação
-- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Documentação da API REST e eSCL
-- [instalador.bat](./instalador.bat) - Script de instalação Windows
-- [instalador.ps1](./instalador.ps1) - Script PowerShell
+### Porta 5000 em uso
 
-## 🔐 Segurança
+Altere `Urls` no `appsettings.json`. O CotrimScan usa `FORK_URL` (`http://127.0.0.1:5000`) em `packages/scan-core/src/escl-client.cjs`; atualize também esse valor.
 
-- CORS habilitado (`AllowAnyOrigin`) para desenvolvimento
-- Para produção, configure CORS específico no `Program.cs`
-- Serviço roda como LocalSystem por padrão
+### Erro ao gravar ports.json
 
-## 📊 Requisitos de Sistema
+Em execução manual no Linux, use `ScanShare__PortsFile` apontando para um caminho gravável. Quando o arquivo está corrompido, o serviço ignora o conteúdo e recria o mapa.
 
-- **.NET 8.0 Runtime**
-- **Windows 10/11** ou **Windows Server 2016+**
-- **Drivers TWAIN** dos scanners instalados
-- **4GB RAM** mínimo (recomendado 8GB para múltiplos scanners)
-- **Permissões de Administrador** para instalação
+### Logs
 
-## 🤝 Integração
+```powershell
+# Windows: Event Viewer > Logs de Aplicativo, origem "NAPS2.WebScan Service"
+Get-EventLog -LogName Application -Source "NAPS2.WebScan Service" -Newest 20
+```
 
-### Com React/TypeScript
+```sh
+# Linux
+sudo journalctl -u naps2-webscan -f
+```
+
+## Segurança
+
+- A API REST escuta em `127.0.0.1` e não tem autenticação.
+- CORS com `AllowAnyOrigin` nas rotas REST e nos servidores eSCL. Isso é adequado para uso local; restrinja a política em `Program.cs` se o serviço for exposto à rede.
+- Windows: o serviço roda, por padrão, com a conta LocalSystem. Linux: o serviço roda com o usuário dedicado `naps2scan`.
+
+## Requisitos de sistema
+
+- .NET 8 runtime.
+- Windows 10/11 x64 com drivers TWAIN, ou Linux x64 com systemd e SANE.
+- Permissão de administrador para instalar o serviço no Windows, e `sudo` para instalar no Linux.
+
+## Integração
+
+O CotrimScan consome a API em `packages/scan-core/src/escl-client.cjs`: `listDevices` lê `GET /api/scanners` e `refreshDevices` chama `POST /api/scanners/refresh`. A digitalização usa o protocolo eSCL na porta de cada scanner.
 
 ```typescript
-// Verificar scanners disponíveis
-const response = await fetch('http://localhost:5000/api/scanners');
-const scanners = await response.json();
-
-// Selecionar scanner
-await fetch(`http://localhost:5000/api/scanners/${scannerId}/select`, {
-  method: 'POST'
-});
-
-// Usar SDK eSCL
-import Scanner from 'escl-sdk-ts';
-const scanner = new Scanner({ ip: 'localhost', port: 9880 });
-const jobUrl = await scanner.ScanJobs({ Resolution: 300 });
+const scanners = await (await fetch('http://127.0.0.1:5000/api/scanners')).json();
+await fetch('http://127.0.0.1:5000/api/scanners/refresh', { method: 'POST' });
 ```
 
-### Com C#
+## Documentação
 
-```csharp
-using System.Net.Http;
-using System.Net.Http.Json;
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md): rotas REST e eSCL, com exemplos de uso.
+- [INSTALACAO_SERVICO.md](./INSTALACAO_SERVICO.md): instalação, controle e verificação do serviço no Windows e no Linux.
+- [BUILD.md](./BUILD.md): compilação, publicação e distribuição.
+- [LEIA-ME.txt](./LEIA-ME.txt) e [README_INSTALACAO.txt](./README_INSTALACAO.txt): resumo e guia rápido que acompanham o pacote Windows.
 
-var client = new HttpClient { BaseAddress = new Uri("http://localhost:5000") };
+## Licença
 
-// Listar scanners
-var scanners = await client.GetFromJsonAsync<List<ScannerDto>>("/api/scanners");
-
-// Selecionar scanner
-await client.PostAsync($"/api/scanners/{scannerId}/select", null);
-```
-
-## 🆘 Suporte
-
-1. **Verifique os logs** no Event Viewer
-2. **Execute em modo console** (`dotnet run`) para debug
-3. **Teste o scanner** no software nativo primeiro
-4. **Verifique as portas** com `netstat -ano | findstr 5000`
-
-## 📝 Licença
-
-Este projeto usa NAPS2 SDK que é open source (LGPL).
-
-## ✨ Features
-
-- [x] Detecção automática de scanners TWAIN
-- [x] Multi-scanner simultâneo
-- [x] API REST completa
-- [x] Protocolo eSCL
-- [x] Instalável como serviço Windows
-- [x] Worker TWAIN 32-bit
-- [x] CORS habilitado
-- [x] Logs Event Viewer
-- [x] Múltiplas páginas (feeder)
-- [x] Otimizações de performance
-
-## 🚀 Próximos Passos
-
-1. Execute `instalador.bat` como Administrador
-2. Escolha opção 6 para publicar
-3. Escolha opção 1 para instalar
-4. Escolha opção 3 para iniciar
-5. Acesse http://localhost:5000/api/scanners
-
-**Pronto! Seus scanners TWAIN agora são acessíveis via HTTP/eSCL!** 🎉
+Este projeto usa o NAPS2 SDK, distribuído sob a licença LGPL.

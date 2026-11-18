@@ -21,10 +21,10 @@ function Write-Header {
 function Test-DotNetSdk {
     try {
         $version = dotnet --version
-        Write-Host "✓ .NET SDK encontrado: $version" -ForegroundColor Green
+        Write-Host "[OK] .NET SDK encontrado: $version" -ForegroundColor Green
         return $true
     } catch {
-        Write-Host "✗ .NET SDK nao encontrado!" -ForegroundColor Red
+        Write-Host "[ERRO] .NET SDK nao encontrado!" -ForegroundColor Red
         Write-Host ""
         Write-Host "Instale o .NET 8.0 SDK:" -ForegroundColor Yellow
         Write-Host "https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Cyan
@@ -113,7 +113,7 @@ try {
         Write-Host ""
         
         Write-Host "Para distribuir:" -ForegroundColor Yellow
-        Write-Host "  Compress-Archive -Path '$OutputPath\*' -DestinationPath 'NAPS2-WebScan-v2.0.0.zip'" -ForegroundColor White
+        Write-Host "  Compress-Archive -Path '$OutputPath\*' -DestinationPath 'NAPS2-WebScan-win-x64.zip'" -ForegroundColor White
         Write-Host ""
         
         $open = Read-Host "Deseja abrir a pasta de output? (S/N)"

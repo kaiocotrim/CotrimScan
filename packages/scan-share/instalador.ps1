@@ -86,8 +86,8 @@ function Install-LocalService {
         Write-Host "Configuracao:" -ForegroundColor Cyan
         Write-Host "- Nome: $ServiceName" -ForegroundColor White
         Write-Host "- Inicio: Automatico" -ForegroundColor White
-        Write-Host "- API REST: http://localhost:5000/api/scanners" -ForegroundColor White
-        Write-Host "- ESCL Base: http://localhost:9880/eSCL/" -ForegroundColor White
+        Write-Host "- API REST: http://127.0.0.1:5000/api/scanners" -ForegroundColor White
+        Write-Host "- Portas eSCL: a partir de 9880 (uma por scanner)" -ForegroundColor White
         Write-Host ""
         
         $start = Read-Host "Deseja iniciar o servico agora? (S/N)"
@@ -136,7 +136,7 @@ function Start-LocalService {
         Write-Host "Verificando scanners..." -ForegroundColor Cyan
         
         try {
-            $response = Invoke-RestMethod -Uri "http://localhost:5000/api/scanners" -Method Get -TimeoutSec 5
+            $response = Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/scanners" -Method Get -TimeoutSec 5
             Write-Host "Scanners detectados: $($response.Count)" -ForegroundColor Green
             $response | ForEach-Object {
                 Write-Host "  - $($_.name) (Porta: $($_.port))" -ForegroundColor White

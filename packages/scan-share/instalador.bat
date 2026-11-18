@@ -78,7 +78,7 @@ if %errorLevel% equ 0 (
     echo - Nome: NAPS2.WebScan Service
     echo - Inicio: Automatico
     echo - API REST: http://localhost:5000/api/scanners
-    echo - ESCL Scanner Base: http://localhost:9880/eSCL/
+    echo - Portas eSCL: a partir de 9880 (uma por scanner)
     echo.
     echo IMPORTANTE: O servico detecta automaticamente scanners TWAIN
     echo conectados ao sistema e expoe cada um em uma porta separada.
@@ -134,7 +134,7 @@ if %errorLevel% equ 0 (
     curl -s http://localhost:5000/api/scanners 2>nul
     echo.
     echo API REST: http://localhost:5000/api/scanners
-    echo ESCL Base: http://localhost:9880/eSCL/
+    echo Portas eSCL: a partir de 9880 (uma por scanner)
 ) else (
     echo ERRO ao iniciar o servico!
     echo Verifique os logs do Windows Event Viewer.
@@ -153,40 +153,6 @@ if %errorLevel% equ 0 (
 )
 pause
 goto sair
-
-:console
-echo.
-echo Iniciando em modo console (API REST + ESCL Servers)...
-echo Pressione Ctrl+C para parar o servidor
-echo.
-echo API REST: http://localhost:5000/api/scanners
-echo ESCL Base: http://localhost:9880/eSCL/
-echo.
-echo Aguarde a deteccao de scanners TWAIN...
-echo.
-dotnet run --project "%~dp0NAPS2.WebScan.LocalService.csproj"
-pause
-goto sair
-
-:publicar
-echo.
-echo Publicando executavel...
-echo Este processo pode demorar alguns minutos...
-echo.
-dotnet publish "%~dp0NAPS2.WebScan.LocalService.csproj" -c Release -r win-x64 --self-contained false -o "%~dp0publish"
-if %errorLevel% equ 0 (
-    echo.
-    echo Executavel publicado com sucesso em:
-    echo %~dp0publish\NAPS2.WebScan.LocalService.exe
-    echo.
-    echo Agora voce pode usar a opcao 1 para instalar o servico.
-) else (
-    echo.
-    echo ERRO ao publicar o executavel!
-    echo Verifique se o .NET SDK esta instalado corretamente.
-)
-pause
-goto inicio
 
 :scanners
 echo.
@@ -211,9 +177,10 @@ echo.
 echo API aberta no navegador!
 echo.
 echo Endpoints disponiveis:
-echo - GET  /api/scanners         - Lista scanners
-echo - GET  /api/scanners/current - Scanner atual
-echo - POST /api/scanners/{id}/select - Seleciona scanner
+echo - GET  /api/scanners           - Lista scanners
+echo - GET  /api/scanners/{id}      - Detalhes de um scanner
+echo - POST /api/scanners/refresh   - Atualiza a lista de scanners
+echo - GET  /api/scanners/count     - Total de scanners
 goto sair
 
 :sair

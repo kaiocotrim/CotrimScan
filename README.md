@@ -1,22 +1,84 @@
-# CotrimScan — versão inicial
+# CotrimScan
 
-App Electron para Windows e Linux que acessa o serviço NAPS2 WebScan em `127.0.0.1`. Inclui teste de conexão, resolução, vidro/alimentador, prévias e salvamento de páginas em JPEG ou PDF assinado por certificado digital. A escolha do scanner é feita pela porta do serviço; não há descoberta automática nem seleção de dispositivos físicos nesta versão.
+Aplicativo desktop (Electron) para Windows e Linux que digitaliza documentos a partir de scanners locais e de fotos enviadas por celular. A interface é feita em React e se comunica com o serviço de digitalização `packages/scan-share` (fork do NAPS2 WebScan em .NET 8), que expõe os scanners em `127.0.0.1` pela API REST e pelo protocolo eSCL. Inclui projetos locais, cores, pastas de saída, certificado digital A1/A3, OCR, captura por modelos e nomeação por QR Code ou código de barras.
 
-## Executar
-Instale Node.js 22 ou superior e, nesta pasta, execute:
+## Requisitos
+
+- Node.js 22 ou superior e npm (workspaces).
+- .NET 8 SDK, para compilar e publicar o serviço `packages/scan-share`.
+- Windows: driver TWAIN do fabricante do scanner.
+- Linux: SANE, com `libsane1`, `sane-utils` e, opcionalmente, `sane-airscan` para scanners de rede.
+
+## Instalação e execução
 
 ```sh
 npm install
 npm start
 ```
 
-O serviço local deve estar ativo antes de digitalizar. Projeto original: https://github.com/cyanfish/naps2-webscan
-
-**Windows:** compile e configure `NAPS2.WebScan.LocalService` do projeto original. Ele usa o primeiro dispositivo WIA e a porta 9880. Este app não instala nem inicia esse serviço automaticamente.
-
-**Linux:** a interface Electron é preparada para Linux, mas o serviço original usa WIA, exclusivo do Windows. É necessário adaptar o serviço com NAPS2.Sdk para um driver compatível, como SANE, e expor a API eSCL na máquina local. Esse serviço Linux não está incluído nem validado nesta entrega. Não basta executar o serviço WIA no Linux.
+O serviço local deve estar ativo antes de digitalizar. Em desenvolvimento, `npm run dev` inicia a interface web e o serviço NAPS2 WebScan (`dotnet run`). Projeto original do fork: https://github.com/cyanfish/naps2-webscan
 
 O nome exibido no aplicativo e nos instaladores é **CotrimScan**. O identificador interno e a pasta de dados `naps2-desktop` são mantidos para preservar contas e projetos existentes.
+
+## Estrutura do repositório
+
+```
+apps/web/             Interface React 19, Vite 7, Tailwind 4 e MUI (renderizada no Electron)
+apps/desktop/         Processo principal do Electron, serviços locais, testes e scripts de empacotamento
+packages/scan-core/   Cliente eSCL, descoberta/seleção de scanners e leitura de páginas
+packages/shared/      Tipos compartilhados entre a interface e os pacotes
+packages/scan-share/  Serviço NAPS2 WebScan (.NET 8) com TWAIN no Windows e SANE no Linux
+scripts/              Utilitários de revisão de qualidade da digitalização
+```
+
+Principais módulos do processo principal em [apps/desktop/src](apps/desktop/src): [main.cjs](apps/desktop/src/main.cjs) (IPC e janela), [auth.cjs](apps/desktop/src/auth.cjs) (conta local), [projects.cjs](apps/desktop/src/projects.cjs) (projetos e páginas), [scanner-config.cjs](apps/desktop/src/scanner-config.cjs) (scanners selecionados e manuais), [scan-agent.cjs](apps/desktop/src/scan-agent.cjs) (fila de digitalização), [mobile-server.cjs](apps/desktop/src/mobile-server.cjs) (pareamento com celular), [signatures.cjs](apps/desktop/src/signatures.cjs) e [certificate-credentials.cjs](apps/desktop/src/certificate-credentials.cjs) (certificados), [pdf.cjs](apps/desktop/src/pdf.cjs) e [outputs.cjs](apps/desktop/src/outputs.cjs) (exportação).
+
+Comandos na raiz:
+
+| Comando | Função |
+| --- | --- |
+| `npm run dev` | Interface web e serviço NAPS2 WebScan em modo desenvolvimento |
+| `npm run build` | Compila todos os pacotes |
+| `npm start` | Compila e abre o aplicativo Electron |
+| `npm test` | Executa os testes de todos os pacotes |
+| `npm run dist:win` | Gera o instalador Windows em `apps/desktop/dist/` |
+| `npm run dist:linux` | Gera os pacotes AppImage e deb em `apps/desktop/dist/` |
+
+## Serviço de digitalização (packages/scan-share)
+
+O serviço enumera os scanners do sistema e cria um servidor eSCL por dispositivo, em portas a partir de **9880**. A atribuição de porta é persistida em `ports.json`, para que cada scanner mantenha a mesma porta entre reinicializações. A API REST escuta em `http://127.0.0.1:5000`:
+
+- `GET /api/scanners`: scanners disponíveis, com id, nome e porta.
+- `GET /api/scanners/{id}`: detalhes de um scanner.
+- `POST /api/scanners/refresh`: enumera os dispositivos novamente (interrompe digitalizações em andamento).
+- `GET /api/scanners/count`: quantidade de scanners.
+
+O driver é escolhido pelo sistema: **TWAIN** no Windows (worker de 32 bits) e **SANE** no Linux, ambos via NAPS2.Sdk 1.2.1. A lista de scanners também pode ser complementada por equipamentos adicionados manualmente por endereço e porta eSCL.
+
+Para o Linux, gere o pacote e instale como serviço systemd com os scripts de `packages/scan-share`:
+
+```sh
+cd packages/scan-share
+chmod +x compilar.sh instalador.sh deploy/linux/install.sh
+./compilar.sh
+cd dist-linux
+sudo ./instalador.sh install
+sudo ./instalador.sh start
+```
+
+Instalação manual, sem os scripts:
+
+```sh
+cd packages/scan-share
+dotnet publish -c Release -r linux-x64 --self-contained false -o publish/linux-x64
+sudo ./deploy/linux/install.sh publish/linux-x64
+```
+
+Para verificar os scanners no Linux, use `scanimage -L`; para verificar o serviço, use `curl.exe http://127.0.0.1:5000/api/scanners` no Windows ou `curl http://127.0.0.1:5000/api/scanners` no Linux.
+
+No Windows, compile com `.\compilar.ps1` (gera a pasta `dist`) e, em um PowerShell como administrador, execute `.\instalador.ps1 install` e `.\instalador.ps1 start`. O serviço se chama **NAPS2.WebScan Service**.
+
+Os detalhes de rotas, eSCL e build estão em [packages/scan-share/README.md](packages/scan-share/README.md).
 
 ## Login local
 
@@ -89,9 +151,48 @@ npm run dist:linux
 
 Gere preferencialmente o instalador Windows no Windows e os pacotes Linux no Linux. Os arquivos serão criados em `apps/desktop/dist/`. A entrega é código-fonte, sem instaladores compilados ou assinatura de código dos instaladores.
 
+O serviço de digitalização é publicado separadamente, conforme a seção [Serviço de digitalização](#serviço-de-digitalização-packagesscan-share). Os artefatos de `publish/` são gerados localmente e não devem ser versionados.
+
+## Scripts do serviço de digitalização
+
+Os scripts ficam em `packages/scan-share`. Os de Windows geram `dist\` e os de Linux geram `dist-linux/`. Ambos são ignorados pelo Git.
+
+| Script | Plataforma | Função |
+| --- | --- | --- |
+| `compilar.bat` | Windows | Publica o serviço (win-x64) em `dist\` |
+| `compilar.ps1` | Windows | Mesma publicação, com `-SelfContained`, `-SingleFile` e `-OutputDir` |
+| `compilar.sh` | Linux | Publica o serviço (linux-x64) em `dist-linux/`; use `--self-contained` para incluir o runtime |
+| `instalador.bat` | Windows | Menu para instalar, desinstalar, iniciar, parar e listar scanners (execute como administrador) |
+| `instalador.ps1` | Windows | Menu ou comando (`install`, `uninstall`, `start`, `stop`, `status`, `logs`); execute como administrador |
+| `instalador.sh` | Linux | Menu ou comando (`install`, `uninstall`, `start`, `stop`, `status`, `logs`, `scanners`); use `sudo` |
+
+Fluxo no Windows, em um PowerShell como administrador:
+
+```powershell
+cd packages\scan-share
+.\compilar.ps1
+cd dist
+.\instalador.ps1 install
+.\instalador.ps1 start
+```
+
+Fluxo no Linux:
+
+```sh
+cd packages/scan-share
+chmod +x compilar.sh instalador.sh deploy/linux/install.sh
+./compilar.sh
+cd dist-linux
+sudo ./instalador.sh install
+sudo ./instalador.sh start
+./instalador.sh scanners
+```
+
+Após clonar o repositório em Windows, o Git pode não manter a permissão de execução dos `.sh`; rode o `chmod +x` no Linux. Os guias completos estão em [packages/scan-share/INSTALACAO_SERVICO.md](packages/scan-share/INSTALACAO_SERVICO.md) e [packages/scan-share/BUILD.md](packages/scan-share/BUILD.md).
+
 ## Validação e limites
 
-`npm test` verifica o cliente eSCL com respostas HTTP simuladas, incluindo páginas do alimentador e falhas. Os testes incluem criação e persistência da conta, login, encerramento de sessão, limitação de tentativas e bloqueio das operações internas sem autenticação. A tela de projetos e o editor foram conferidos visualmente no Chrome, com APIs simuladas, incluindo clique simples, duplo clique, criação, edição e navegação. A persistência e o bloqueio das operações sem login foram testados com arquivos temporários. O A1 foi testado com certificado RSA fictício, incluindo senha incorreta, verificação criptográfica da assinatura, rejeição de conteúdo alterado, descarte da sessão e ausência de senha no projeto. O PDF foi renderizado e conferido, e a assinatura foi reconhecida como válida pelo `pdfsig`. O caminho A3 foi testado por adaptador simulado; não houve teste real no Windows ou em token físico. O pareamento foi testado com HTTP real em loopback, incluindo recusa, expiração, origem/host, limite de upload, envio repetido e encerramento. O navegador móvel foi simulado no Chrome com envio JPEG/PNG e persistência real; o QR e a aprovação no desktop foram conferidos visualmente em duas resoluções. A normalização foi executada no runtime do Electron/Linux, usando o auxiliar isolado. Não houve teste com celular físico, Wi-Fi/firewall real, captura pela câmera ou empacotamento Windows/Linux nesta validação. Nenhum scanner físico foi usado na validação. A compatibilidade com modelos, resoluções e alimentadores depende do serviço e dos drivers. PDF com várias páginas por trabalho, cancelamento durante a digitalização não estão implementados. Limite de 200 páginas por trabalho; as páginas ficam salvas no projeto e são carregadas na memória quando ele é aberto.
+`npm test` executa a suíte de todos os pacotes (`turbo run test`). Os testes do cliente eSCL usam respostas HTTP simuladas, incluindo páginas do alimentador e falhas. O teste de integração com o serviço real, em `packages/scan-core/test/fork-integration.test.cjs`, só executa com `COTRIM_FORK_E2E=1`. Os testes incluem criação e persistência da conta, login, encerramento de sessão, limitação de tentativas e bloqueio das operações internas sem autenticação. A tela de projetos e o editor foram conferidos visualmente no Chrome, com APIs simuladas, incluindo clique simples, duplo clique, criação, edição e navegação. A persistência e o bloqueio das operações sem login foram testados com arquivos temporários. O A1 foi testado com certificado RSA fictício, incluindo senha incorreta, verificação criptográfica da assinatura, rejeição de conteúdo alterado, descarte da sessão e ausência de senha no projeto. O PDF foi renderizado e conferido, e a assinatura foi reconhecida como válida pelo `pdfsig`. O caminho A3 foi testado por adaptador simulado; não houve teste real no Windows ou em token físico. O pareamento foi testado com HTTP real em loopback, incluindo recusa, expiração, origem/host, limite de upload, envio repetido e encerramento. O navegador móvel foi simulado no Chrome com envio JPEG/PNG e persistência real; o QR e a aprovação no desktop foram conferidos visualmente em duas resoluções. A normalização foi executada no runtime do Electron/Linux, usando o auxiliar isolado. Não houve teste com celular físico, Wi-Fi/firewall real, captura pela câmera ou empacotamento Windows/Linux nesta validação. Nenhum scanner físico foi usado na validação. A compatibilidade com modelos, resoluções e alimentadores depende do serviço e dos drivers. PDF com várias páginas por trabalho, cancelamento durante a digitalização não estão implementados. Limite de 200 páginas por trabalho; as páginas ficam salvas no projeto e são carregadas na memória quando ele é aberto.
 
 A interface usa isolamento de contexto, sem acesso direto ao Node.js. Conexões são restritas ao próprio computador e redirecionamentos HTTP são recusados.
 

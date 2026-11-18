@@ -1,56 +1,35 @@
 ====================================================
-        NAPS2 WebScan LocalService v2.0.0
-         Scanner TWAIN to HTTP/eSCL Bridge
+        NAPS2 WebScan LocalService
+         Scanner TWAIN para HTTP/eSCL
 ====================================================
 
-BEM-VINDO!
-==========
-
-Este pacote transforma seus scanners TWAIN em scanners
-acessiveis via HTTP, permitindo scan direto do navegador.
+Este pacote expoe scanners TWAIN via HTTP, permitindo digitalizar
+pelo navegador ou por clientes eSCL.
 
 
-INSTALACAO RAPIDA (3 PASSOS)
-=============================
+INSTALACAO RAPIDA (WINDOWS)
+===========================
 
-1. EXECUTAR INSTALADOR
-   - Clique com botao direito em "instalador.bat"
-   - Selecione "Executar como administrador"
+1. Execute "instalador.bat" como Administrador
+2. Digite 1 e pressione ENTER (instalar servico)
+3. Digite 3 e pressione ENTER (iniciar servico)
 
-2. INSTALAR SERVICO
-   - Digite 1 e pressione ENTER
-
-3. INICIAR SERVICO  
-   - Digite 3 e pressione ENTER
-
-PRONTO! Seus scanners agora estao acessiveis via HTTP.
+Para o passo a passo completo, veja README_INSTALACAO.txt.
 
 
 VERIFICAR INSTALACAO
 =====================
 
-Abra seu navegador em:
-  http://localhost:5000/api/scanners
+Abra no navegador:
+  http://127.0.0.1:5000/api/scanners
 
-Deve retornar uma lista JSON com seus scanners.
-
-
-ARQUIVOS INCLUIDOS
-==================
-
-instalador.bat              <- Use este para instalar (Windows)
-instalador.ps1              <- Ou este (PowerShell avancado)
-NAPS2.WebScan.LocalService.exe  <- Executavel principal
-README_INSTALACAO.txt       <- Guia rapido (este arquivo)
-README.md                   <- Documentacao completa
-API_DOCUMENTATION.md        <- Como usar a API
-INSTALACAO_SERVICO.md       <- Guia detalhado de instalacao
+Deve retornar uma lista JSON com os scanners detectados.
 
 
 COMANDOS DO INSTALADOR
 ======================
 
-instalador.bat (Menu):
+instalador.bat (menu):
   1. Instalar como servico
   2. Desinstalar servico
   3. Iniciar servico
@@ -60,142 +39,50 @@ instalador.bat (Menu):
   0. Sair
 
 
-API REST
-========
+API REST (127.0.0.1:5000)
+=========================
 
-Quando o servico estiver rodando, use:
-
-Listar scanners:
-  GET http://localhost:5000/api/scanners
-
-Scanner atual:
-  GET http://localhost:5000/api/scanners/current
-
-Selecionar scanner:
-  POST http://localhost:5000/api/scanners/{id}/select
+  GET  /api/scanners            Lista os scanners
+  GET  /api/scanners/{id}       Dados de um scanner
+  GET  /api/scanners/count      Total de scanners
+  POST /api/scanners/refresh    Atualiza a lista de scanners
 
 
 PROTOCOLO eSCL
 ==============
 
-Cada scanner recebe sua propria porta eSCL:
+Cada scanner recebe sua porta eSCL, a partir de 9880:
+  http://127.0.0.1:9880/eSCL/ScannerCapabilities
 
-Scanner 1: http://localhost:9880/eSCL/
-Scanner 2: http://localhost:9881/eSCL/
-Scanner 3: http://localhost:9882/eSCL/
-
-Use essas URLs para fazer scan via protocolo eSCL
-(compativel com AirPrint).
+Use essas URLs para digitalizar via eSCL (compativel com AirPrint).
 
 
 REQUISITOS
 ==========
 
 - Windows 10/11 ou Windows Server 2016+
-- .NET 8.0 Runtime (https://dotnet.microsoft.com/download/dotnet/8.0)
+- .NET 8.0 Runtime (ou pacote self-contained)
 - Drivers TWAIN dos scanners instalados
-- Permissoes de Administrador (para instalar servico)
-
-
-SOLUCAO DE PROBLEMAS
-=====================
-
-Scanners nao aparecem:
-  1. Verifique se drivers TWAIN estao instalados
-  2. Teste scanner no software nativo
-  3. Reinicie o servico (opcao 2 depois opcao 1)
-
-Servico nao inicia:
-  1. Verifique se porta 5000 esta livre
-  2. Veja logs: Event Viewer > Application
-  3. Execute: netstat -ano | findstr 5000
-
-Erro ao instalar:
-  1. Execute instalador.bat como Administrador
-  2. Verifique se .NET 8 Runtime esta instalado
-  3. Tente instalacao manual (veja INSTALACAO_SERVICO.md)
+- Permissao de Administrador (para instalar o servico)
 
 
 DESINSTALAR
 ===========
 
-1. Executar instalador.bat como Administrador
-2. Opcao 2 - Desinstalar servico
-3. Deletar esta pasta
+1. Execute instalador.bat como Administrador
+2. Opcao 2 (desinstalar servico)
+3. Apague a pasta
 
 
-PROXIMOS PASSOS
-===============
+DOCUMENTACAO
+============
 
-Apos instalacao bem-sucedida:
-
-1. Teste a API:
-   http://localhost:5000/api/scanners
-
-2. Se tiver o WebServer instalado:
-   http://localhost:5154
-
-3. Integre com seu sistema usando a API REST
-
-4. Consulte API_DOCUMENTATION.md para exemplos
-
-
-DOCUMENTACAO COMPLETA
-======================
-
-Todos os arquivos .md podem ser abertos em:
-- Bloco de Notas
-- Notepad++
-- Visual Studio Code
-- Navegador (com extensao Markdown)
-
-OU leia online em:
-- README.md - Visao geral completa
-- API_DOCUMENTATION.md - Exemplos de codigo
-- INSTALACAO_SERVICO.md - Troubleshooting
-
-
-SUPORTE TECNICO
-===============
-
-1. Verifique README.md incluido
-2. Veja logs: Event Viewer > Application > NAPS2.WebScan Service
-3. Execute em modo console: NAPS2.WebScan.LocalService.exe
-4. Consulte INSTALACAO_SERVICO.md para troubleshooting
-
-
-ARQUITETURA
-===========
-
-LocalService (esta aplicacao)
-  ↓
-Detecta scanners TWAIN automaticamente
-  ↓
-Cria servidor eSCL para cada scanner
-  ↓
-Expoe via HTTP nas portas 9880+
-  ↓
-API REST centralizada na porta 5000
-
-
-VERSAO
-======
-
-Versao: 2.0.0
-Data: 2026-02-27
-Plataforma: Windows 10/11, Server 2016+
-.NET: 8.0
-NAPS2 SDK: 1.2.1
+README_INSTALACAO.txt   Guia rapido
+INSTALACAO_SERVICO.md   Guia detalhado (Windows e Linux)
+API_DOCUMENTATION.md    Documentacao da API
+README.md               Visao geral e scripts
 
 
 ====================================================
-           OBRIGADO POR USAR NAPS2 WEBSCAN!
-====================================================
-
-Para comecar: Execute instalador.bat como Administrador
-
-Documentacao: README.md
-Suporte: INSTALACAO_SERVICO.md
-API: API_DOCUMENTATION.md
-
+           Obrigado por usar NAPS2 WebScan!
 ====================================================

@@ -1,85 +1,109 @@
-# API de Scanners - NAPS2 LocalService
+# API de Scanners - NAPS2 WebScan LocalService
 
-## 🚀 Endpoints Disponíveis
+Este documento descreve as rotas expostas pelo LocalService (Windows e Linux).
+Há duas superfícies: a API REST de gerenciamento (porta 5000) e os servidores eSCL, um por scanner, a partir da porta 9880.
 
-### API REST (Porta 5000)
+## Visão geral
 
-### 1. Listar todos os scanners
+| Superfície | Endereço | Uso |
+|------------|----------|-----|
+| API REST | `http://127.0.0.1:5000` | Listar e atualizar scanners |
+| eSCL | `http://<host>:9880`, `9881`, ... | Protocolo de escaneamento de cada dispositivo |
+
+O serviço escuta em `127.0.0.1` (configurável em `appsettings.json`, chave `Urls`). Para acesso pela rede, use as portas eSCL a partir de 9880 em conjunto com o IP da máquina.
+
+## API REST (porta 5000)
+
+### 1. Listar scanners
 ```http
-GET http://localhost:5000/api/scanners
+GET http://127.0.0.1:5000/api/scanners
 ```
 
-**Resposta:**
+**Resposta (200 OK):** array JSON com os scanners detectados.
 ```json
 [
   {
     "id": "Canon DR-C240 TWAIN",
     "name": "Canon DR-C240 TWAIN",
     "port": 9880,
-    "capabilitiesUrl": "http://localhost:9880/eSCL/ScannerCapabilities",
+    "capabilitiesUrl": "http://127.0.0.1:9880/eSCL/ScannerCapabilities",
     "registeredAt": "2024-01-01T10:00:00Z"
   }
 ]
 ```
 
-### 2. Obter detalhes de um scanner específico
+Lista vazia (`[]`) indica que nenhum dispositivo foi encontrado.
+
+### 2. Detalhes de um scanner
 ```http
-GET http://localhost:5000/api/scanners/{id}
+GET http://127.0.0.1:5000/api/scanners/{id}
 ```
 
-### 3. Selecionar scanner para usar
+Retorna um objeto com os mesmos campos da lista. Retorna 404 se o `id` não existir.
+
+### 3. Atualizar a lista de scanners
 ```http
-POST http://localhost:5000/api/scanners/{id}/select
+POST http://127.0.0.1:5000/api/scanners/refresh
 ```
 
-**Resposta de sucesso:**
+Reenumera os dispositivos (TWAIN no Windows, SANE no Linux) e reinicia o servidor eSCL sem reiniciar o serviço.
+
+**Resposta (200 OK):**
 ```json
 {
-  "message": "Scanner 'Canon DR-C240 TWAIN' selecionado com sucesso",
-  "scannerId": "Canon DR-C240 TWAIN",
-  "scannerName": "Canon DR-C240 TWAIN",
-  "port": 9880,
-  "capabilitiesUrl": "http://localhost:9880/eSCL/ScannerCapabilities"
+  "count": 2,
+  "timestamp": "2024-01-01T10:05:00Z"
 }
 ```
 
-### 4. Ver scanner atualmente selecionado
+### 4. Contar scanners
 ```http
-GET http://localhost:5000/api/scanners/current
+GET http://127.0.0.1:5000/api/scanners/count
 ```
 
-### 5. Contar scanners disponíveis
-```http
-GET http://localhost:5000/api/scanners/count
+**Resposta (200 OK):**
+```json
+{
+  "count": 2,
+  "timestamp": "2024-01-01T10:05:00Z"
+}
 ```
+
+> As rotas `/api/scanners/current` e `/api/scanners/{id}/select` não existem mais. A seleção de scanner é feita pelo cliente (o aplicativo desktop guarda a escolha em `scanner.json`).
 
 ---
 
-## 📡 Endpoints eSCL (Portas 9880+)
+## Endpoints eSCL (portas 9880+)
 
-### Status do Scanner
+Cada scanner tem seu próprio servidor eSCL. Os caminhos seguem o padrão eSCL (AirScan). Substitua `127.0.0.1` pelo IP da máquina para acesso pela rede.
+
+### Capacidades do scanner
 ```http
-GET http://localhost:9880/eSCL/ScannerStatus
+GET http://127.0.0.1:9880/eSCL/ScannerCapabilities
 ```
 
-**Resposta:** Estado atual do scanner (Idle, Processing, etc.)
+**Resposta:** XML com resoluções, formatos e fontes suportados.
 
-### Capacidades do Scanner
+### Status do scanner
 ```http
-GET http://localhost:9880/eSCL/ScannerCapabilities
+GET http://127.0.0.1:9880/eSCL/ScannerStatus
 ```
 
-**Resposta:** XML com capacidades do scanner (resoluções, formatos, etc.)
+**Resposta:** XML com o estado atual do dispositivo (por exemplo, `Idle`).
 
-### Criar Job de Scan
+### Criar job de escaneamento
 ```http
-POST http://localhost:9880/eSCL/ScanJobs
+POST http://127.0.0.1:9880/eSCL/ScanJobs
 Content-Type: text/xml
+```
 
-<scan:ScanSettings xmlns:scan="http://schemas.hp.com/imaging/escl/2011/05/03">
-  <pwg:Version xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm">2.0</pwg:Version>
+Corpo (exemplo simplificado):
+```xml
+<scan:ScanSettings xmlns:scan="http://schemas.hp.com/imaging/escl/2011/05/03"
+                   xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm">
+  <pwg:Version>2.0</pwg:Version>
   <scan:Intent>Document</scan:Intent>
-  <pwg:ScanRegions xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm">
+  <pwg:ScanRegions>
     <pwg:ScanRegion>
       <pwg:XResolution>300</pwg:XResolution>
       <pwg:YResolution>300</pwg:YResolution>
@@ -88,117 +112,51 @@ Content-Type: text/xml
 </scan:ScanSettings>
 ```
 
-**Resposta:** Header `Location` com a URL do job criado (ex: `/eSCL/ScanJobs/12345`)
+**Resposta (201 Created):** header `Location` com a URL do job (por exemplo, `/eSCL/ScanJobs/<id>`).
 
-### Verificar Status do Job ⚡ NOVO
+### Obter próximo documento
 ```http
-GET http://localhost:9880/eSCL/ScanJobs/{jobId}
+GET http://127.0.0.1:9880/eSCL/ScanJobs/{jobId}/NextDocument
 ```
 
-**Resposta:** XML com status do job (Pending, Processing, Completed, etc.)
-
-```xml
-<scan:ScanJobInfo>
-  <pwg:JobState>Processing</pwg:JobState>
-  <pwg:JobStateReasons>JobScanning</pwg:JobStateReasons>
-  <scan:ImagesCompleted>0</scan:ImagesCompleted>
-</scan:ScanJobInfo>
-```
-
-### Informações da Imagem do Job ⚡ OTIMIZAÇÃO
-```http
-GET http://localhost:9880/eSCL/ScanJobs/{jobId}/ScanImageInfo
-```
-
-**Resposta:** Informações sobre a imagem escaneada (formato, tamanho, etc.)
-- **200 OK**: Imagem pronta para download
-- **404 Not Found**: Imagem ainda não disponível
-- **409 Conflict**: Scan ainda em progresso
-
-### Obter Próximo Documento
-```http
-GET http://localhost:9880/eSCL/ScanJobs/{jobId}/NextDocument
-```
-
-**Resposta:** Imagem escaneada (JPEG/PNG/PDF)
-- **200 OK**: Documento pronto e retornado
-- **404 Not Found**: Nenhum documento disponível (fim do scan)
-- **503 Service Unavailable**: Scanner ainda processando, tente novamente
+**Resposta:**
+- **200 OK**: imagem escaneada (JPEG ou PDF, conforme o formato pedido).
+- **503 Service Unavailable**: o scanner ainda está processando; tente novamente.
+- **404 Not Found**: não há mais documentos no job (fim do escaneamento).
 
 ---
 
-## 📝 Fluxo Otimizado de Scan
+## Fluxo de uso
 
-### Método 1: Polling no Status da Imagem (Recomendado)
+1. Liste os scanners em `GET /api/scanners` (porta 5000) e escolha um `port`.
+2. Crie o job em `POST /eSCL/ScanJobs` na porta escolhida e leia o header `Location`.
+3. Chame `GET .../NextDocument` repetidamente até receber 404. Trate 503 com nova tentativa após um intervalo curto.
+
 ```javascript
-// 1. Criar job de scan
-const jobUrl = await scanner.ScanJobs({ Resolution: 300 });
-const jobId = jobUrl.split('/').pop();
+const base = 'http://127.0.0.1:9880/eSCL';
+const post = await fetch(`${base}/ScanJobs`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'text/xml' },
+  body: scanSettingsXml
+});
+const jobPath = post.headers.get('Location');   // ex: /eSCL/ScanJobs/123
 
-// 2. Aguardar imagem estar pronta (polling otimizado)
-let ready = false;
-let attempts = 0;
-const maxAttempts = 30; // 30 tentativas = 15 segundos máx
-
-while (!ready && attempts < maxAttempts) {
-  try {
-    const imageInfo = await scanner.ScanImageInfo(jobId);
-    if (imageInfo) {
-      ready = true;
-      break;
-    }
-  } catch (err) {
-    if (err.response?.status === 404 || err.response?.status === 409) {
-      // Ainda não pronto, aguardar 500ms
-      await new Promise(resolve => setTimeout(resolve, 500));
-      attempts++;
-      continue;
-    }
-    throw err;
-  }
-}
-
-// 3. Obter documento
-if (ready) {
-  const doc = await scanner.NextDocument(jobId);
-  // Processar imagem...
+while (true) {
+  const res = await fetch(`http://127.0.0.1:9880${jobPath}/NextDocument`);
+  if (res.status === 404) break;               // fim do job
+  if (res.status === 503) { await new Promise(r => setTimeout(r, 1000)); continue; }
+  const page = await res.arrayBuffer();        // processar a página
 }
 ```
 
-### Método 2: Usando Método Otimizado (Simplificado)
-```javascript
-const jobUrl = await scanner.ScanJobs({ Resolution: 300 });
-const jobId = jobUrl.split('/').pop();
-
-// Aguarda automaticamente o documento estar pronto
-const doc = await scanner.GetNextDocumentOptimized(jobId);
-```
-
-### Método 3: NextDocument com Auto-Retry (Padrão)
-```javascript
-// NextDocument já faz retry automático no 503
-const doc = await scanner.NextDocument(jobId);
-```
-
 ---
 
-## ⚡ Comparação de Performance
+## Arquitetura
 
-| Método | Vantagens | Desvantagens | Tempo Médio |
-|--------|-----------|--------------|-------------|
-| **ScanImageInfo Polling** | Mais rápido, não bloqueia thread | Requer lógica de polling | ~0.5-2s |
-| **NextDocument Auto-Retry** | Simples, funciona sempre | Mais lento (retry 2s) | ~2-4s |
-| **GetNextDocumentOptimized** | Melhor dos dois mundos | - | ~0.5-2s |
+- **Porta 5000**: API REST de gerenciamento (`127.0.0.1`).
+- **Portas 9880+**: um servidor eSCL por scanner. A porta é atribuída na primeira detecção e mantida entre reinícios no arquivo `ports.json`:
+  - Windows: `%ProgramData%\NAPS2.WebScan\ports.json`
+  - Linux: `/var/lib/naps2-webscan/ports.json`
 
----
-
-## 🏗️ Arquitetura
-
-- **Porta 5000**: API REST para gerenciar scanners
-- **Portas 9880+**: Servidores eSCL (um por scanner)
-  - 9880: Primeiro scanner (Canon DR-C240)
-  - 9881: Segundo scanner (Canon DR-M160)
-  - 9882: Terceiro scanner (KODAK S2000)
-
-Todos os scanners TWAIN são descobertos na inicialização e servidos simultaneamente em portas separadas.
+Os dispositivos são enumerados na inicialização e a lista pode ser atualizada com `POST /api/scanners/refresh`.
 
