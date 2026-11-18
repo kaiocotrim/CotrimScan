@@ -8,4 +8,5 @@ apps/desktop/renderer/
 
 packages/scan-share/bin/
 packages/scan-share/obj/
+packages/scan-share/publish/
 .vs/

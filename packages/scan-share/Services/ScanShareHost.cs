@@ -8,12 +8,14 @@ using NAPS2.WebScan.LocalService.Models;
 namespace NAPS2.WebScan.LocalService.Services;
 
 /// <summary>
-/// Dono do ciclo de vida do servidor eSCL. Enumera dispositivos TWAIN,
-/// registra cada um em uma porta estavel e permite reenumerar (refresh)
-/// sem reiniciar o servico do Windows.
+/// Dono do ciclo de vida do servidor eSCL. Enumera dispositivos (TWAIN no
+/// Windows, SANE no Linux), registra cada um em uma porta estavel e permite
+/// reenumerar (refresh) sem reiniciar o servico.
 /// </summary>
 public class ScanShareHost : IAsyncDisposable
 {
+    private static Driver ActiveDriver => OperatingSystem.IsWindows() ? Driver.Twain : Driver.Sane;
+
     private readonly ScannerRegistryService _registry;
     private readonly PortRegistryService _ports;
     private readonly ILogger<ScanShareHost> _logger;
@@ -47,15 +49,15 @@ public class ScanShareHost : IAsyncDisposable
             _context ??= CreateContext();
             _controller ??= new ScanController(_context);
 
-            _logger.LogInformation("Buscando dispositivos TWAIN...");
-            var allDevices = await _controller.GetDeviceList(new ScanOptions { Driver = Driver.Twain });
-            var devices = allDevices.Where(d => d.Driver == Driver.Twain).ToList();
+            _logger.LogInformation("Buscando dispositivos {Driver}...", ActiveDriver);
+            var allDevices = await _controller.GetDeviceList(new ScanOptions { Driver = ActiveDriver });
+            var devices = allDevices.Where(d => d.Driver == ActiveDriver).ToList();
 
             _registry.ClearScanners();
 
             if (devices.Count == 0)
             {
-                _logger.LogWarning("Nenhum dispositivo TWAIN encontrado. Servidor eSCL nao iniciado.");
+                _logger.LogWarning("Nenhum dispositivo {Driver} encontrado. Servidor eSCL nao iniciado.", ActiveDriver);
                 return 0;
             }
 
@@ -131,8 +133,11 @@ public class ScanShareHost : IAsyncDisposable
     private static ScanningContext CreateContext()
     {
         var context = new ScanningContext(new ImageSharpImageContext());
-        // Worker 32-bit para comunicar com drivers TWAIN (mais estavel)
-        context.SetUpWin32Worker();
+        if (OperatingSystem.IsWindows())
+        {
+            // Worker 32-bit para comunicar com drivers TWAIN (mais estavel)
+            context.SetUpWin32Worker();
+        }
         return context;
     }
 }

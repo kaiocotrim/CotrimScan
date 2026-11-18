@@ -1,0 +1,18 @@
+[Unit]
+Description=NAPS2 WebScan LocalService (SANE to eSCL bridge)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=naps2scan
+Group=naps2scan
+SupplementaryGroups=scanner lp
+WorkingDirectory=/opt/naps2-webscan
+ExecStart=/opt/naps2-webscan/NAPS2.WebScan.LocalService
+StateDirectory=naps2-webscan
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

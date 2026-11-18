@@ -16,11 +16,7 @@ public class PortRegistryService
 
     public PortRegistryService(IConfiguration configuration)
     {
-        _file = configuration["ScanShare:PortsFile"]
-            ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "NAPS2.WebScan",
-                "ports.json");
+        _file = configuration["ScanShare:PortsFile"] ?? DefaultFile();
         _map = Load();
     }
 
@@ -47,6 +43,14 @@ public class PortRegistryService
             return port;
         }
     }
+
+    private static string DefaultFile() =>
+        OperatingSystem.IsWindows()
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "NAPS2.WebScan",
+                "ports.json")
+            : "/var/lib/naps2-webscan/ports.json";
 
     private Dictionary<string, int> Load()
     {

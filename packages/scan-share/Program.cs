@@ -3,11 +3,18 @@ using NAPS2.WebScan.LocalService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Adicionar suporte a Windows Service
-builder.Services.AddWindowsService(options =>
+// Windows Service no Windows; unit systemd no Linux
+if (OperatingSystem.IsWindows())
 {
-    options.ServiceName = "NAPS2.WebScan Service";
-});
+    builder.Services.AddWindowsService(options =>
+    {
+        options.ServiceName = "NAPS2.WebScan Service";
+    });
+}
+else
+{
+    builder.Services.AddSystemd();
+}
 
 // Adicionar controladores para API REST
 builder.Services.AddControllers();
