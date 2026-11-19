@@ -5,6 +5,9 @@ import { ProjectEditor } from './ProjectEditor';
 import { ScannerView } from './ScannerView';
 import type { Project, Page } from '@cotrimscan/shared';
 import { CertificateDialogs } from './CertificateDialogs';
+import { CaptureEditor } from './CaptureEditor';
+import { capturePreviewModel, capturePreviewSample } from '../browser-preview';
+import { motion } from 'framer-motion';
 
 function errorText(error: unknown): string {
   return (error instanceof Error ? error.message : String(error)).replace(/^Error invoking remote method '[^']+': (?:Error: )?/, '');
@@ -16,6 +19,7 @@ function AppContent() {
   const [creating, setCreating] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
+  const [enteringProjects, setEnteringProjects] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const projectsRef = useRef<Project[]>([]);
   projectsRef.current = projects;
@@ -26,9 +30,30 @@ function AppContent() {
   const [pages, setPages] = useState<Page[]>([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('Pronto para digitalizar.');
+  const [themeMotion, setThemeMotion] = useState(0);
+  const [lightTheme, setLightTheme] = useState(() => localStorage.getItem('cotrimscan-login-theme') === 'light');
+
+  useEffect(() => {
+    if (view === 'auth') return;
+    const handleThemeShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 't') {
+        event.preventDefault();
+        setLightTheme(current => {
+          const next = !current;
+          localStorage.setItem('cotrimscan-login-theme', next ? 'light' : 'dark');
+          document.documentElement.classList.toggle('app-light', next);
+          return next;
+        });
+        setThemeMotion(value => value + 1);
+      }
+    };
+    window.addEventListener('keydown', handleThemeShortcut);
+    return () => window.removeEventListener('keydown', handleThemeShortcut);
+  }, [view]);
 
   async function refreshProjects() { setProjects(await window.projects.list()); }
-  async function showProjects(username: string) {
+  async function showProjects(username: string, fromLogin = false) {
+    setEnteringProjects(fromLogin);
     setAccount(username); setView('projects'); setAuthError('');
     try { await refreshProjects(); } catch (error) { setStatus(errorText(error)); }
   }
@@ -68,14 +93,20 @@ function AppContent() {
     await run(async () => { await window.projects.close(); setProject(null); setPages([]); await refreshProjects(); setView('projects'); });
   }
   return <>
+    {themeMotion > 0 && <motion.div key={themeMotion} aria-hidden="true" className="app-theme-transition" style={{ background: lightTheme ? 'radial-gradient(ellipse at 50% 45%, #a6cfff80, transparent 70%)' : 'radial-gradient(ellipse at 50% 45%, #23354c99, transparent 70%)' }} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: [0, 0.75, 0], scale: [0.97, 1, 1.03] }} transition={{ duration: 0.65, ease: 'easeInOut' }} />}
     {view === 'auth' && <AuthView creating={creating} loading={authLoading} error={authError} onSubmit={async (username, password) => {
       setAuthError('Validando…');
-      try { const session = creating ? await window.localAuth.register(username, password) : await window.localAuth.login(username, password); await showProjects(session.username); }
+      try { const session = creating ? await window.localAuth.register(username, password) : await window.localAuth.login(username, password); await showProjects(session.username, true); }
       catch (error) { setAuthError(errorText(error)); }
     }} />}
-    {view === 'projects' && <ProjectsView onRefresh={refreshProjects} username={account} projects={projects} status={status} setStatus={setStatus} busy={busy} onLogout={logout} onNew={() => setEditing(null)} onOpen={openProject} onEdit={setEditing} />}
+    {view === 'projects' && <ProjectsView entering={enteringProjects} onRefresh={refreshProjects} username={account} projects={projects} status={status} setStatus={setStatus} busy={busy} onLogout={logout} onNew={() => setEditing(null)} onOpen={openProject} onEdit={setEditing} />}
     {view === 'scanner' && project && <ScannerView username={account} project={project} pages={pages} status={status} busy={busy} setStatus={setStatus} setPages={setPages} run={run} onBack={back} onLogout={logout} />}
     {editing !== undefined && <ProjectEditor project={editing} onClose={() => setEditing(undefined)} onSaved={async saved => { await refreshProjects(); if (project?.id === saved.id) setProject(saved); }} />}
   </>;
 }
-export function App() { return <CertificateDialogs><AppContent /></CertificateDialogs>; }
+export function App() {
+  if (import.meta.env.DEV && window.location.search === '?preview=capture') {
+    return <CaptureEditor settings={{ dpi: 300 }} selected={capturePreviewModel} sampleUrl={capturePreviewSample} onSave={async () => {}} onClose={() => { window.location.href = '/'; }} />;
+  }
+  return <CertificateDialogs><AppContent /></CertificateDialogs>;
+}

@@ -1,4 +1,9 @@
-import type { Project } from '@cotrimscan/shared';
+import type { CaptureModel, Project } from '@cotrimscan/shared';
+
+export const capturePreviewSample = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="850" height="1100" viewBox="0 0 850 1100"><rect width="850" height="1100" fill="#fff"/><rect x="55" y="55" width="740" height="990" fill="none" stroke="#cbd5e1" stroke-width="2"/><text x="90" y="130" font-family="Arial" font-size="32" font-weight="bold" fill="#192434">DOCUMENTO DE EXEMPLO</text><text x="90" y="180" font-family="Arial" font-size="16" fill="#64748b">Prévia visual do editor de modelos</text><path d="M90 215h670" stroke="#cbd5e1"/><text x="90" y="290" font-family="Arial" font-size="20" fill="#334155">Nome: Maria da Silva</text><text x="90" y="355" font-family="Arial" font-size="20" fill="#334155">Matrícula: 00123456</text><text x="90" y="420" font-family="Arial" font-size="20" fill="#334155">Data: 19/11/2026</text><rect x="575" y="245" width="170" height="170" fill="#192434"/><path d="M590 260h42v42h-42zm98 0h42v42h-42zm-98 98h42v42h-42zm56-56h28v28h-28zm42 42h14v14h-14zm-28 28h28v28h-28z" fill="#fff"/><text x="575" y="440" font-family="Arial" font-size="13" fill="#64748b">QR Code de exemplo</text><path d="M90 500h670" stroke="#cbd5e1"/><text x="90" y="550" font-family="Arial" font-size="17" fill="#64748b">Selecione ou mova as áreas azuis para testar a interface.</text></svg>`)}`;
+
+export const capturePreviewModel: CaptureModel = { id: 'preview-capture-model', name: 'Documento de exemplo', version: 1, fields: [] };
+let captureModels: CaptureModel[] = [capturePreviewModel];
 
 // Design preview for Vite. Electron supplies these APIs through preload.cjs.
 let projects: Project[] = [{
@@ -59,8 +64,14 @@ if (import.meta.env.DEV && !window.localAuth) Object.assign(window, {
     copyLink: unavailable,
   },
   capture: {
-    models: async () => [], saveModel: unavailable, assign: unavailable,
+    models: async () => [...captureModels],
+    saveModel: async (model: CaptureModel) => { const saved = { ...model, id: model.id || crypto.randomUUID(), version: (model.version || 0) + 1 }; captureModels = [...captureModels.filter(item => item.id !== saved.id), saved]; return saved; },
+    assign: unavailable,
     read: unavailable, extract: unavailable, save: unavailable,
-    sample: unavailable, calibrate: unavailable, preview: unavailable,
+    sample: async () => ({ url: capturePreviewSample }),
+    calibrate: async () => ({ reference: { preview: true } }),
+    preview: async (_url: string, field: { type: string }) => field.type === 'barcode'
+      ? { value: '', confidence: 100, error: 'Nenhum código encontrado na área.' }
+      : { value: field.type === 'qr' ? 'QR-EXEMPLO-12345' : 'Maria da Silva', confidence: field.type === 'qr' ? 98 : 94 },
   },
 });

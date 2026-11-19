@@ -1,0 +1,38 @@
+.capture-editor-modal .capture-redesign[role=dialog] { padding: 0 20px 16px; background: #131619; color: #f1f2f4; border: 0; border-radius: 0; box-shadow: none; }
+.capture-redesign .capture-editor-header { min-height: 58px; margin-bottom: 14px; padding: 10px 4px; border-bottom: 1px solid #383a40; }
+.capture-redesign .capture-editor-header h2 { font-size: 19px; font-weight: 600; }
+.capture-redesign .capture-sample-badge { margin-left: auto; border: 1px solid #435048; background: #202923; border-radius: 30px; padding: 6px 13px; color: #dce9df; font-size: 12px; }
+.capture-redesign .capture-editor-toolbar { gap: 10px; padding: 4px; margin-bottom: 14px; }
+.capture-editor-modal .capture-redesign .capture-editor-toolbar button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 38px; padding: 8px 13px; border-radius: 8px !important; border: 1px solid #41454a; }
+.capture-editor-modal .capture-redesign .capture-editor-toolbar button:first-child { background: #2582ed !important; border-color: #4199ff; color: white; }
+.capture-editor-modal .capture-redesign .capture-editor-settings { padding: 0 !important; background: transparent; border: 0; border-radius: 0; }
+.capture-redesign .capture-editor-fields { padding: 18px; background: #202326; border: 1px solid #363b40; border-radius: 10px; }
+.capture-redesign .capture-editor-fields [data-slot="card-content"], .capture-redesign .capture-editor-fields strong { color: #f1f3f5 !important; }
+.capture-redesign .capture-editor-fields { --card: #202326; --card-foreground: #f1f3f5; --popover: #262a2e; --popover-foreground: #f1f3f5; --primary: #6daeff; --primary-foreground: #101820; --secondary: #30363c; --secondary-foreground: #f1f3f5; --muted: #30363c; --muted-foreground: #b5bdc5; --accent: #303b46; --accent-foreground: #f1f3f5; --border: #454c53; --input: #454c53; --ring: #61a5fa; }
+.capture-redesign .capture-fields-model-row, .capture-redesign .capture-fields-model-row label { color: #e8edf2 !important; }
+.capture-redesign .capture-fields-model-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 34px; align-items: end; gap: 10px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #3a3e43; }
+.capture-redesign .capture-fields-model-row label { min-width: 0; }
+.capture-redesign .capture-fields-model-row details { position: relative; margin: 0 0 1px; }
+.capture-redesign .capture-fields-model-row summary { list-style: none; width: 34px; height: 36px; display: grid; place-items: center; border: 1px solid #45494e; border-radius: 7px; cursor: pointer; }
+.capture-redesign .capture-fields-model-row details label { position: absolute; z-index: 3; right: 0; top: 40px; width: 250px; padding: 12px; border: 1px solid #45494e; border-radius: 8px; background: #202326; box-shadow: 0 12px 30px #0008; }
+.capture-redesign .capture-editor-sidebar-heading { border: 0; padding: 0; margin: 0 0 14px; font-size: 17px; }
+.capture-editor-modal .capture-redesign .capture-editor-settings label { font-size: 12px; color: #e5e7eb; }
+.capture-editor-modal .capture-redesign .capture-editor-settings :is(input:not([type=checkbox]),select) { display: block; min-height: 38px; margin-top: 7px; padding: 8px 11px; border: 1px solid #4b5055 !important; border-radius: 7px !important; background: #141719 !important; color: #f1f2f4 !important; font-size: 13px; }
+.capture-editor-modal .capture-redesign .capture-editor-new-model { margin: 4px 0 12px !important; border-radius: 7px; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current] { display: flex; width: 100%; min-height: 46px; align-items: center; gap: 12px; margin: 4px 0; border-radius: 7px; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current=true] { background: #23364c !important; border-color: #529df0; color: #fff; }
+.capture-editor-modal .capture-redesign .capture-editor-field-card { padding: 16px 0 0; margin: 16px 0 0; border: 0; border-top: 1px solid #494d52; border-radius: 0; background: transparent; }
+.capture-redesign .capture-property-heading { margin: 3px 0 18px; font-size: 16px; font-weight: 600; }
+.capture-editor-modal .capture-redesign label:has(> input[type=checkbox]) { display: flex; align-items: center; gap: 9px; margin: 16px 0; }
+.capture-editor-modal .capture-redesign .capture-editor-fields details { border: 1px solid #45494e; border-radius: 8px; padding: 11px; background: #292d31; margin: 18px 0; }
+.capture-redesign details summary { color: #e5e7eb; font-size: 13px; }
+.capture-editor-modal .capture-redesign .capture-editor-field-card button { width: auto; padding: 8px 14px; margin: 4px 8px 0 0; border-radius: 7px; font-size: 12px; }
+.capture-redesign .capture-delete-field { color: #e2a7aa; border: 1px solid #655052; }
+.capture-editor-modal .capture-redesign .capture-editor-viewport { padding: 24px; background: #101316; border: 1px solid #3b4045; border-radius: 9px; }
+.capture-redesign .capture-editor-viewport img { border-radius: 3px; }
+.capture-redesign .capture-editor-footer { margin: 0; padding-top: 12px; border-color: #383c41; }
+.capture-redesign .capture-editor-status { margin: 12px 0; border-radius: 8px; }
+.capture-redesign .capture-editor-status.is-error { border-color: #d84f59 !important; background: #3a1e22 !important; color: #ffd2d5 !important; }
+.capture-redesign .capture-editor-status.is-success { border-color: #3da66b !important; background: #183326 !important; color: #c8f1d7 !important; }
+.capture-redesign .capture-editor-status.is-idle { border-color: #383c41 !important; background: #202326 !important; color: #a1a5ad !important; }
+@media (max-width: 700px) { .capture-editor-modal .capture-redesign[role=dialog] { padding: 0 10px 12px; } .capture-redesign .capture-sample-badge { display: none; } .capture-redesign .capture-editor-viewport { padding: 12px !important; } }

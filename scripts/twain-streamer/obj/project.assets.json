@@ -1,0 +1,1556 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0-windows7.0": {
+      "Google.Protobuf/3.29.3": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Grpc.Core.Api/2.67.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/Grpc.Core.Api.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/Grpc.Core.Api.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "GrpcDotNetNamedPipes/3.1.0": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.29.3",
+          "Grpc.Core.Api": "2.67.0",
+          "System.Memory": "4.6.0"
+        },
+        "compile": {
+          "lib/net8.0/GrpcDotNetNamedPipes.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/GrpcDotNetNamedPipes.dll": {}
+        }
+      },
+      "Makaretu.Dns/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "SimpleBase": "1.3.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/Makaretu.Dns.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Makaretu.Dns.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.10": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.10",
+          "System.Diagnostics.DiagnosticSource": "10.0.10"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "NAPS2.Escl/1.6.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
+          "NAPS2.Mdns": "1.0.1",
+          "StandardSocketsHttpHandler": "2.2.0.10"
+        },
+        "compile": {
+          "lib/net8.0/NAPS2.Escl.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Escl.dll": {}
+        }
+      },
+      "NAPS2.Images/1.6.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.10",
+          "NAPS2.Internals": "1.6.1",
+          "System.Collections.Immutable": "10.0.10",
+          "ZXing.Net": "0.16.11"
+        },
+        "compile": {
+          "lib/net8.0/NAPS2.Images.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Images.dll": {}
+        }
+      },
+      "NAPS2.Images.ImageSharp/1.6.1": {
+        "type": "package",
+        "dependencies": {
+          "NAPS2.Images": "1.6.1",
+          "SixLabors.ImageSharp": "[3.1.12, 5.0.0)"
+        },
+        "compile": {
+          "lib/net8.0/NAPS2.Images.ImageSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Images.ImageSharp.dll": {}
+        }
+      },
+      "NAPS2.Internals/1.6.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.10",
+          "System.Collections.Immutable": "10.0.10"
+        },
+        "compile": {
+          "lib/net8.0/NAPS2.Internals.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Internals.dll": {}
+        }
+      },
+      "NAPS2.Mdns/1.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Makaretu.Dns": "2.0.1"
+        },
+        "compile": {
+          "lib/net6.0/Makaretu.Dns.Multicast.New.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Makaretu.Dns.Multicast.New.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "NAPS2.NTwain/1.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/NTwain.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/NTwain.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "NAPS2.PdfSharp/1.0.2": {
+        "type": "package",
+        "dependencies": {
+          "SharpZipLib": "1.3.3",
+          "SixLabors.Fonts": "1.0.0-beta17"
+        },
+        "compile": {
+          "lib/net6.0/PdfSharpCore.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/PdfSharpCore.dll": {}
+        },
+        "resource": {
+          "lib/net6.0/de/PdfSharpCore.resources.dll": {
+            "locale": "de"
+          }
+        }
+      },
+      "NAPS2.Sdk/1.6.1": {
+        "type": "package",
+        "dependencies": {
+          "GrpcDotNetNamedPipes": "3.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
+          "NAPS2.Escl": "1.6.1",
+          "NAPS2.Images": "1.6.1",
+          "NAPS2.Internals": "1.6.1",
+          "NAPS2.NTwain": "1.0.1",
+          "NAPS2.PdfSharp": "1.0.2",
+          "NAPS2.Wia": "2.0.3",
+          "SharpZipLib": "1.4.2",
+          "SixLabors.Fonts": "1.0.1",
+          "System.Collections.Immutable": "10.0.10",
+          "System.Resources.Extensions": "10.0.10",
+          "System.Threading.Tasks.Dataflow": "10.0.10",
+          "ZXing.Net": "0.16.11"
+        },
+        "compile": {
+          "lib/net8.0/NAPS2.Sdk.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Sdk.dll": {}
+        },
+        "resource": {
+          "lib/net8.0/af/NAPS2.Sdk.resources.dll": {
+            "locale": "af"
+          },
+          "lib/net8.0/ar/NAPS2.Sdk.resources.dll": {
+            "locale": "ar"
+          },
+          "lib/net8.0/bg/NAPS2.Sdk.resources.dll": {
+            "locale": "bg"
+          },
+          "lib/net8.0/bn/NAPS2.Sdk.resources.dll": {
+            "locale": "bn"
+          },
+          "lib/net8.0/bs/NAPS2.Sdk.resources.dll": {
+            "locale": "bs"
+          },
+          "lib/net8.0/ca/NAPS2.Sdk.resources.dll": {
+            "locale": "ca"
+          },
+          "lib/net8.0/cs/NAPS2.Sdk.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/da/NAPS2.Sdk.resources.dll": {
+            "locale": "da"
+          },
+          "lib/net8.0/de/NAPS2.Sdk.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/el/NAPS2.Sdk.resources.dll": {
+            "locale": "el"
+          },
+          "lib/net8.0/es/NAPS2.Sdk.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/et/NAPS2.Sdk.resources.dll": {
+            "locale": "et"
+          },
+          "lib/net8.0/fa/NAPS2.Sdk.resources.dll": {
+            "locale": "fa"
+          },
+          "lib/net8.0/fi/NAPS2.Sdk.resources.dll": {
+            "locale": "fi"
+          },
+          "lib/net8.0/fr/NAPS2.Sdk.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/he/NAPS2.Sdk.resources.dll": {
+            "locale": "he"
+          },
+          "lib/net8.0/hi/NAPS2.Sdk.resources.dll": {
+            "locale": "hi"
+          },
+          "lib/net8.0/hr/NAPS2.Sdk.resources.dll": {
+            "locale": "hr"
+          },
+          "lib/net8.0/hu/NAPS2.Sdk.resources.dll": {
+            "locale": "hu"
+          },
+          "lib/net8.0/id/NAPS2.Sdk.resources.dll": {
+            "locale": "id"
+          },
+          "lib/net8.0/it/NAPS2.Sdk.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/NAPS2.Sdk.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/NAPS2.Sdk.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/lt/NAPS2.Sdk.resources.dll": {
+            "locale": "lt"
+          },
+          "lib/net8.0/lv/NAPS2.Sdk.resources.dll": {
+            "locale": "lv"
+          },
+          "lib/net8.0/nb/NAPS2.Sdk.resources.dll": {
+            "locale": "nb"
+          },
+          "lib/net8.0/nl/NAPS2.Sdk.resources.dll": {
+            "locale": "nl"
+          },
+          "lib/net8.0/nn/NAPS2.Sdk.resources.dll": {
+            "locale": "nn"
+          },
+          "lib/net8.0/pl/NAPS2.Sdk.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/NAPS2.Sdk.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/pt-PT/NAPS2.Sdk.resources.dll": {
+            "locale": "pt-PT"
+          },
+          "lib/net8.0/ro/NAPS2.Sdk.resources.dll": {
+            "locale": "ro"
+          },
+          "lib/net8.0/ru/NAPS2.Sdk.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/si/NAPS2.Sdk.resources.dll": {
+            "locale": "si"
+          },
+          "lib/net8.0/sk/NAPS2.Sdk.resources.dll": {
+            "locale": "sk"
+          },
+          "lib/net8.0/sl/NAPS2.Sdk.resources.dll": {
+            "locale": "sl"
+          },
+          "lib/net8.0/sq/NAPS2.Sdk.resources.dll": {
+            "locale": "sq"
+          },
+          "lib/net8.0/sr-CS/NAPS2.Sdk.resources.dll": {
+            "locale": "sr-CS"
+          },
+          "lib/net8.0/sr/NAPS2.Sdk.resources.dll": {
+            "locale": "sr"
+          },
+          "lib/net8.0/sv/NAPS2.Sdk.resources.dll": {
+            "locale": "sv"
+          },
+          "lib/net8.0/th/NAPS2.Sdk.resources.dll": {
+            "locale": "th"
+          },
+          "lib/net8.0/tr/NAPS2.Sdk.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/uk/NAPS2.Sdk.resources.dll": {
+            "locale": "uk"
+          },
+          "lib/net8.0/vi/NAPS2.Sdk.resources.dll": {
+            "locale": "vi"
+          },
+          "lib/net8.0/zh-CN/NAPS2.Sdk.resources.dll": {
+            "locale": "zh-CN"
+          },
+          "lib/net8.0/zh-TW/NAPS2.Sdk.resources.dll": {
+            "locale": "zh-TW"
+          }
+        }
+      },
+      "NAPS2.Sdk.Worker.Win32/1.6.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/NAPS2.Sdk.Worker.Win32.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NAPS2.Sdk.Worker.Win32.dll": {}
+        },
+        "build": {
+          "build/NAPS2.Sdk.Worker.Win32.targets": {}
+        }
+      },
+      "NAPS2.Wia/2.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/NAPS2.Wia.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/NAPS2.Wia.dll": {}
+        }
+      },
+      "SharpZipLib/1.4.2": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/ICSharpCode.SharpZipLib.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/ICSharpCode.SharpZipLib.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "SimpleBase/1.3.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.3/SimpleBase.dll": {
+            "related": ".pdb"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.3/SimpleBase.dll": {
+            "related": ".pdb"
+          }
+        }
+      },
+      "SixLabors.Fonts/1.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "SixLabors.ImageSharp/3.1.12": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        }
+      },
+      "StandardSocketsHttpHandler/2.2.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/StandardSocketsHttpHandler.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.1/StandardSocketsHttpHandler.dll": {}
+        }
+      },
+      "System.Collections.Immutable/10.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.Collections.Immutable.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Collections.Immutable.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Diagnostics.DiagnosticSource/10.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.Diagnostics.DiagnosticSource.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Diagnostics.DiagnosticSource.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Formats.Nrbf/10.0.10": {
+        "type": "package",
+        "dependencies": {
+          "System.Reflection.Metadata": "10.0.10"
+        },
+        "compile": {
+          "lib/net8.0/System.Formats.Nrbf.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Formats.Nrbf.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Memory/4.6.0": {
+        "type": "package",
+        "compile": {
+          "lib/netcoreapp2.1/_._": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.1/_._": {}
+        }
+      },
+      "System.Reflection.Metadata/10.0.10": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections.Immutable": "10.0.10"
+        },
+        "compile": {
+          "lib/net8.0/System.Reflection.Metadata.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Reflection.Metadata.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Resources.Extensions/10.0.10": {
+        "type": "package",
+        "dependencies": {
+          "System.Formats.Nrbf": "10.0.10"
+        },
+        "compile": {
+          "lib/net8.0/System.Resources.Extensions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Resources.Extensions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "System.Threading.Tasks.Dataflow/10.0.10": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.Threading.Tasks.Dataflow.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Threading.Tasks.Dataflow.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "ZXing.Net/0.16.11": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/zxing.dll": {
+            "related": ".XML"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/zxing.dll": {
+            "related": ".XML"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Google.Protobuf/3.29.3": {
+      "sha512": "t7nZFFUFwigCwZ+nIXHDLweXvwIpsOXi+P7J7smPT/QjI3EKxnCzTQOhBqyEh6XEzc/pNH+bCFOOSjatrPt6Tw==",
+      "type": "package",
+      "path": "google.protobuf/3.29.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "google.protobuf.3.29.3.nupkg.sha512",
+        "google.protobuf.nuspec",
+        "lib/net45/Google.Protobuf.dll",
+        "lib/net45/Google.Protobuf.pdb",
+        "lib/net45/Google.Protobuf.xml",
+        "lib/net5.0/Google.Protobuf.dll",
+        "lib/net5.0/Google.Protobuf.pdb",
+        "lib/net5.0/Google.Protobuf.xml",
+        "lib/netstandard1.1/Google.Protobuf.dll",
+        "lib/netstandard1.1/Google.Protobuf.pdb",
+        "lib/netstandard1.1/Google.Protobuf.xml",
+        "lib/netstandard2.0/Google.Protobuf.dll",
+        "lib/netstandard2.0/Google.Protobuf.pdb",
+        "lib/netstandard2.0/Google.Protobuf.xml"
+      ]
+    },
+    "Grpc.Core.Api/2.67.0": {
+      "sha512": "cL1/2f8kc8lsAGNdfCU25deedXVehhLA6GXKLLN4hAWx16XN7BmjYn3gFU+FBpir5yJynvDTHEypr3Tl0j7x/Q==",
+      "type": "package",
+      "path": "grpc.core.api/2.67.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "grpc.core.api.2.67.0.nupkg.sha512",
+        "grpc.core.api.nuspec",
+        "lib/net462/Grpc.Core.Api.dll",
+        "lib/net462/Grpc.Core.Api.pdb",
+        "lib/net462/Grpc.Core.Api.xml",
+        "lib/netstandard2.0/Grpc.Core.Api.dll",
+        "lib/netstandard2.0/Grpc.Core.Api.pdb",
+        "lib/netstandard2.0/Grpc.Core.Api.xml",
+        "lib/netstandard2.1/Grpc.Core.Api.dll",
+        "lib/netstandard2.1/Grpc.Core.Api.pdb",
+        "lib/netstandard2.1/Grpc.Core.Api.xml",
+        "packageIcon.png"
+      ]
+    },
+    "GrpcDotNetNamedPipes/3.1.0": {
+      "sha512": "IEbpody7yYtL+oTNGRJspbK+Xne2fWzhiAOmJxJ8zoS3knFv0jDxv0WgJxO2cOCpoItn1cv4X4dloxSbFPB3eA==",
+      "type": "package",
+      "path": "grpcdotnetnamedpipes/3.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "grpcdotnetnamedpipes.3.1.0.nupkg.sha512",
+        "grpcdotnetnamedpipes.nuspec",
+        "lib/net462/GrpcDotNetNamedPipes.dll",
+        "lib/net6.0/GrpcDotNetNamedPipes.dll",
+        "lib/net8.0/GrpcDotNetNamedPipes.dll",
+        "lib/netstandard2.0/GrpcDotNetNamedPipes.dll"
+      ]
+    },
+    "Makaretu.Dns/2.0.1": {
+      "sha512": "qe/5w5Q/i2Xz2ZnCq3E49kLAtVFRuuBn40C1mQPWbLDwlHM0KVDzCkFqwxDedv7JgQis66Z9AZKyo1zCTRrdYA==",
+      "type": "package",
+      "path": "makaretu.dns/2.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/Makaretu.Dns.dll",
+        "lib/net45/Makaretu.Dns.pdb",
+        "lib/net45/Makaretu.Dns.xml",
+        "lib/net472/Makaretu.Dns.dll",
+        "lib/net472/Makaretu.Dns.pdb",
+        "lib/net472/Makaretu.Dns.xml",
+        "lib/netstandard1.4/Makaretu.Dns.dll",
+        "lib/netstandard1.4/Makaretu.Dns.pdb",
+        "lib/netstandard1.4/Makaretu.Dns.xml",
+        "lib/netstandard2.0/Makaretu.Dns.dll",
+        "lib/netstandard2.0/Makaretu.Dns.pdb",
+        "lib/netstandard2.0/Makaretu.Dns.xml",
+        "makaretu.dns.2.0.1.nupkg.sha512",
+        "makaretu.dns.nuspec"
+      ]
+    },
+    "Microsoft.Bcl.AsyncInterfaces/10.0.10": {
+      "sha512": "TFI6OKYE1XZz4SGuTSH70c6SBdPpFktXsoa1gCxTr3mKrhmXirnvaS0tKz+J3ZWICEAmMpEGn59nO4ICtUpQXA==",
+      "type": "package",
+      "path": "microsoft.bcl.asyncinterfaces/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Bcl.AsyncInterfaces.targets",
+        "buildTransitive/net462/_._",
+        "lib/net462/Microsoft.Bcl.AsyncInterfaces.dll",
+        "lib/net462/Microsoft.Bcl.AsyncInterfaces.xml",
+        "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll",
+        "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.xml",
+        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll",
+        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.xml",
+        "microsoft.bcl.asyncinterfaces.10.0.10.nupkg.sha512",
+        "microsoft.bcl.asyncinterfaces.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.10": {
+      "sha512": "z/2xXlFw2aLGjHyEm6E0tQ+In6VfzQzTrtArbQ2c0TQE16ZbyDCMGPvaUT9I0s8rgy9sRWlU2P9waW37qV04qA==",
+      "type": "package",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Extensions.DependencyInjection.Abstractions.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/Microsoft.Extensions.DependencyInjection.Abstractions.targets",
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net462/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "microsoft.extensions.dependencyinjection.abstractions.10.0.10.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.abstractions.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.Logging.Abstractions/10.0.10": {
+      "sha512": "zkFxGYUvdxAvIKTyXHrmW+Sux53D4SezD9dMyZ6hrwwzPQJNuwCRy1f5W7AvYTqacEGhWF2XderRQG1OvbV8og==",
+      "type": "package",
+      "path": "microsoft.extensions.logging.abstractions/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/roslyn3.11/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn3.11/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn4.0/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn4.4/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "buildTransitive/net461/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/net462/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/netcoreapp2.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net462/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "microsoft.extensions.logging.abstractions.10.0.10.nupkg.sha512",
+        "microsoft.extensions.logging.abstractions.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "NAPS2.Escl/1.6.1": {
+      "sha512": "RAktGsVPL4sj08oxkgGte10BlesU76LmhScBzksei+kpx77zg4zXIWT1GUj8csUArVcLzbsZDS1fDPnDWSe50w==",
+      "type": "package",
+      "path": "naps2.escl/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net10.0/NAPS2.Escl.dll",
+        "lib/net462/NAPS2.Escl.dll",
+        "lib/net8.0/NAPS2.Escl.dll",
+        "lib/netstandard2.0/NAPS2.Escl.dll",
+        "naps2.escl.1.6.1.nupkg.sha512",
+        "naps2.escl.nuspec"
+      ]
+    },
+    "NAPS2.Images/1.6.1": {
+      "sha512": "kb6Bfer6p1+1kAjGkDmVk81jBCVRcYzpNP3zsRzB9sVz5d5fOqeVYQq2/dfjBX81tynk2nHGadVOBqSEJ4ptSA==",
+      "type": "package",
+      "path": "naps2.images/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net10.0/NAPS2.Images.dll",
+        "lib/net462/NAPS2.Images.dll",
+        "lib/net8.0/NAPS2.Images.dll",
+        "lib/netstandard2.0/NAPS2.Images.dll",
+        "naps2.images.1.6.1.nupkg.sha512",
+        "naps2.images.nuspec"
+      ]
+    },
+    "NAPS2.Images.ImageSharp/1.6.1": {
+      "sha512": "/nUNa3ZGnr5hCj6CGepGSZKZ62jzKolcHdAfiLzN8lJrXQiT9aSs0DcMNgSLFXjTI0rs8Gs/fBDxDwMegbumWg==",
+      "type": "package",
+      "path": "naps2.images.imagesharp/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net10.0/NAPS2.Images.ImageSharp.dll",
+        "lib/net8.0/NAPS2.Images.ImageSharp.dll",
+        "naps2.images.imagesharp.1.6.1.nupkg.sha512",
+        "naps2.images.imagesharp.nuspec"
+      ]
+    },
+    "NAPS2.Internals/1.6.1": {
+      "sha512": "iOyzPSduySyJ7o+OkflnwtzWwHf4/9WIP0s16uPaRgScZ76gqYfZnv19YK23ryo7ibKvz4gg5Q1WLtS+jUtwjg==",
+      "type": "package",
+      "path": "naps2.internals/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net10.0/NAPS2.Internals.dll",
+        "lib/net462/NAPS2.Internals.dll",
+        "lib/net8.0/NAPS2.Internals.dll",
+        "lib/netstandard2.0/NAPS2.Internals.dll",
+        "naps2.internals.1.6.1.nupkg.sha512",
+        "naps2.internals.nuspec"
+      ]
+    },
+    "NAPS2.Mdns/1.0.1": {
+      "sha512": "LQMEYKiSzvXtVVFgzBqBTRnoWa9lJRB7YEnD2m8/we9PfON6s+QGPSq7ZATVt1Cbuhr4FDRkJEjuLUeBkPK6Zw==",
+      "type": "package",
+      "path": "naps2.mdns/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net462/Makaretu.Dns.Multicast.New.dll",
+        "lib/net462/Makaretu.Dns.Multicast.New.xml",
+        "lib/net6.0/Makaretu.Dns.Multicast.New.dll",
+        "lib/net6.0/Makaretu.Dns.Multicast.New.xml",
+        "lib/netstandard2.0/Makaretu.Dns.Multicast.New.dll",
+        "lib/netstandard2.0/Makaretu.Dns.Multicast.New.xml",
+        "naps2.mdns.1.0.1.nupkg.sha512",
+        "naps2.mdns.nuspec"
+      ]
+    },
+    "NAPS2.NTwain/1.0.1": {
+      "sha512": "gTUekPpglFMgcCKQ6cOcXsnuOR/Y3hMp2dTo8jlrRRzBQ7ASregm262rkyDxD5KeZ7LxmjT5NXX1tg+JUUZg9A==",
+      "type": "package",
+      "path": "naps2.ntwain/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net462/NTwain.dll",
+        "lib/net462/NTwain.pdb",
+        "lib/net462/NTwain.xml",
+        "lib/net6.0/NTwain.dll",
+        "lib/net6.0/NTwain.pdb",
+        "lib/net6.0/NTwain.xml",
+        "lib/netstandard2.0/NTwain.dll",
+        "lib/netstandard2.0/NTwain.pdb",
+        "lib/netstandard2.0/NTwain.xml",
+        "naps2.ntwain.1.0.1.nupkg.sha512",
+        "naps2.ntwain.nuspec"
+      ]
+    },
+    "NAPS2.PdfSharp/1.0.2": {
+      "sha512": "Eapb5d75M1NqAffpDq2uw6IBQu1yWcu87ClPvKoJwin5IwuvmV1Tkvrr67Di8C7fAldBko0hcpVTZ0vkFXaL2A==",
+      "type": "package",
+      "path": "naps2.pdfsharp/1.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENCE.md",
+        "lib/net462/PdfSharpCore.dll",
+        "lib/net462/de/PdfSharpCore.resources.dll",
+        "lib/net6.0/PdfSharpCore.dll",
+        "lib/net6.0/de/PdfSharpCore.resources.dll",
+        "lib/netstandard2.0/PdfSharpCore.dll",
+        "lib/netstandard2.0/de/PdfSharpCore.resources.dll",
+        "naps2.pdfsharp.1.0.2.nupkg.sha512",
+        "naps2.pdfsharp.nuspec"
+      ]
+    },
+    "NAPS2.Sdk/1.6.1": {
+      "sha512": "fuHk4mtqBvdPlGUyI3/7iqyGeWf/6SIGon9nTHDfSQFXg3q0HBYwSijFIpttUOsMKsSIBP/ZnMB6NEt3+W/cfA==",
+      "type": "package",
+      "path": "naps2.sdk/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net10.0/NAPS2.Sdk.dll",
+        "lib/net10.0/af/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ar/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/bg/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/bn/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/bs/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ca/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/cs/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/da/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/de/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/el/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/es/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/et/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/fa/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/fi/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/fr/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/he/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/hi/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/hr/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/hu/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/id/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/it/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ja/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ko/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/lt/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/lv/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/nb/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/nl/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/nn/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/pl/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/pt-BR/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/pt-PT/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ro/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/ru/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/si/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sk/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sl/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sq/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sr-CS/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sr/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/sv/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/th/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/tr/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/uk/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/vi/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/zh-CN/NAPS2.Sdk.resources.dll",
+        "lib/net10.0/zh-TW/NAPS2.Sdk.resources.dll",
+        "lib/net462/NAPS2.Sdk.dll",
+        "lib/net462/af/NAPS2.Sdk.resources.dll",
+        "lib/net462/ar/NAPS2.Sdk.resources.dll",
+        "lib/net462/bg/NAPS2.Sdk.resources.dll",
+        "lib/net462/bn/NAPS2.Sdk.resources.dll",
+        "lib/net462/bs/NAPS2.Sdk.resources.dll",
+        "lib/net462/ca/NAPS2.Sdk.resources.dll",
+        "lib/net462/cs/NAPS2.Sdk.resources.dll",
+        "lib/net462/da/NAPS2.Sdk.resources.dll",
+        "lib/net462/de/NAPS2.Sdk.resources.dll",
+        "lib/net462/el/NAPS2.Sdk.resources.dll",
+        "lib/net462/es/NAPS2.Sdk.resources.dll",
+        "lib/net462/et/NAPS2.Sdk.resources.dll",
+        "lib/net462/fa/NAPS2.Sdk.resources.dll",
+        "lib/net462/fi/NAPS2.Sdk.resources.dll",
+        "lib/net462/fr/NAPS2.Sdk.resources.dll",
+        "lib/net462/he/NAPS2.Sdk.resources.dll",
+        "lib/net462/hi/NAPS2.Sdk.resources.dll",
+        "lib/net462/hr/NAPS2.Sdk.resources.dll",
+        "lib/net462/hu/NAPS2.Sdk.resources.dll",
+        "lib/net462/id/NAPS2.Sdk.resources.dll",
+        "lib/net462/it/NAPS2.Sdk.resources.dll",
+        "lib/net462/ja/NAPS2.Sdk.resources.dll",
+        "lib/net462/ko/NAPS2.Sdk.resources.dll",
+        "lib/net462/lt/NAPS2.Sdk.resources.dll",
+        "lib/net462/lv/NAPS2.Sdk.resources.dll",
+        "lib/net462/nb/NAPS2.Sdk.resources.dll",
+        "lib/net462/nl/NAPS2.Sdk.resources.dll",
+        "lib/net462/nn/NAPS2.Sdk.resources.dll",
+        "lib/net462/pl/NAPS2.Sdk.resources.dll",
+        "lib/net462/pt-BR/NAPS2.Sdk.resources.dll",
+        "lib/net462/pt-PT/NAPS2.Sdk.resources.dll",
+        "lib/net462/ro/NAPS2.Sdk.resources.dll",
+        "lib/net462/ru/NAPS2.Sdk.resources.dll",
+        "lib/net462/si/NAPS2.Sdk.resources.dll",
+        "lib/net462/sk/NAPS2.Sdk.resources.dll",
+        "lib/net462/sl/NAPS2.Sdk.resources.dll",
+        "lib/net462/sq/NAPS2.Sdk.resources.dll",
+        "lib/net462/sr-CS/NAPS2.Sdk.resources.dll",
+        "lib/net462/sr/NAPS2.Sdk.resources.dll",
+        "lib/net462/sv/NAPS2.Sdk.resources.dll",
+        "lib/net462/th/NAPS2.Sdk.resources.dll",
+        "lib/net462/tr/NAPS2.Sdk.resources.dll",
+        "lib/net462/uk/NAPS2.Sdk.resources.dll",
+        "lib/net462/vi/NAPS2.Sdk.resources.dll",
+        "lib/net462/zh-CN/NAPS2.Sdk.resources.dll",
+        "lib/net462/zh-TW/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/NAPS2.Sdk.dll",
+        "lib/net8.0/af/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ar/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/bg/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/bn/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/bs/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ca/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/cs/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/da/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/de/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/el/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/es/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/et/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/fa/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/fi/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/fr/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/he/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/hi/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/hr/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/hu/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/id/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/it/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ja/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ko/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/lt/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/lv/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/nb/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/nl/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/nn/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/pl/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/pt-BR/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/pt-PT/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ro/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/ru/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/si/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sk/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sl/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sq/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sr-CS/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sr/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/sv/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/th/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/tr/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/uk/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/vi/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/zh-CN/NAPS2.Sdk.resources.dll",
+        "lib/net8.0/zh-TW/NAPS2.Sdk.resources.dll",
+        "naps2.sdk.1.6.1.nupkg.sha512",
+        "naps2.sdk.nuspec"
+      ]
+    },
+    "NAPS2.Sdk.Worker.Win32/1.6.1": {
+      "sha512": "SyfbrAPFoBgf66qHIo07+oDBcC9j5JUlNW4S3vwY8zSriN1csXWJvlM+bKLCRLPGufMiF/B5RCKVHHwNnAgEDA==",
+      "type": "package",
+      "path": "naps2.sdk.worker.win32/1.6.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "build/NAPS2.Sdk.Worker.Win32.targets",
+        "contentFiles/NAPS2.Worker.exe",
+        "lib/net10.0/NAPS2.Sdk.Worker.Win32.dll",
+        "lib/net462/NAPS2.Sdk.Worker.Win32.dll",
+        "lib/net8.0/NAPS2.Sdk.Worker.Win32.dll",
+        "naps2.sdk.worker.win32.1.6.1.nupkg.sha512",
+        "naps2.sdk.worker.win32.nuspec"
+      ]
+    },
+    "NAPS2.Wia/2.0.3": {
+      "sha512": "Za/pkCCVuUxD3Q00pTsFd3FRAi1HTBlM8uzDXaPpULMZ6MoqYaJKcE5fJmOz+fqNfQaMxv9dQeJ1GZ9uVtBM8g==",
+      "type": "package",
+      "path": "naps2.wia/2.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net462/NAPS2.Wia.dll",
+        "lib/net6.0/NAPS2.Wia.dll",
+        "lib/netstandard2.0/NAPS2.Wia.dll",
+        "naps2.wia.2.0.3.nupkg.sha512",
+        "naps2.wia.nuspec"
+      ]
+    },
+    "SharpZipLib/1.4.2": {
+      "sha512": "yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+      "type": "package",
+      "path": "sharpziplib/1.4.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "images/sharpziplib-nuget-256x256.png",
+        "lib/net6.0/ICSharpCode.SharpZipLib.dll",
+        "lib/net6.0/ICSharpCode.SharpZipLib.pdb",
+        "lib/net6.0/ICSharpCode.SharpZipLib.xml",
+        "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll",
+        "lib/netstandard2.0/ICSharpCode.SharpZipLib.pdb",
+        "lib/netstandard2.0/ICSharpCode.SharpZipLib.xml",
+        "lib/netstandard2.1/ICSharpCode.SharpZipLib.dll",
+        "lib/netstandard2.1/ICSharpCode.SharpZipLib.pdb",
+        "lib/netstandard2.1/ICSharpCode.SharpZipLib.xml",
+        "sharpziplib.1.4.2.nupkg.sha512",
+        "sharpziplib.nuspec"
+      ]
+    },
+    "SimpleBase/1.3.1": {
+      "sha512": "TqqQc+WFg3s10/PdnI2Dio0U7xEmVXhkf+ey4tOGZzjyd054rnNOLNVahJhMYmfBQdS7/jkVqC8xzLm/bkR3EA==",
+      "type": "package",
+      "path": "simplebase/1.3.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/SimpleBase.dll",
+        "lib/net45/SimpleBase.pdb",
+        "lib/netstandard1.3/SimpleBase.dll",
+        "lib/netstandard1.3/SimpleBase.pdb",
+        "simplebase.1.3.1.nupkg.sha512",
+        "simplebase.nuspec"
+      ]
+    },
+    "SixLabors.Fonts/1.0.1": {
+      "sha512": "ljezRHWc7N0azdQViib7Aa5v+DagRVkKI2/93kEbtjVczLs+yTkSq6gtGmvOcx4IqyNbO3GjLt7SAQTpLkySNw==",
+      "type": "package",
+      "path": "sixlabors.fonts/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netcoreapp3.1/SixLabors.Fonts.dll",
+        "lib/netcoreapp3.1/SixLabors.Fonts.xml",
+        "lib/netstandard2.0/SixLabors.Fonts.dll",
+        "lib/netstandard2.0/SixLabors.Fonts.xml",
+        "lib/netstandard2.1/SixLabors.Fonts.dll",
+        "lib/netstandard2.1/SixLabors.Fonts.xml",
+        "sixlabors.fonts.1.0.1.nupkg.sha512",
+        "sixlabors.fonts.128.png",
+        "sixlabors.fonts.nuspec"
+      ]
+    },
+    "SixLabors.ImageSharp/3.1.12": {
+      "sha512": "iAg6zifihXEFS/t7fiHhZBGAdCp3FavsF4i2ZIDp0JfeYeDVzvmlbY1CNhhIKimaIzrzSi5M/NBFcWvZT2rB/A==",
+      "type": "package",
+      "path": "sixlabors.imagesharp/3.1.12",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "build/SixLabors.ImageSharp.props",
+        "lib/net6.0/SixLabors.ImageSharp.dll",
+        "lib/net6.0/SixLabors.ImageSharp.xml",
+        "sixlabors.imagesharp.128.png",
+        "sixlabors.imagesharp.3.1.12.nupkg.sha512",
+        "sixlabors.imagesharp.nuspec"
+      ]
+    },
+    "StandardSocketsHttpHandler/2.2.0.10": {
+      "sha512": "tlnMfWuT043rvyVQTGCm9049SZcDpe9oeLwLTVWRLw0s5ijjCdNYdxfOCMejtsUBFdWQ00boZSJHcNB2GZKBCw==",
+      "type": "package",
+      "path": "standardsocketshttphandler/2.2.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/StandardSocketsHttpHandler.dll",
+        "lib/netstandard2.1/StandardSocketsHttpHandler.dll",
+        "standardsocketshttphandler.2.2.0.10.nupkg.sha512",
+        "standardsocketshttphandler.nuspec"
+      ]
+    },
+    "System.Collections.Immutable/10.0.10": {
+      "sha512": "Ih5zrydoDc1H5I0eNP6f4Lzw3cjsPMN4Nikd86kbyi66y0flkM9GfjVo62aUbcxeTbypzBCFAFQ+/6RF2jRORg==",
+      "type": "package",
+      "path": "system.collections.immutable/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Collections.Immutable.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Collections.Immutable.targets",
+        "lib/net10.0/System.Collections.Immutable.dll",
+        "lib/net10.0/System.Collections.Immutable.xml",
+        "lib/net462/System.Collections.Immutable.dll",
+        "lib/net462/System.Collections.Immutable.xml",
+        "lib/net8.0/System.Collections.Immutable.dll",
+        "lib/net8.0/System.Collections.Immutable.xml",
+        "lib/net9.0/System.Collections.Immutable.dll",
+        "lib/net9.0/System.Collections.Immutable.xml",
+        "lib/netstandard2.0/System.Collections.Immutable.dll",
+        "lib/netstandard2.0/System.Collections.Immutable.xml",
+        "system.collections.immutable.10.0.10.nupkg.sha512",
+        "system.collections.immutable.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Diagnostics.DiagnosticSource/10.0.10": {
+      "sha512": "cjtKi6ERMYWp6b9UTVPcwDT29PjKDtlM3W9OwnWL5abRsI8ku42Q2wqZoLIIXJnT/XF2s2CjuK8Nl4a3mmTxQQ==",
+      "type": "package",
+      "path": "system.diagnostics.diagnosticsource/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Diagnostics.DiagnosticSource.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Diagnostics.DiagnosticSource.targets",
+        "lib/net10.0/System.Diagnostics.DiagnosticSource.dll",
+        "lib/net10.0/System.Diagnostics.DiagnosticSource.xml",
+        "lib/net462/System.Diagnostics.DiagnosticSource.dll",
+        "lib/net462/System.Diagnostics.DiagnosticSource.xml",
+        "lib/net8.0/System.Diagnostics.DiagnosticSource.dll",
+        "lib/net8.0/System.Diagnostics.DiagnosticSource.xml",
+        "lib/net9.0/System.Diagnostics.DiagnosticSource.dll",
+        "lib/net9.0/System.Diagnostics.DiagnosticSource.xml",
+        "lib/netstandard2.0/System.Diagnostics.DiagnosticSource.dll",
+        "lib/netstandard2.0/System.Diagnostics.DiagnosticSource.xml",
+        "system.diagnostics.diagnosticsource.10.0.10.nupkg.sha512",
+        "system.diagnostics.diagnosticsource.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Formats.Nrbf/10.0.10": {
+      "sha512": "gOcWB7GddeYRGZWA8lHi84MvuzTI3ugYISfLfCg5FTdZB3cDaoAj7yG7c2bBaO+hio1nZ5kz/BrwpzfLT1R8Bg==",
+      "type": "package",
+      "path": "system.formats.nrbf/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Formats.Nrbf.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Formats.Nrbf.targets",
+        "lib/net10.0/System.Formats.Nrbf.dll",
+        "lib/net10.0/System.Formats.Nrbf.xml",
+        "lib/net462/System.Formats.Nrbf.dll",
+        "lib/net462/System.Formats.Nrbf.xml",
+        "lib/net8.0/System.Formats.Nrbf.dll",
+        "lib/net8.0/System.Formats.Nrbf.xml",
+        "lib/net9.0/System.Formats.Nrbf.dll",
+        "lib/net9.0/System.Formats.Nrbf.xml",
+        "lib/netstandard2.0/System.Formats.Nrbf.dll",
+        "lib/netstandard2.0/System.Formats.Nrbf.xml",
+        "system.formats.nrbf.10.0.10.nupkg.sha512",
+        "system.formats.nrbf.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Memory/4.6.0": {
+      "sha512": "OEkbBQoklHngJ8UD8ez2AERSk2g+/qpAaSWWCBFbpH727HxDq5ydVkuncBaKcKfwRqXGWx64dS6G1SUScMsitg==",
+      "type": "package",
+      "path": "system.memory/4.6.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "buildTransitive/net461/System.Memory.targets",
+        "buildTransitive/net462/_._",
+        "lib/net462/System.Memory.dll",
+        "lib/net462/System.Memory.xml",
+        "lib/netcoreapp2.1/_._",
+        "lib/netstandard2.0/System.Memory.dll",
+        "lib/netstandard2.0/System.Memory.xml",
+        "system.memory.4.6.0.nupkg.sha512",
+        "system.memory.nuspec"
+      ]
+    },
+    "System.Reflection.Metadata/10.0.10": {
+      "sha512": "NZIS6/IUBh70nJfVvE577oDc81y5GfYRgjWssC8AGpSlVzSu5YfbHXEtHXyLeEY7gqqbAaASwJEP0Oy3Q54Jfw==",
+      "type": "package",
+      "path": "system.reflection.metadata/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Reflection.Metadata.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Reflection.Metadata.targets",
+        "lib/net10.0/System.Reflection.Metadata.dll",
+        "lib/net10.0/System.Reflection.Metadata.xml",
+        "lib/net462/System.Reflection.Metadata.dll",
+        "lib/net462/System.Reflection.Metadata.xml",
+        "lib/net8.0/System.Reflection.Metadata.dll",
+        "lib/net8.0/System.Reflection.Metadata.xml",
+        "lib/net9.0/System.Reflection.Metadata.dll",
+        "lib/net9.0/System.Reflection.Metadata.xml",
+        "lib/netstandard2.0/System.Reflection.Metadata.dll",
+        "lib/netstandard2.0/System.Reflection.Metadata.xml",
+        "system.reflection.metadata.10.0.10.nupkg.sha512",
+        "system.reflection.metadata.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Resources.Extensions/10.0.10": {
+      "sha512": "xUBGLR+HPujL5k3LmHIJSS6xFsKECOGO52nurXMDADkLRFNVVUxCH4ng2WBD1YTxGHkE/s2kJs1I2B89DJJyLA==",
+      "type": "package",
+      "path": "system.resources.extensions/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Resources.Extensions.targets",
+        "buildTransitive/net462/System.Resources.Extensions.targets",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Resources.Extensions.targets",
+        "lib/net10.0/System.Resources.Extensions.dll",
+        "lib/net10.0/System.Resources.Extensions.xml",
+        "lib/net462/System.Resources.Extensions.dll",
+        "lib/net462/System.Resources.Extensions.xml",
+        "lib/net8.0/System.Resources.Extensions.dll",
+        "lib/net8.0/System.Resources.Extensions.xml",
+        "lib/net9.0/System.Resources.Extensions.dll",
+        "lib/net9.0/System.Resources.Extensions.xml",
+        "lib/netstandard2.0/System.Resources.Extensions.dll",
+        "lib/netstandard2.0/System.Resources.Extensions.xml",
+        "system.resources.extensions.10.0.10.nupkg.sha512",
+        "system.resources.extensions.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.Threading.Tasks.Dataflow/10.0.10": {
+      "sha512": "5MUgjNSoEOixUEFzH9sYjsoDFsb8yEb1Hj5LM2PwWHkJhIkw1N+QciTp62zev6hYNyWuS/q5dY+LXQtyvBHI+Q==",
+      "type": "package",
+      "path": "system.threading.tasks.dataflow/10.0.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Threading.Tasks.Dataflow.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Threading.Tasks.Dataflow.targets",
+        "lib/net10.0/System.Threading.Tasks.Dataflow.dll",
+        "lib/net10.0/System.Threading.Tasks.Dataflow.xml",
+        "lib/net462/System.Threading.Tasks.Dataflow.dll",
+        "lib/net462/System.Threading.Tasks.Dataflow.xml",
+        "lib/net8.0/System.Threading.Tasks.Dataflow.dll",
+        "lib/net8.0/System.Threading.Tasks.Dataflow.xml",
+        "lib/net9.0/System.Threading.Tasks.Dataflow.dll",
+        "lib/net9.0/System.Threading.Tasks.Dataflow.xml",
+        "lib/netstandard2.0/System.Threading.Tasks.Dataflow.dll",
+        "lib/netstandard2.0/System.Threading.Tasks.Dataflow.xml",
+        "lib/netstandard2.1/System.Threading.Tasks.Dataflow.dll",
+        "lib/netstandard2.1/System.Threading.Tasks.Dataflow.xml",
+        "system.threading.tasks.dataflow.10.0.10.nupkg.sha512",
+        "system.threading.tasks.dataflow.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "ZXing.Net/0.16.11": {
+      "sha512": "OZfAVu88hl87BffQ+rlWCj/vLvAhhCK4QnFaoveeF/MY8SjHNSYBQ3qyUEWlPKNgBQGh1syXhCDg10vUnCsqkg==",
+      "type": "package",
+      "path": "zxing.net/0.16.11",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "docs/README.md",
+        "lib/native/zxing.XML",
+        "lib/native/zxing.pri",
+        "lib/native/zxing.winmd",
+        "lib/net20-cf/zxing.ce2.0.dll",
+        "lib/net20-cf/zxing.ce2.0.xml",
+        "lib/net20/zxing.XML",
+        "lib/net20/zxing.dll",
+        "lib/net35-cf/zxing.ce3.5.dll",
+        "lib/net35-cf/zxing.ce3.5.xml",
+        "lib/net35/zxing.XML",
+        "lib/net35/zxing.dll",
+        "lib/net40/zxing.XML",
+        "lib/net40/zxing.dll",
+        "lib/net40/zxing.presentation.XML",
+        "lib/net40/zxing.presentation.dll",
+        "lib/net45/zxing.XML",
+        "lib/net45/zxing.dll",
+        "lib/net45/zxing.presentation.XML",
+        "lib/net45/zxing.presentation.dll",
+        "lib/net461/zxing.XML",
+        "lib/net461/zxing.dll",
+        "lib/net461/zxing.presentation.XML",
+        "lib/net461/zxing.presentation.dll",
+        "lib/net47/zxing.XML",
+        "lib/net47/zxing.dll",
+        "lib/net47/zxing.presentation.XML",
+        "lib/net47/zxing.presentation.dll",
+        "lib/net48/zxing.XML",
+        "lib/net48/zxing.dll",
+        "lib/net48/zxing.presentation.XML",
+        "lib/net48/zxing.presentation.dll",
+        "lib/net5.0/zxing.XML",
+        "lib/net5.0/zxing.dll",
+        "lib/net6.0/zxing.XML",
+        "lib/net6.0/zxing.dll",
+        "lib/net7.0/zxing.XML",
+        "lib/net7.0/zxing.dll",
+        "lib/net8.0/zxing.XML",
+        "lib/net8.0/zxing.dll",
+        "lib/net9.0/zxing.XML",
+        "lib/net9.0/zxing.dll",
+        "lib/netcoreapp3.0/zxing.dll",
+        "lib/netcoreapp3.0/zxing.xml",
+        "lib/netcoreapp3.1/zxing.dll",
+        "lib/netcoreapp3.1/zxing.xml",
+        "lib/netstandard1.0/zxing.dll",
+        "lib/netstandard1.0/zxing.xml",
+        "lib/netstandard1.1/zxing.dll",
+        "lib/netstandard1.1/zxing.xml",
+        "lib/netstandard1.3/zxing.dll",
+        "lib/netstandard1.3/zxing.xml",
+        "lib/netstandard2.0/zxing.dll",
+        "lib/netstandard2.0/zxing.xml",
+        "lib/netstandard2.1/zxing.dll",
+        "lib/netstandard2.1/zxing.xml",
+        "lib/portable-win+net40+sl4+sl5+wp7+wp71+wp8/zxing.portable.XML",
+        "lib/portable-win+net40+sl4+sl5+wp7+wp71+wp8/zxing.portable.dll",
+        "lib/sl3-wp/zxing.wp7.0.XML",
+        "lib/sl3-wp/zxing.wp7.0.dll",
+        "lib/sl4-wp71/zxing.wp7.1.XML",
+        "lib/sl4-wp71/zxing.wp7.1.dll",
+        "lib/sl4/zxing.sl4.XML",
+        "lib/sl4/zxing.sl4.dll",
+        "lib/sl5/zxing.sl5.XML",
+        "lib/sl5/zxing.sl5.dll",
+        "lib/uap10/zxing.dll",
+        "lib/uap10/zxing.pri",
+        "lib/uap10/zxing.xml",
+        "lib/windows8-managed/zxing.winrt.XML",
+        "lib/windows8-managed/zxing.winrt.dll",
+        "lib/windows8/zxing.XML",
+        "lib/windows8/zxing.pri",
+        "lib/windows8/zxing.winmd",
+        "lib/wp8/zxing.wp8.0.XML",
+        "lib/wp8/zxing.wp8.0.dll",
+        "logo.jpg",
+        "zxing.net.0.16.11.nupkg.sha512",
+        "zxing.net.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0-windows7.0": [
+      "NAPS2.Images.ImageSharp >= 1.6.1",
+      "NAPS2.Sdk >= 1.6.1",
+      "NAPS2.Sdk.Worker.Win32 >= 1.6.1"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\kaio.cotrim\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\kaio.cotrim\\Documents\\CotrimScan\\scripts\\twain-streamer\\TwainStreamer.csproj",
+      "projectName": "TwainStreamer",
+      "projectPath": "C:\\Users\\kaio.cotrim\\Documents\\CotrimScan\\scripts\\twain-streamer\\TwainStreamer.csproj",
+      "packagesPath": "C:\\Users\\kaio.cotrim\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\kaio.cotrim\\Documents\\CotrimScan\\scripts\\twain-streamer\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\kaio.cotrim\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0-windows"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0-windows7.0": {
+        "targetAlias": "net8.0-windows",
+        "dependencies": {
+          "NAPS2.Images.ImageSharp": {
+            "target": "Package",
+            "version": "[1.6.1, )"
+          },
+          "NAPS2.Sdk": {
+            "target": "Package",
+            "version": "[1.6.1, )"
+          },
+          "NAPS2.Sdk.Worker.Win32": {
+            "target": "Package",
+            "version": "[1.6.1, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Users\\kaio.cotrim\\Documents\\CotrimScan\\.local\\dotnet\\sdk\\8.0.427/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

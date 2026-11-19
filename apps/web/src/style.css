@@ -242,6 +242,22 @@
 .capture-editor-modal [role="dialog"] .capture-editor-footer > button:last-child:not(:disabled) { border-color: #61acfa70 !important; background: #3287dc !important; color: white !important; }
 .capture-editor-modal [role="dialog"] .capture-editor-footer > button:last-child:not(:disabled):hover { background: #4397ea !important; }
 @media (max-width: 750px) { .capture-editor-settings { margin-left: 0 !important; padding-left: 0 !important; } }
+.capture-editor-modal [role="dialog"] .capture-editor-shell { background: #17181b; color: #f1f2f4; }
+.capture-editor-modal [role="dialog"] .capture-editor-settings { margin-left: 0 !important; padding: 16px !important; border: 1px solid #383a40; border-radius: 10px; background: #202124; }
+.capture-editor-modal [role="dialog"] .capture-editor-field-card { border-color: #383a40; border-radius: 10px; background: #292b30; }
+.capture-editor-modal [role="dialog"] .capture-editor-field-card :is(input:not([type=checkbox]), select) { border-color: #383a40; border-radius: 6px; background: #202124; color: #f1f2f4; }
+.capture-editor-modal [role="dialog"] .capture-editor-field-card details { border-color: #383a40; background: #202124; }
+.capture-editor-modal [role="dialog"] .capture-editor-toolbar button { border-color: #383a40; background: #292b30; }
+.capture-editor-modal [role="dialog"] .capture-editor-viewport { border-color: #383a40; }
+.project-card-shadcn { display: block !important; padding: 16px 12px 18px !important; color: #e8e8e8 !important; background: transparent !important; box-shadow: none !important; }
+.project-card-shadcn:hover { background: #ffffff03 !important; }
+#auth-view [data-slot="accordion-trigger"] { width: 100%; justify-content: space-between; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+#auth-view [data-slot="accordion-trigger"]:hover { background: transparent !important; text-decoration: none; color: #eef5fc !important; }
+#auth-view [data-slot="accordion-item"] { border-color: #ffffff12; }
+@media (max-width: 700px) {
+  .capture-editor-modal [role="dialog"] .capture-editor-settings { margin-top: 12px !important; }
+  .capture-editor-modal [role="dialog"] .capture-editor-settings.max-\[700px\]\:hidden { display: none; }
+}
 
 #projects-view .account-logout { background: #3287dc; color: #fff; }
 #projects-view .account-logout:hover { background: #4397ea; }
@@ -383,3 +399,158 @@ html:not(.app-light) #projects-view .scanner-selector-toggle:hover,html:not(.app
 #projects-view>header button[aria-haspopup="menu"]{display:inline-flex;align-items:center;gap:8px;width:auto;min-height:40px;margin:0;padding:4px;border-radius:999px;line-height:1}
 #projects-view>header button[aria-haspopup="menu"]>span:first-child{display:grid;place-items:center;width:32px;height:32px;flex:none}
 #projects-view>header button[aria-haspopup="menu"]>span:last-child{padding-right:4px}
+
+/* Central login composition based on the supplied AbacatePay reference. */
+#auth-view{position:relative;display:block;min-height:100dvh;overflow:hidden}
+#auth-view>div{position:relative;display:block;min-height:100dvh}
+#auth-view>div>section{position:relative;z-index:1;display:flex;width:100%;min-height:100dvh;align-items:center;justify-content:center;padding:56px 24px}
+#auth-view>div>section>div{width:100%;max-width:396px!important}
+#auth-view>div>section>div>img{width:180px;margin:0 auto 28px}
+#auth-view #auth-title,#auth-view>div>section>div>p:first-of-type{text-align:center}
+#auth-view #auth-title{font-size:24px;letter-spacing:-.5px}
+#auth-view>div>section>div>p:first-of-type{font-size:14px;line-height:1.65;margin-bottom:28px}
+#auth-view [data-slot="canvas"].auth-orbit{position:absolute;inset:0;z-index:0;display:block!important;width:100%;height:100%;margin:0;border-radius:0;opacity:.5}
+#auth-view [data-slot="canvas-content"]{display:none}
+#auth-view .auth-theme-toggle{position:fixed;top:20px;left:20px}
+@media(max-width:650px){#auth-view>div>section{padding:64px 24px 32px}#auth-view [data-slot="canvas"].auth-orbit{display:block!important}#auth-view .auth-theme-toggle{top:16px;left:16px}}
+
+/* Keep the centered login column alongside the scanner illustration. */
+#auth-view{display:flex;align-items:stretch;overflow:hidden}
+#auth-view>div{display:grid;grid-template-columns:30.5% 69.5%;width:100%;min-height:100dvh}
+#auth-view>div>section{width:auto;min-height:100dvh;padding:46px;z-index:auto}
+#auth-view>div>section>div{max-width:396px!important;padding:0 24px}
+#auth-view>div>section>div>img{width:180px;margin:0 auto 28px}
+#auth-view [data-slot="canvas"].auth-orbit{position:relative;inset:auto;z-index:auto;width:auto;height:auto;margin:18px 18px 18px 0;border-radius:24px;opacity:1}
+#auth-view [data-slot="canvas-content"]{display:block}
+#auth-view .auth-theme-toggle{position:absolute;top:22px;left:24px}
+@media(max-width:1000px){#auth-view>div{grid-template-columns:36% 64%}#auth-view>div>section{padding:24px}}
+@media(max-width:650px){#auth-view{display:block}#auth-view>div{display:block}#auth-view>div>section{width:100%;min-height:100dvh;padding:64px 24px 32px}#auth-view>div>section>div{max-width:396px!important;padding:0}#auth-view [data-slot="canvas"].auth-orbit{display:none!important}}
+#auth-view input{border:0!important;box-shadow:none!important;outline:0!important}
+#auth-view input:focus{box-shadow:0 0 0 1px #589fe8!important}
+.auth-light #auth-view input,#auth-view.auth-light input{border:0!important}
+
+/* Subtle dotted texture behind the login column. */
+#auth-view>div>section::before{content:"";position:absolute;inset:42% 0 0;pointer-events:none;background-image:radial-gradient(circle,#8fa7c333 .7px,transparent .9px);background-size:8px 8px;mask-image:radial-gradient(ellipse at 50% 78%,#000 8%,transparent 76%);opacity:.7}
+#auth-view>div>section>div{position:relative;z-index:1}
+#auth-view .auth-theme-toggle{z-index:2}
+.auth-light#auth-view>div>section::before{background-image:radial-gradient(circle,#7189a633 .7px,transparent .9px)}
+
+/* Keep the login anchored while accordion answers expand below it. */
+#auth-view>div>section{align-items:flex-start;overflow-y:auto}
+#auth-view>div>section>div{flex:none;margin-top:max(0px,calc((100dvh - 760px)/2));margin-bottom:24px}
+@media(max-width:650px){#auth-view>div>section>div{margin-top:0}}
+
+#auth-view>div>section>div{margin-top:max(40px,calc((100dvh - 760px)/2 + 40px))}
+@media(max-width:650px){#auth-view>div>section>div{margin-top:40px}}
+
+#auth-view,#auth-view>div,#auth-view>div>section,#auth-view .auth-orbit,#auth-view input,#auth-view #auth-title,#auth-view>div>section>div>p,#auth-view [data-slot="accordion-trigger"]{transition-property:background-color,color,border-color,box-shadow!important;transition-duration:.35s!important;transition-timing-function:cubic-bezier(.2,.7,.2,1)!important}
+.auth-theme-transition{position:fixed;inset:0;z-index:1000;pointer-events:none;transform-origin:28% 48%;will-change:opacity,transform}
+@media(prefers-reduced-motion:reduce){.auth-theme-transition{display:none}#auth-view,#auth-view>div,#auth-view>div>section,#auth-view .auth-orbit,#auth-view input,#auth-view #auth-title,#auth-view>div>section>div>p,#auth-view [data-slot="accordion-trigger"]{transition:none!important}}
+
+/* Compact windowed login: avoid a visible side scrollbar and restore text width. */
+@media(max-height:850px) and (min-width:651px){
+  #auth-view,#auth-view>div{height:100dvh;min-height:100dvh;overflow:hidden}
+  #auth-view>div>section{height:100dvh;min-height:0;scrollbar-width:none}
+  #auth-view>div>section::-webkit-scrollbar{display:none}
+  #auth-view>div>section>div{width:100%;max-width:320px!important;padding:0 16px}
+  #auth-view [data-slot="canvas"].auth-orbit{height:calc(100dvh - 36px);min-height:0}
+}
+
+/* Theme transition throughout the authenticated workspace. */
+.app-theme-transition{position:fixed;inset:0;z-index:9999;pointer-events:none;transform-origin:center;will-change:opacity,transform}
+html,body,#projects-view,#scanner-view,.workspace,#projects-view header,#scanner-view header,#projects-view main,#scanner-view main,#projects-view article,#scanner-view aside,#scanner-view section{transition:background-color .38s ease,color .38s ease,border-color .38s ease,box-shadow .38s ease}
+@media(prefers-reduced-motion:reduce){.app-theme-transition{display:none}html,body,#projects-view,#scanner-view,.workspace,#projects-view header,#scanner-view header,#projects-view main,#scanner-view main,#projects-view article,#scanner-view aside,#scanner-view section{transition:none}}
+.scanner-picker-row [data-slot="select-trigger"]{flex:1;width:100%;justify-content:space-between}
+.scanner-select-popup{background:#454545!important;color:#f0f0f0!important;border-color:#666!important}
+html.app-light .scanner-select-popup{background:#fff!important;color:#243449!important;border-color:#cbd7e4!important}
+
+#projects-view>main .projects-canvas{position:absolute;inset:0;width:100%;height:100%;background:transparent!important}
+
+/* Always-visible scanner list, modeled after a desktop driver picker. */
+.scanner-dialog{width:min(540px,calc(100vw - 32px))}
+.scanner-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0}
+.scanner-picker-heading .scanner-picker-label{margin:0}
+.scanner-picker-heading .scanner-action{width:auto;min-height:30px;padding:5px 10px}
+.scanner-device-list{min-height:168px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid #666;border-radius:6px;background:#292929}
+.scanner-device-option,.scanner-dialog .scanner-device-option{display:block;width:100%;min-height:31px;margin:0;padding:6px 10px;border:0;border-radius:4px;background:transparent;color:#ececec;text-align:left;font-size:12px;font-weight:400;white-space:normal}
+.scanner-device-option:hover,.scanner-dialog .scanner-device-option:hover{background:#3b4b5d}
+.scanner-device-option[aria-selected="true"],.scanner-dialog .scanner-device-option[aria-selected="true"]{background:#3287dc;color:#fff}
+.scanner-list-empty{margin:0;padding:10px;color:#aaa;font-size:12px}
+.scanner-picker-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.scanner-picker-footer button{width:auto;min-width:88px;min-height:34px;margin:0;padding:7px 16px;font-size:12px}
+.scanner-picker-confirm{background:#3287dc!important;color:#fff!important}
+.scanner-picker-confirm:disabled{opacity:.45}
+html.app-light .scanner-device-list{background:#fff;border-color:#aab5c2}
+html.app-light .scanner-device-option{color:#243449}
+html.app-light .scanner-device-option:hover{background:#e7eef7}
+html.app-light .scanner-device-option[aria-selected="true"]{background:#3287dc;color:#fff}
+html.app-light .scanner-list-empty{color:#65778a}
+html.app-light #projects-view .scanner-device-option[aria-selected="true"]{color:#fff!important}
+
+#projects-view .projects-canvas [data-slot="canvas-pattern"]{color:#fff!important}
+html.app-light #projects-view .projects-canvas [data-slot="canvas-pattern"]{color:#8fa7c3!important}
+#projects-view .scanner-picker-heading .scanner-action,html.app-light #projects-view .scanner-picker-heading .scanner-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0!important;box-shadow:none!important}
+.scanner-picker-heading .scanner-picker-label{flex:1}
+.scanner-picker-actions{display:flex;align-items:center;gap:8px}
+@media(max-width:520px){.scanner-picker-heading{flex-wrap:wrap}.scanner-picker-heading .scanner-picker-label{flex-basis:100%}.scanner-picker-actions{width:100%;justify-content:flex-end}}
+.scanner-manual-reveal .scanner-manual-form{margin-top:0;padding-top:4px;border-top:0}
+
+/* Scanner dialog uses surface contrast instead of borders. */
+#project-scanner-selector,#project-scanner-selector *{border-width:0!important}
+html.app-light #project-scanner-selector .scanner-device-list{background:#f3f6fa!important}
+#project-scanner-selector :is(button,input):focus-visible{outline:2px solid #75baff;outline-offset:2px}
+
+/* Manual scanner fields use the PanelUI input in a single column. */
+#project-scanner-selector .scanner-manual-form{grid-template-columns:minmax(0,1fr)!important;gap:14px}
+#project-scanner-selector .scanner-manual-form>.scanner-manual-field{grid-column:auto!important;grid-row:auto!important;width:100%}
+#project-scanner-selector .scanner-manual-form .scanner-control{display:block;width:100%}
+#project-scanner-selector .scanner-manual-form>.scanner-action{grid-column:auto!important;justify-self:stretch;width:100%}
+
+#project-scanner-selector{height:min(440px,calc(100dvh - 40px));min-height:0;overflow-y:auto}
+
+#project-scanner-selector .scanner-manual-reveal{overflow:visible}
+#project-scanner-selector .scanner-manual-form{padding:4px 5px 6px}
+
+#project-scanner-selector .scanner-manual-form input[type="number"]{appearance:textfield;-moz-appearance:textfield}
+#project-scanner-selector .scanner-manual-form input[type="number"]::-webkit-inner-spin-button,#project-scanner-selector .scanner-manual-form input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+#project-scanner-selector{height:min(500px,calc(100dvh - 40px));display:flex;flex-direction:column}
+#project-scanner-selector>.scanner-selector{display:flex!important;flex:1;min-height:0;flex-direction:column}
+#project-scanner-selector .scanner-list-view{display:flex;flex:1;min-height:0;flex-direction:column}
+#project-scanner-selector .scanner-list-view .scanner-device-list{flex:1;min-height:180px}
+#project-scanner-selector .scanner-list-view .scanner-picker-footer{margin-top:auto;padding-top:22px}
+#project-scanner-selector .scanner-list-view .scanner-device-list{max-height:none}
+
+/* Keep the manual save action aligned with the dialog footer. */
+#project-scanner-selector .scanner-manual-reveal{display:flex;flex:1;min-height:0;flex-direction:column}
+#project-scanner-selector .scanner-manual-form{display:flex;flex:1;min-height:0;flex-direction:column}
+#project-scanner-selector .scanner-manual-form>.scanner-action-primary{margin-top:auto;flex:none;min-height:38px;background:#666!important;color:#fff!important}
+#project-scanner-selector .scanner-manual-form>.scanner-action-primary:disabled{opacity:.65;cursor:not-allowed}
+#project-scanner-selector .scanner-manual-form>.scanner-action-primary:not(:disabled),
+html.app-light #project-scanner-selector .scanner-manual-form>.scanner-action-primary:not(:disabled){background:#3287dc!important;color:#fff!important}
+#project-scanner-selector .scanner-manual-form>.scanner-action-primary:not(:disabled):hover{background:#2478ca!important}
+#project-scanner-selector .scanner-picker-footer .scanner-picker-cancel,
+html.app-light #project-scanner-selector .scanner-picker-footer .scanner-picker-cancel{border:0!important;box-shadow:none!important;outline:none!important}
+#project-scanner-selector .scanner-picker-footer .scanner-picker-cancel:focus-visible{outline:2px solid #75baff!important;outline-offset:2px!important}
+
+/* Panel UI Alert for scanner messages, clear of the dialog content. */
+.scanner-alert-position{position:fixed;top:12px;right:12px;z-index:1100;width:min(280px,calc(100vw - 24px));pointer-events:none}
+.scanner-alert{pointer-events:auto;--pu-tone:#3287dc!important;box-shadow:0 12px 28px #0006}
+.scanner-alert [data-slot="alert-body"]{background:#292929!important;color:#f2f2f2!important;border-color:#474747!important;border-radius:10px!important;padding:10px 12px!important;font-size:12px!important}
+.scanner-alert [data-slot="alert-title"]{color:#f2f2f2!important;font-size:12px!important;line-height:16px!important}
+.scanner-alert [data-slot="alert-description"]{color:#bcbcbc!important;font-size:11px!important;line-height:16px!important}
+.scanner-alert [data-slot="alert-icon"]{color:#3287dc!important;margin-right:8px!important}
+.scanner-alert [data-slot="alert-close"],.scanner-alert [data-slot="alert-close"]:hover{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;padding:0!important;border:0!important;border-radius:4px!important;background:transparent!important;color:#bcbcbc!important;box-shadow:none!important}
+html.app-light .scanner-alert{box-shadow:0 12px 28px #0002}
+html.app-light .scanner-alert [data-slot="alert-body"]{background:#fff!important;color:#202020!important;border-color:#dadada!important}
+html.app-light .scanner-alert [data-slot="alert-title"]{color:#202020!important}
+html.app-light .scanner-alert [data-slot="alert-description"],html.app-light .scanner-alert [data-slot="alert-close"]{color:#666!important}
+
+/* Project document settings are grouped in a single card. */
+#project-editor .project-document-card{gap:0;overflow:hidden;padding:0;background:#292929;color:#eee;box-shadow:none;--tw-ring-color:#ffffff18}
+#project-editor .project-document-card>h3{border:0;border-bottom:1px solid #ffffff12;background:#303030;padding:14px 18px;color:#eee}
+#project-editor .project-document-card>label{margin:0 18px;padding:18px 4px;border-bottom:1px solid #ffffff12}
+#project-editor .project-document-card>label:last-child{border-bottom:0}
+html.app-light #project-editor .project-document-card{background:#fff;color:#243449;--tw-ring-color:#d9e1ea}
+html.app-light #project-editor .project-document-card>h3{background:#f3f6fa;color:#243449;border-bottom-color:#d9e1ea}
+html.app-light #project-editor .project-document-card>label{color:#243449;border-bottom-color:#e5ebf1}

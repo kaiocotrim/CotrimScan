@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import './tailwind.css';
 import './style.css';
+import './ui/capture-editor.css';
 import './browser-preview';
 import { App } from './ui/App';
 

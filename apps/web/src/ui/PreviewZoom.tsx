@@ -1,3 +1,4 @@
+import { NativeSelect } from '@/components/ui/native-select';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent, type ReactNode } from 'react';
 import type { Page, Region } from '@cotrimscan/shared';
 
@@ -105,11 +106,11 @@ export function PreviewZoom({ page, pageIndex, locked = false, children, content
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[#363636] px-[18px] py-[9px] text-[11px] text-[#bbb] max-[700px]:gap-1.5 max-[700px]:p-2" role="group" aria-label="Zoom do documento">
       <span>Zoom</span>
       <button id="zoom-out" className={`${zoomButton} min-w-[30px] text-[17px] leading-[17px]`} type="button" aria-label="Diminuir zoom" title="Diminuir zoom" disabled={disabled || actual <= MIN} onClick={() => zoom(actual / 1.25)}>−</button>
-      <select className="m-0 w-auto max-w-[220px] rounded-sm border border-[#555] bg-[#202020] px-2 py-1.5 text-[11px] text-[#eee]" aria-label="Nível de zoom" disabled={disabled} value={fit ? 'fit' : String(scale)} onChange={event => event.target.value === 'fit' ? fitToScreen() : zoom(Number(event.target.value))}>
+      <NativeSelect className="m-0 w-auto max-w-[220px] rounded-sm border border-[#555] bg-[#202020] px-2 py-1.5 text-[11px] text-[#eee]" aria-label="Nível de zoom" disabled={disabled} value={fit ? 'fit' : String(scale)} onChange={event => event.target.value === 'fit' ? fitToScreen() : zoom(Number(event.target.value))}>
         <option value="fit">Ajustar ({Math.round(fitScale * 100)}%)</option>
         {[.25, .5, .75, 1, 1.5, 2, 3, 4].map(value => <option key={value} value={String(value)}>{value * 100}%</option>)}
         {!fit && ![.25, .5, .75, 1, 1.5, 2, 3, 4].includes(scale) && <option value={String(scale)}>{Math.round(scale * 100)}%</option>}
-      </select>
+      </NativeSelect>
       <button id="zoom-in" className={`${zoomButton} min-w-[30px] text-[17px] leading-[17px]`} type="button" aria-label="Aumentar zoom" title="Aumentar zoom" disabled={disabled || actual >= MAX} onClick={() => zoom(actual * 1.25)}>+</button>
       <button className={zoomButton} type="button" disabled={disabled} onClick={fitToScreen}>Ajustar à tela</button>
       <button id="zoom-loupe" className={`${zoomButton} ${loupe ? 'border-[#72b9ed] bg-[#234968] text-white' : ''}`} type="button" disabled={disabled} aria-pressed={loupe} onClick={() => { setLoupe(value => !value); setLens(null); }}>Lupa 3×</button>

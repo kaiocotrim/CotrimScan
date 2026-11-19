@@ -6,6 +6,7 @@ export default defineConfig({
   root: 'src',
   publicDir: '../public',
   base: './',
+  resolve: { alias: { '@': resolve(__dirname, 'src') } },
   build: {
     outDir: '../dist',
     emptyOutDir: true,

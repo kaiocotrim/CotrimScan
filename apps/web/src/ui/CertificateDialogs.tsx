@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { createContext, useContext, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ModalBackdrop } from './ModalBackdrop';
 
@@ -44,13 +46,13 @@ export function CertificateDialogs({ children }: { children: ReactNode }) {
         <p className="my-3 text-[11px] leading-[1.8] text-[#aaa]">Informe a senha do certificado para assinar os documentos nesta sessão.</p>
         <form onSubmit={submit}>
           <label className="block text-[11px] font-normal text-[#ccc]">Senha do certificado
-            <input className="mt-2 block w-full rounded-sm border border-[#454545] bg-[#191919] p-2.5 font-[Arial] text-[13px] text-[#eee] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="password" autoComplete="off" value={password} onChange={event => setPassword(event.target.value)} autoFocus required disabled={busy} />
+            <Input className="mt-2 block w-full rounded-sm border border-[#454545] bg-[#191919] p-2.5 font-[Arial] text-[13px] text-[#eee] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="password" autoComplete="off" value={password} onChange={event => setPassword(event.target.value)} autoFocus required disabled={busy} />
           </label>
           {canRemember && <label className="mt-3 flex items-center gap-2 text-[11px] text-[#ccc]"><input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} disabled={busy} /> Lembrar senha neste computador</label>}
           <p className="my-3 text-[11px] leading-[1.8] text-[#eee] [overflow-wrap:anywhere]" role="status" aria-live="polite">{error}</p>
           <div className="mt-[22px] flex justify-end gap-2.5">
-            <button className="m-0 w-auto rounded-sm border border-[#444] bg-transparent px-3.5 py-2.5 font-[Arial] text-xs text-[#ccc] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="button" onClick={cancel} disabled={busy}>Cancelar</button>
-            <button className="m-0 w-auto rounded-sm border border-[#ededed] bg-[#ededed] px-3.5 py-2.5 font-[Arial] text-xs text-[#222] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="submit" disabled={busy}>{busy ? 'Conferindo…' : 'Liberar certificado'}</button>
+            <Button variant="ghost" className="m-0 w-auto rounded-sm border border-[#444] bg-transparent px-3.5 py-2.5 font-[Arial] text-xs text-[#ccc] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="button" onClick={cancel} disabled={busy}>Cancelar</Button>
+            <Button variant="ghost" className="m-0 w-auto rounded-sm border border-[#ededed] bg-[#ededed] px-3.5 py-2.5 font-[Arial] text-xs text-[#222] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#ddd]" type="submit" disabled={busy}>{busy ? 'Conferindo…' : 'Liberar certificado'}</Button>
           </div>
         </form>
       </div>

@@ -1,3 +1,6 @@
+import { NativeSelect } from '@/components/ui/native-select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { CloseButton } from './CloseButton';
 import { useEffect, useState } from 'react';
 import type { MobileState, Project } from '@cotrimscan/shared';
@@ -37,24 +40,24 @@ export function MobileDialog({ project, onClose }: Props) {
       </div>
       <p className="my-3 leading-relaxed text-[#ccc]">Conecte o computador e o celular à mesma rede Wi-Fi.</p>
       <label className="my-4 block text-[11px] font-normal text-[#bbb]">Rede local
-        <select className={inputClass} value={address} onChange={event => setAddress(event.target.value)} disabled={busy}>{addresses.map(row => <option value={row.address} key={row.address}>{row.name} · {row.address}</option>)}</select>
+        <NativeSelect className={inputClass} value={address} onChange={event => setAddress(event.target.value)} disabled={busy}>{addresses.map(row => <option value={row.address} key={row.address}>{row.name} · {row.address}</option>)}</NativeSelect>
       </label>
       <div className="my-5 grid min-h-[260px] place-items-center border border-[#383838] bg-[#191919] p-2.5 max-[900px]:min-h-[225px]">
         {state.qr && state.url ? <img className="size-60 max-w-full bg-white object-contain max-[900px]:size-[210px]" src={state.qr} alt="QR Code para conectar o celular" /> : <p className="m-0 text-center leading-[1.8] text-[#aaa]">{state.connected ? 'Celular conectado. Você já pode enviar imagens.' : 'Gere um QR Code e leia com a câmera do celular.'}</p>}
       </div>
-      {state.url && <label className="my-4 block text-[11px] font-normal text-[#bbb]">Link de conexão<input className={inputClass} value={state.url} readOnly /></label>}
+      {state.url && <label className="my-4 block text-[11px] font-normal text-[#bbb]">Link de conexão<Input className={inputClass} value={state.url} readOnly /></label>}
       <p className="my-3 leading-relaxed text-[#ccc]">{state.url ? seconds ? `QR Code válido por ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : 'QR Code expirado. Gere uma nova conexão.' : ''}</p>
       <div className="my-4 flex flex-wrap gap-2.5">
-        <button className={buttonClass} disabled={busy || !address} onClick={() => void action(() => window.mobile.start(address))}>{state.active ? 'Gerar nova conexão' : 'Gerar QR Code'}</button>
-        {state.active && <button className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.stop())}>Encerrar conexão</button>}
-        {state.url && <button className={buttonClass} disabled={busy} onClick={() => void action(async () => { await window.mobile.copyLink(); setError('Link copiado.'); })}>Copiar link</button>}
+        <Button variant="ghost" className={buttonClass} disabled={busy || !address} onClick={() => void action(() => window.mobile.start(address))}>{state.active ? 'Gerar nova conexão' : 'Gerar QR Code'}</Button>
+        {state.active && <Button variant="ghost" className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.stop())}>Encerrar conexão</Button>}
+        {state.url && <Button variant="ghost" className={buttonClass} disabled={busy} onClick={() => void action(async () => { await window.mobile.copyLink(); setError('Link copiado.'); })}>Copiar link</Button>}
       </div>
       {state.connected && <p className="my-3 leading-relaxed text-[#ccc]">Conectado: {state.connected.name}</p>}
       {state.pending?.map(peer => <div className="my-6 border border-[#777] bg-[#262626] p-4" key={peer.id}>
         <h3 className="m-0 text-[13px] font-normal break-words">{peer.name}</h3>
         <p className="my-2.5 text-[10px] leading-[1.7] text-[#aaa]">Confira este código no celular:</p>
         <strong className="my-4 block text-[27px] font-normal tracking-[6px]">{peer.code}</strong>
-        <div className="flex flex-wrap gap-2"><button className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.decide(peer.id, false))}>Recusar</button><button className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.decide(peer.id, true))}>Permitir conexão</button></div>
+        <div className="flex flex-wrap gap-2"><Button variant="ghost" className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.decide(peer.id, false))}>Recusar</Button><Button variant="ghost" className={buttonClass} disabled={busy} onClick={() => void action(() => window.mobile.decide(peer.id, true))}>Permitir conexão</Button></div>
       </div>)}
       <p className="my-0 py-2.5 leading-relaxed text-[#ddd]" role="status" aria-live="polite">{error || state.lastError || (state.receiving ? ({ uploading: 'Recebendo foto…', processing: 'Melhorando foto…', saving: 'Salvando foto…', exporting: 'Exportando documento…' }[state.receivingStage || ''] || 'Recebendo foto…') : state.connected ? 'Pronto para receber fotos.' : '')}</p>
     </div>
