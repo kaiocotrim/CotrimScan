@@ -1,6 +1,6 @@
 {
   "name": "@cotrimscan/desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "CotrimScan — digitalização de documentos com NAPS2 WebScan (Electron)",
   "main": "src/main.cjs",
