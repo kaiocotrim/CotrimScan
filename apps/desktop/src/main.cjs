@@ -11,6 +11,7 @@ const scanner=require('@cotrimscan/scan-core/scanner');
 const escl=require('@cotrimscan/scan-core/escl-client');
 const {createScanService}=require('./scan-service.cjs');
 const wia=require('./wia-scanner.cjs');
+const sane=require('./sane-scanner.cjs');
 const scannerConfig=require('./scanner-config.cjs');
 const {createAuth}=require('./auth.cjs');
 const {createProjects}=require('./projects.cjs');
@@ -34,20 +35,41 @@ function requireProject(){if(!activeProject)throw Error('Abra um projeto para di
 function pageView(data,id){return {id,url:'data:image/jpeg;base64,'+data.toString('base64')};}
 // Scanner selection is stored per computer in scanner.json. Devices come from the NAPS2 WebScan service (TWAIN via eSCL) and manual eSCL entries.
 const scannerConfigFile=()=>path.join(app.getPath('userData'),'scanner.json');
-async function listScanners(){
+async function listScanners({refresh=false}={}){
  let startupError=null;
+ const saneDevices=await sane.listDevices().catch(error=>{log.error('sane:list',error);return [];});
  const wiaDevices=await wia.listDevices().catch(error=>{log.error('wia:list',error);return [];});
- if(!wiaDevices.length)try{await scanService.ensure();}catch(error){startupError=error.message;}
+ try{if(process.platform!=='linux'||!saneDevices.length)await scanService.ensure();if(refresh)await escl.refreshDevices();}catch(error){startupError=error.message;log.error('twain:list',error);}
  const config=await scannerConfig.loadScannerConfig(scannerConfigFile());
  const {devices,forkError}=await escl.listDevices({manual:config.manual});
- return {config,devices:[...wiaDevices,...devices],forkError:wiaDevices.length?null:startupError||forkError};
+ return {config,devices:[...saneDevices,...wiaDevices,...devices],forkError:saneDevices.length?null:startupError||forkError};
+}
+let pickerDevices=[];
+async function streamScanners(event){
+ const config=await scannerConfig.loadScannerConfig(scannerConfigFile());
+ let devices=[...config.manual.map(item=>({...item,id:escl.deviceId(item.host,item.port),driver:'escl-manual'}))];
+ const publish=()=>{pickerDevices=devices;if(!event.sender.isDestroyed())event.sender.send('scanners:updated',{devices,selected:config.selected,manual:config.manual});};
+ publish();
+ const sources=[
+  sane.listDevices().then(found=>{devices=[...devices,...found];publish();}).catch(error=>log.error('sane:list',error)),
+  wia.listDevices().then(found=>{devices=[...devices,...found];publish();}).catch(error=>log.error('wia:list',error)),
+  (async()=>{try{await scanService.ensure();await escl.refreshDevices();}catch(error){log.error('twain:list',error);}const result=await escl.listDevices({manual:config.manual});devices=[...devices.filter(device=>!result.devices.some(item=>item.id===device.id)),...result.devices];publish();})()
+ ];
+ await Promise.allSettled(sources);
 }
 async function selectedScanner(){
+ if(process.platform==='linux'){
+  const {selected}=await scannerConfig.loadScannerConfig(scannerConfigFile());
+  if(selected?.startsWith('sane:')&&selected.length>5){
+   return {id:selected,saneId:selected.slice(5),driver:'sane'};
+  }
+ }
  const {config,devices,forkError}=await listScanners();
  if(config.selected&&forkError&&!devices.some(device=>device.id===config.selected))throw Error(forkError+' Verifique se o NAPS2 WebScan está em execução.');
  return scannerConfig.resolveSelected(config,devices);
 }
 async function scanConfigured(device,dpi,source,colorMode,duplex,onPage,maxPages=200){
+ if(device.driver==='sane')return sane.scanDevice(device,{dpi,source,colorMode,duplex,maxPages},onPage);
  if(device.driver==='wia')return wia.scanDevice(device,{dpi,source,colorMode,duplex,maxPages},onPage);
  return escl.scanDevice(device,{dpi,source,colorMode,duplex,maxPages},onPage);
 }
@@ -183,13 +205,23 @@ app.whenReady().then(()=>{
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
- async function scannersState(){const {config,devices,forkError}=await listScanners();return {devices,selected:config.selected,manual:config.manual,forkError};}
+ async function scannersState(options){const {config,devices,forkError}=await listScanners(options);pickerDevices=devices;return {devices,selected:config.selected,manual:config.manual,forkError};}
  handle('scanners:list',()=>scannersState());
- handle('scanners:select',id=>operation(async()=>{const {config,devices}=await listScanners();await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.selectDevice(config,devices,id===null?null:String(id)));return scannersState();}));
- handle('scanners:refresh',()=>operation(async()=>{const state=await scannersState();if(!state.devices.some(device=>device.driver==='wia'))await escl.refreshDevices();return scannersState();}));
+ ipcMain.on('scanners:stream',async(event)=>{
+  if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)return;
+  try{auth.requireSession();await streamScanners(event);}catch(error){log.error('scanners:stream',error);if(!event.sender.isDestroyed())event.sender.send('scanners:updated',{error:error.message});}
+ });
+ handle('scanners:select',id=>operation(async()=>{
+  const config=await scannerConfig.loadScannerConfig(scannerConfigFile());
+  const devices=pickerDevices;
+  const selection=scannerConfig.selectDevice(config,devices,id===null?null:String(id));
+  const saved=await scannerConfig.saveScannerConfig(scannerConfigFile(),selection);
+  return {devices,selected:saved.selected,manual:saved.manual};
+ }));
+ handle('scanners:refresh',()=>operation(()=>scannersState({refresh:true})));
  handle('scanners:manual-add',input=>operation(async()=>{const config=await scannerConfig.loadScannerConfig(scannerConfigFile());await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.addManual(config,input));return scannersState();}));
  handle('scanners:manual-remove',id=>operation(async()=>{const config=await scannerConfig.loadScannerConfig(scannerConfigFile());await scannerConfig.saveScannerConfig(scannerConfigFile(),scannerConfig.removeManual(config,String(id)));return scannersState();}));
- handle('scanners:connect',id=>operation(async()=>{const {devices}=await listScanners();const device=devices.find(item=>item.id===id);if(!device)throw Error('Scanner não encontrado. Atualize a lista de scanners.');if(device.driver!=='wia')await escl.connectDevice(device);return true;}));
+ handle('scanners:connect',id=>operation(async()=>{const {devices}=await listScanners();const device=devices.find(item=>item.id===id);if(!device)throw Error('Scanner não encontrado. Atualize a lista de scanners.');if(device.driver!=='wia'&&device.driver!=='sane')await escl.connectDevice(device);return true;}));
  handle('blank:sample',async(url,sensitivity)=>{if(typeof url!=='string'||url.length>30000000||!url.startsWith('data:image/'))throw Error('Imagem inválida.');const buffer=Buffer.from(url.split(',')[1],'base64');return {id:0,url,...await require('./blank-pages.cjs').inspect(buffer,sensitivity)};});
  handle('blank:scan',input=>operation(async()=>{
   const {dpi,source,colorMode,duplex}=input||{};

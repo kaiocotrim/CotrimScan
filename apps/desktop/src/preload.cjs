@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('blankPages',{sample:(url,sensitivity)=>ipcRende
 contextBridge.exposeInMainWorld('scanner',{
  connect:id=>ipcRenderer.invoke('scanners:connect',id),
  list:()=>ipcRenderer.invoke('scanners:list'),
+ watch:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('scanners:updated',listener);ipcRenderer.send('scanners:stream');return ()=>ipcRenderer.removeListener('scanners:updated',listener);},
  select:id=>ipcRenderer.invoke('scanners:select',id),
  refresh:()=>ipcRenderer.invoke('scanners:refresh'),
  addManual:input=>ipcRenderer.invoke('scanners:manual-add',input),
