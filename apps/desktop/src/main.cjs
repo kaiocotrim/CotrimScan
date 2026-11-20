@@ -170,10 +170,12 @@ app.whenReady().then(()=>{
  handle('projects:update',(id,input,password,remember)=>operation(()=>saveProject(id,input,password,remember)));
  handle('projects:open',id=>operation(async()=>{const data=await projects.open(id); await mobile.stop();mobileProject=null;activeProject=data.project.id; pages=data.pages;if(data.project.signature.type==='a1'&&!signatures.ready(activeProject,data.project.signature)){const saved=await credentials.get(activeProject,data.project.signature);if(saved!==null)try{await signatures.prepare(activeProject,data.project.signature,saved);}catch{await credentials.remove(activeProject);}}return {project:data.project,pages:pages.map((buffer,index)=>({...pageView(buffer,index),hasOcr:!!data.ocr[index],hasProcessed:!!data.processed[index]}))};}));
  handle('projects:pickOutputs',()=>operation(async()=>{const result=await dialog.showOpenDialog(win,{title:'Selecionar pastas de saída',properties:['openDirectory','multiSelections','createDirectory']});return result.canceled?[]:result.filePaths;}));
+ handle('indexing:queue',(projectId,command,input)=>operation(async()=>{requireProject();if(projectId!==activeProject)throw Error('O projeto mudou.');const documents=await projects.indexingQueue(activeProject,command,input);const data=await projects.open(activeProject);pages=data.pages;return {documents,pages:pages.map((buffer,index)=>({...pageView(buffer,index),hasOcr:!!data.ocr[index],hasProcessed:!!data.processed[index]}))};}));
  handle('projects:export',()=>operation(async()=>{requireProject();return projects.exportAll(activeProject);}));
  handle('projects:close',()=>operation(async()=>{await mobile.stop();mobileProject=null;if(activeProject)await projects.clear(activeProject);activeProject=null;pages=[];}));
  handle('auth:status',()=>auth.status(),false);
  handle('auth:register',(username,password)=>auth.register(username,password),false);
+ handle('auth:enter',()=>auth.enter(),false);
  handle('auth:login',(username,password)=>auth.login(username,password),false);
  handle('auth:logout',()=>operation(async()=>{await mobile.stop();mobileProject=null;auth.logout();signatures.clear();pages=[];activeProject=null;}));
  win=new BrowserWindow({title:'CotrimScan',icon:path.join(__dirname,'assets','icones_3d','download.png'),width:1100,height:780,minWidth:760,minHeight:600,backgroundColor:'#111827',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true}});
@@ -239,6 +241,15 @@ app.whenReady().then(()=>{
    });
    if(suspects.length)warnings.push('Revise as páginas possivelmente em branco antes de enviar para as saídas.');
    return {blankCandidates:suspects,pages:scanned-ignored,warnings:[...warnings,`${ignored} página(s) em branco ignorada(s).`],refreshed:pages.map((buffer,id)=>({...pageView(buffer,id),projectId:activeProject}))};
+ }));
+ handle('pages:import',projectId=>operation(async()=>{
+  requireProject();if(projectId!==activeProject)throw Error('O projeto mudou. Abra a importação novamente.');
+  const selected=await dialog.showOpenDialog(win,{title:'Importar fotos',properties:['openFile','multiSelections'],filters:[{name:'Fotos',extensions:['jpg','jpeg','png','webp']}]});
+  if(selected.canceled)return {imported:0,warnings:[]};
+  return require('./import-images.cjs').importImages(selected.filePaths,{projects,projectId:activeProject,onPage:image=>{
+   const id=pages.push(image)-1;
+   if(!win.isDestroyed())win.webContents.send('page',{...pageView(image,id),projectId:activeProject,hasProcessed:true});
+  }});
  }));
  handle('pages:rotate',(index,angle)=>operation(async()=>{requireProject();const buffer=await projects.rotate(activeProject,index,angle);pages[index]=buffer;return pageView(buffer,index);}));
  handle('pages:enhance',(index,corners,mode)=>operation(async()=>{requireProject();const result=await projects.enhance(activeProject,index,corners,mode);pages[index]=result.image;return {...pageView(result.image,index),cropped:result.cropped,cropMethod:result.cropMethod,mode:result.mode,hasProcessed:true};}));

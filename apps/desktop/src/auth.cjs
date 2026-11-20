@@ -19,7 +19,8 @@ function createAuth(file) {
   try { return await fn(); } finally { pending = false; }
  }
  return {
-  async status() { await ready; if(initializationError) throw initializationError; return {hasAccount: !!account, authenticated, username: authenticated ? account.username : null}; },
+  async status() { await ready; if(initializationError) throw initializationError; return {hasAccount: !!account, authenticated, username: authenticated ? (account?.username || 'Local') : null}; },
+  enter() { return exclusive(async () => { authenticated = true; return {username: account?.username || 'Local'}; }); },
   requireSession() { if(!authenticated) throw Error('Faça login para acessar o scanner.'); },
   register(username, password) { return exclusive(async () => {
    if(account) throw Error('Já existe uma conta neste computador. Faça login.');

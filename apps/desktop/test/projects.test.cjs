@@ -149,3 +149,124 @@ test('exclui somente páginas selecionadas e mantém a ordem das demais',async t
  const files=await fs.readdir(root);assert.ok(!files.includes(ids[1]+'.jpg'));assert.ok(!files.includes(ids[1]+'-cached.pdf'));assert.ok(files.includes(ids[0]+'-cached.pdf'));
  assert.equal(await store.removePages(a.id,[0,1]),2);assert.equal((await store.open(a.id)).pages.length,0);
 });
+
+test('indexação separa lotes do scanner, permite novos lotes e exporta pastas independentes',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-batches-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const output=path.join(dir,'out');await fs.mkdir(output);
+ const store=createProjects(dir),project=await store.create({...options,outputs:[output],indexing:{enabled:true,fields:[{id:'registration',name:'Matrícula',type:'text',source:'manual'}]}});
+ const sharp=require('sharp');
+ const first=await sharp({create:{width:80,height:100,channels:3,background:'white'}}).jpeg().toBuffer();
+ const second=await sharp({create:{width:80,height:100,channels:3,background:'blue'}}).jpeg().toBuffer();
+ await store.append(project.id,first);await store.append(project.id,second);
+ await assert.rejects(store.indexingQueue(project.id,'add',{values:{}}),/Matrícula/);
+ assert.equal((await store.open(project.id)).pages.length,2);
+ let queue=await store.indexingQueue(project.id,'add',{values:{registration:'00123'}});
+ assert.equal(queue[0].pageCount,2);assert.equal(queue[0].values.registration,'00123');
+ assert.equal((await store.open(project.id)).pages.length,0);
+ assert.ok(queue[0].previews[0].startsWith('data:image/jpeg;base64,'));
+ await assert.rejects(store.indexingQueue(project.id,'add',{values:{registration:'2'}}),/Digitalize/);
+ await store.append(project.id,second);
+ queue=await store.indexingQueue(project.id,'add',{values:{registration:'00456'}});
+ assert.equal(queue.length,2);assert.equal(queue[1].pageCount,1);
+ assert.equal((await createProjects(dir).open(project.id)).pages.length,0);
+ queue=await store.indexingQueue(project.id,'edit',{id:queue[1].id,values:{registration:'00789'}});
+ assert.equal(queue[1].values.registration,'00789');
+ queue=await store.indexingQueue(project.id,'process');assert.ok(queue.every(d=>d.processed));
+ const {PDFDocument}=require('pdf-lib');
+ for(const doc of queue){const pdf=await PDFDocument.load(await fs.readFile(path.join(output,doc.folder,'documento.pdf')));assert.equal(pdf.getPageCount(),doc.pageCount);}
+ assert.equal((await fs.readdir(output)).length,2);
+ await store.indexingQueue(project.id,'process');assert.equal((await fs.readdir(output)).length,2);
+
+ await store.append(project.id,first);
+ queue=await store.indexingQueue(project.id,'add',{values:{registration:'003'}});
+ await store.indexingQueue(project.id,'remove',{id:queue[2].id});
+ assert.equal((await store.open(project.id)).pages.length,1);
+ assert.equal((await store.indexingQueue(project.id,'list')).length,2);
+ await store.clear(project.id);
+ assert.equal((await store.indexingQueue(project.id,'list'))[0].previews.length,2);
+ const processed=(await store.indexingQueue(project.id,'list'))[0];
+ const exported=await fs.readFile(path.join(output,processed.folder,'documento.pdf'));
+ const remaining=await store.indexingQueue(project.id,'remove',{id:processed.id});
+ assert.equal(remaining.length,1);
+ assert.equal((await store.open(project.id)).pages.length,2);
+ assert.deepEqual(await fs.readFile(path.join(output,processed.folder,'documento.pdf')),exported);
+});
+
+test('fila migra páginas antigas e retoma exportação parcial sem duplicar arquivos',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-batch-retry-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const out=path.join(dir,'out'),unavailable=path.join(dir,'unavailable');await fs.mkdir(out);await fs.mkdir(unavailable);
+ const store=createProjects(dir),project=await store.create({...options,outputs:[out,unavailable],indexing:{enabled:true,fields:[{id:'id',name:'Código',type:'text',source:'manual'}]}});
+ const jpeg=await require('sharp')({create:{width:20,height:20,channels:3,background:'white'}}).jpeg().toBuffer();
+ await store.append(project.id,jpeg);
+ const queue=await store.indexingQueue(project.id,'add',{values:{id:'01'}});
+ const file=path.join(dir,project.id,'project.json'),data=JSON.parse(await fs.readFile(file,'utf8'));
+ data.pages=[...data.indexingQueue[0].pages];await fs.writeFile(file,JSON.stringify(data));
+ assert.equal((await store.open(project.id)).pages.length,0);
+ await fs.rm(unavailable,{recursive:true});await fs.writeFile(unavailable,'blocked');
+ await assert.rejects(store.indexingQueue(project.id,'process'),/preservada/);
+ const saved=await fs.readFile(path.join(out,queue[0].folder,'documento.pdf'));
+ await fs.rm(unavailable);await fs.mkdir(unavailable);
+ const completed=await store.indexingQueue(project.id,'process');assert.equal(completed[0].processed,true);
+ assert.deepEqual(await fs.readFile(path.join(unavailable,queue[0].folder,'documento.pdf')),saved);
+ assert.equal((await fs.readdir(out)).length,1);
+});
+
+test('PDF do lote preserva a camada OCR existente e a ordem das páginas',async()=>{
+ const {PDFDocument,PDFName,decodePDFRawStream,PDFRawStream}=require('pdf-lib');
+ const source=await PDFDocument.create();source.addPage([100,200]).drawText('MATRICULA-00123');
+ const jpeg=await require('sharp')({create:{width:40,height:60,channels:3,background:'white'}}).jpeg().toBuffer();
+ const output=await require('../src/pdf.cjs').documentPdf([jpeg,jpeg],{searchablePdfs:[Buffer.from(await source.save()),null]});
+ const merged=await PDFDocument.load(output);assert.equal(merged.getPageCount(),2);assert.equal(merged.getPage(0).getWidth(),100);
+ const streams=merged.context.enumerateIndirectObjects().map(([,obj])=>obj).filter(obj=>obj instanceof PDFRawStream&&obj.dict.get(PDFName.of('Filter'))?.toString()==='/FlateDecode').map(obj=>Buffer.from(decodePDFRawStream(obj).decode()).toString());
+ assert.ok(streams.some(s=>s.includes(Buffer.from('MATRICULA-00123').toString('hex').toUpperCase())));
+});
+
+test('fila abre com imagens ausentes sem apagar referências e devolve somente páginas disponíveis',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-missing-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const output=path.join(dir,'out');await fs.mkdir(output);
+ const store=createProjects(dir),project=await store.create({...options,outputs:[output],indexing:{enabled:true,fields:[{id:'code',name:'Código',type:'text',source:'manual'}]}});
+ const image=await require('sharp')({create:{width:20,height:20,channels:3,background:'white'}}).jpeg().toBuffer();
+ await store.append(project.id,image);await store.append(project.id,image);
+ const [batch]=await store.indexingQueue(project.id,'add',{values:{code:'001'}});
+ await fs.rm(path.join(dir,project.id,batch.pages[0]+'.jpg'));
+ const [missing]=await store.indexingQueue(project.id,'list');
+ assert.deepEqual(missing.missingPages,[1]);assert.equal(missing.previews[0],'');assert.ok(missing.previews[1]);assert.deepEqual(missing.pages,batch.pages);
+ await assert.rejects(store.indexingQueue(project.id,'process'),/importe novamente/);
+ assert.deepEqual(await fs.readdir(output),[]);
+ await store.indexingQueue(project.id,'remove',{id:batch.id});
+ assert.equal((await store.open(project.id)).pages.length,1);
+ assert.deepEqual(await store.indexingQueue(project.id,'list'),[]);
+});
+
+test('limpar páginas de um projeto legado não apaga imagens referenciadas pela fila',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-protected-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const store=createProjects(dir),project=await store.create({...options,indexing:{enabled:true,fields:[{id:'code',name:'Código',type:'text',source:'manual'}]}});
+ const image=await require('sharp')({create:{width:20,height:20,channels:3,background:'white'}}).jpeg().toBuffer();
+ await store.append(project.id,image);
+ const [batch]=await store.indexingQueue(project.id,'add',{values:{code:'001'}});
+ const filename=path.join(dir,project.id,'project.json'),data=JSON.parse(await fs.readFile(filename,'utf8'));
+ data.pages=[...batch.pages];await fs.writeFile(filename,JSON.stringify(data));
+ await store.clear(project.id);
+ const [restored]=await store.indexingQueue(project.id,'list');assert.deepEqual(restored.missingPages,[]);assert.ok(restored.previews[0]);
+});
+
+test('pasta usa valores da indexação, respeita edição e diferencia nomes repetidos',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-index-folder-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const output=path.join(dir,'out');await fs.mkdir(output);
+ const store=createProjects(dir),project=await store.create({...options,outputs:[output],indexing:{enabled:true,fields:[{id:'code',name:'Matrícula',type:'text',source:'manual'},{id:'area',name:'Departamento',type:'text',source:'manual'}]}});
+ const image=await require('sharp')({create:{width:20,height:20,channels:3,background:'white'}}).jpeg().toBuffer();
+ await store.append(project.id,image);
+ let [batch]=await store.indexingQueue(project.id,'add',{values:{code:'0001',area:'RH'}});
+ assert.equal(batch.folder,'0001 - RH');
+ [batch]=await store.indexingQueue(project.id,'edit',{id:batch.id,values:{code:'0002',area:'RH/Contratos'}});
+ assert.equal(batch.folder,'0002 - RH-Contratos');
+ await fs.mkdir(path.join(output,batch.folder));await fs.writeFile(path.join(output,batch.folder,'original.txt'),'preservar');
+ let queue=await store.indexingQueue(project.id,'process');assert.equal(queue[0].folder,'0002 - RH-Contratos (2)');
+ await store.append(project.id,image);
+ await store.indexingQueue(project.id,'add',{values:{code:'0002',area:'RH/Contratos'}});
+ queue=await store.indexingQueue(project.id,'process');assert.equal(queue[1].folder,'0002 - RH-Contratos (3)');
+ for(const doc of queue)await fs.access(path.join(output,doc.folder,'documento.pdf'));
+ assert.equal(await fs.readFile(path.join(output,batch.folder,'original.txt'),'utf8'),'preservar');
+ await store.indexingQueue(project.id,'process');assert.equal((await fs.readdir(output)).length,3);
+ assert.equal((await createProjects(dir).indexingQueue(project.id,'list'))[0].folder,queue[0].folder);
+});

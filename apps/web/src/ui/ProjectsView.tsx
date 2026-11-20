@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import type { Project } from '@cotrimscan/shared';
 import { ScannerSelector } from './ScannerSelector';
 import { Canvas } from '@/components/panelui/canvas';
+import { Pencil } from 'lucide-react';
 
 interface Props { entering?: boolean; onRefresh(): Promise<void>; username: string; projects: Project[]; status: string; setStatus(text: string): void; busy: boolean; onLogout(): void; onNew(): void; onOpen(project: Project): void; onEdit(project: Project): void }
 
@@ -51,7 +52,7 @@ export function ProjectsView({ entering = false, onRefresh, username, projects, 
           <button className="group m-0 flex w-full select-none flex-col items-center gap-3 border-0 bg-transparent px-1 pb-1 pt-[18px]" type="button" aria-label={`Abrir projeto ${project.name}. Dê dois cliques ou pressione Enter.`} onClick={event => { setSelected(project.id); if (event.detail === 0) onOpen(project); }} onDoubleClick={() => onOpen(project)} disabled={busy}>
             <img className="h-[117px] w-[146px] object-contain drop-shadow-[0_10px_14px_#0002] transition-transform duration-200 group-hover:-translate-y-1 max-[600px]:h-24 max-[600px]:w-[120px]" src="assets/folder.svg" alt="" /><span className="text-[10px] text-[#7d91a7]">{project.pageCount} página(s) · {project.dpi} dpi</span>
           </button>
-          <button className="absolute right-3.5 top-3.5 m-0 w-auto bg-transparent p-1.5 leading-none text-[#7b97b5] hover:bg-[#ffffff08] hover:text-[#91c9ff]" type="button" aria-label={`Editar projeto ${project.name}`} title="Editar projeto" onClick={() => onEdit(project)} disabled={busy}>✎</button>
+          <motion.button className="absolute right-3.5 top-3.5 m-0 w-auto rounded-lg bg-transparent p-1.5 leading-none text-[#7b97b5] hover:bg-[#ffffff08] hover:text-[#91c9ff]" type="button" aria-label={`Editar projeto ${project.name}`} title="Editar projeto" onClick={() => onEdit(project)} disabled={busy} initial="rest" whileHover={reduceMotion ? undefined : "hover"} whileFocus={reduceMotion ? undefined : "hover"}><motion.span className="block" variants={{ rest: { rotate: 0, y: 0 }, hover: { rotate: -18, y: -2 } }} transition={{ type: "spring", stiffness: 420, damping: 16 }}><Pencil size={16} strokeWidth={1.8} aria-hidden="true" /></motion.span></motion.button>
         </Card>)}
       </motion.div>
       {projects.length === 0 && <div className="flex min-h-[400px] flex-col items-center justify-center text-center max-[600px]:min-h-80"><img src="assets/folder.svg" width={100} height={80} alt="" /><h2 className="mb-2.5 mt-5 text-lg font-normal">Seu primeiro projeto começa aqui</h2><p className="mb-6 mt-0 text-xs leading-[1.7] text-[#7f8b9a]">Crie uma pasta, configure o scanner e organize seus documentos.</p><Button className={primaryButton} onClick={onNew}>Criar meu primeiro projeto</Button></div>}

@@ -29,7 +29,9 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   if(separation.mode!=='none'&&namingMode!=='default'&&namingMode!=='custom'&&namingMode!=='fixed')throw Error('Na separação por documento, use o nome padrão, fixo ou personalizado.');
   if(separation.mode==='blank'&&input.blankPages?.enabled===true&&input.blankPages.action==='auto')throw Error('Para separar por página em branco, mantenha as páginas em branco durante a digitalização.');
   if(separation.mode!=='none'&&signature.type!=='none')throw Error('Na separação por documento, desative a assinatura digital. Ela ainda não se aplica a documentos com várias páginas.');
-  return {blankPages:require('./blank-pages.cjs').settings(input.blankPages),fixedName,namingFieldId,name:input.name.trim(),nameTemplate,port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
+  const indexing={enabled:input.indexing?.enabled===true,fields:Array.isArray(input.indexing?.fields)?input.indexing.fields.slice(0,30).map(f=>({id:String(f.id||'').slice(0,80),name:String(f.name||'').trim().slice(0,80),type:['text','number','date'].includes(f.type)?f.type:'text',source:'manual'})):[]};
+  if(indexing.enabled&&indexing.fields.some(f=>!f.id||!f.name))throw Error('Informe o nome de todos os campos de indexação.');
+  return {indexing,blankPages:require('./blank-pages.cjs').settings(input.blankPages),fixedName,namingFieldId,name:input.name.trim(),nameTemplate,port:input.port,dpi:input.dpi,source:input.source,duplex,colorMode,processingMode,namingMode,documentType,captureTemplate,outputs,signature,separation,certificateInfo:input.certificateInfo&&typeof input.certificateInfo.subject==='string'&&Number.isFinite(Date.parse(input.certificateInfo.expiresAt))?{subject:input.certificateInfo.subject.slice(0,300),expiresAt:input.certificateInfo.expiresAt}:null,signatureStamp:input.signatureStamp===true};
  }
  async function read(id) {
   const data=JSON.parse(await fs.readFile(path.join(directory(id),'project.json'),'utf8'));
@@ -150,10 +152,79 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
  }
  async function removePageFiles(id,removed){
   const files=await fs.readdir(directory(id));
-  const remove=files.filter(file=>removed.some(page=>file===page+'.jpg'||file===page+'.source'||(file.startsWith(page+'-')&&(/\.(pdf|json)$/.test(file)))));
+  const protectedPages=new Set((await read(id)).indexingQueue?.flatMap(d=>d.pages)||[]);
+  const removable=removed.filter(page=>!protectedPages.has(page));
+  const remove=files.filter(file=>removable.some(page=>file===page+'.jpg'||file===page+'.source'||(file.startsWith(page+'-')&&(/\.(pdf|json)$/.test(file)))));
   await Promise.all(remove.map(file=>fs.rm(path.join(directory(id),file),{force:true}).catch(()=>{})));
  }
+ function indexingFolder(data,doc){
+  if(doc.outputFolder)return doc.outputFolder;
+  if(doc.processed)return 'Lote-'+doc.id;
+  const values=data.indexing.fields.map(field=>doc.values[field.id]).filter(Boolean);
+  const name=require('./document-naming.cjs').safeCodeName(values.join(' - '));
+  return name||'Lote-'+doc.id;
+ }
+ async function reserveIndexingFolder(data,doc){
+  if(doc.outputFolder)return;
+  const base=indexingFolder(data,doc);
+  const occupied=new Set(data.indexingQueue.filter(item=>item.id!==doc.id&&(item.outputFolder||item.processed)).map(item=>indexingFolder(data,item).toLowerCase()));
+  let suffix=1;
+  for(;;suffix++){
+   const candidate=suffix===1?base:`${base} (${suffix})`;
+   if(occupied.has(candidate.toLowerCase()))continue;
+   let exists=false;
+   for(const output of data.outputs){
+    try{await fs.lstat(path.join(output,candidate));exists=true;break;}
+    catch(error){if(!['ENOENT','ENOTDIR'].includes(error.code))throw error;}
+   }
+   if(exists)continue;
+   doc.outputFolder=candidate;
+   // Persist the selected destination before writing so retries use the same folder.
+   await write(data);return;
+  }
+ }
  return {
+  async indexingQueue(id,command,input={}) {
+   const data=await read(id);if(!data.indexing?.enabled)throw Error('Indexação manual desativada.');
+   data.indexingQueue ||= [];
+   // Migrate previously finalized pages out of the active scanner workspace.
+   const queued=new Set(data.indexingQueue.flatMap(d=>d.pages));
+   data.pages=data.pages.filter(p=>!queued.has(p));
+   if(command==='add'){
+    const used=new Set(data.indexingQueue.flatMap(d=>d.pages));const pages=data.pages.filter(p=>!used.has(p));
+    if(!pages.length)throw Error('Digitalize páginas para finalizar um documento.');
+    const values={};for(const f of data.indexing.fields){const value=String(input.values?.[f.id]||'').trim();if(!value||value.length>300)throw Error('Preencha '+f.name);values[f.id]=value;}
+    data.indexingQueue.push({id:randomUUID(),pages,values,processed:false});
+    data.pages=[];
+   }else if(command==='remove'){
+    const doc=data.indexingQueue.find(d=>d.id===input.id);
+    if(!doc)throw Error('Documento indisponível.');
+    for(const page of doc.pages){try{await fs.access(path.join(directory(id),page+'.jpg'));data.pages.push(page);}catch(error){if(error.code!=='ENOENT')throw error;}}
+    data.indexingQueue=data.indexingQueue.filter(d=>d.id!==input.id);
+   }
+   else if(command==='edit'){const doc=data.indexingQueue.find(d=>d.id===input.id);if(!doc||doc.processed)throw Error('Documento indisponível.');if(doc.outputFolder)throw Error('A exportação deste lote já foi iniciada. Tente processar a fila novamente antes de alterar a identificação.');for(const f of data.indexing.fields){const value=String(input.values?.[f.id]||'').trim();if(!value||value.length>300)throw Error('Preencha '+f.name);doc.values[f.id]=value;}}
+   else if(command==='process'){
+    if(!data.outputs.length)throw Error('Configure uma pasta de saída.');
+    if(data.signature.type!=='none')throw Error('Desative a assinatura para processar documentos agrupados.');
+    for(const doc of data.indexingQueue.filter(d=>!d.processed)){
+     const images=await Promise.all(doc.pages.map(async(p,index)=>{try{return await fs.readFile(path.join(directory(id),p+'.jpg'));}catch(error){if(error.code==='ENOENT')throw Error(`A página ${index+1} de um lote não está mais disponível. Abra Visualizar fila, remova o lote afetado e importe novamente as fotos antes de finalizar.`);throw error;}}));
+     const searchablePdfs=await Promise.all(doc.pages.map(async p=>{try{return await fs.readFile(path.join(directory(id),p+'-ocr.pdf'));}catch(error){if(error.code!=='ENOENT')throw error;return null;}}));
+     const cached=path.join(directory(id),doc.id+'-batch.pdf');
+     let buffer;try{buffer=await fs.readFile(cached);}catch(error){if(error.code!=='ENOENT')throw error;buffer=await documentPdf(images,{dpi:data.dpi,name:data.name,searchablePdfs});await fs.writeFile(cached,buffer,{flag:'wx'});}
+     await reserveIndexingFolder(data,doc);
+     await writeOutput(data,{buffer,extension:'pdf',filename:'documento.pdf',subfolder:doc.outputFolder});doc.processed=true;await write(data);
+    }
+   }else if(command!=='list')throw Error('Ação inválida.');
+   await write(data);
+   return Promise.all(data.indexingQueue.map(async d=>{
+    const missingPages=[];
+    const previews=await Promise.all(d.pages.map(async(p,index)=>{
+     try{return 'data:image/jpeg;base64,'+(await fs.readFile(path.join(directory(id),p+'.jpg'))).toString('base64');}
+     catch(error){if(error.code!=='ENOENT')throw error;missingPages.push(index+1);return '';}
+    }));
+    return {...d,pageCount:d.pages.length,previews,missingPages:missingPages.sort((a,b)=>a-b),folder:indexingFolder(data,d)};
+   }));
+  },
   async list() {
    let dirs;try{dirs=await fs.readdir(root,{withFileTypes:true});}catch(e){if(e.code==='ENOENT')return [];throw e;}
    const projects=await Promise.all(dirs.filter(d=>d.isDirectory()&&uuid.test(d.name)).map(d=>read(d.name)));
@@ -175,6 +246,7 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   async update(id,input) {const previous=await read(id),data={...previous,...validateInput({...previous,...input})};await write(data);return summary(data);},
   async open(id) {
    const data=await read(id);
+   if(data.indexingQueue?.length){const queued=new Set(data.indexingQueue.flatMap(d=>d.pages));data.pages=data.pages.filter(p=>!queued.has(p));await write(data);}
    const pages=[];
    for(const page of data.pages)pages.push(await fs.readFile(path.join(directory(id),page+'.jpg')));
    const ocr=await Promise.all(data.pages.map(page=>fs.access(path.join(directory(id),`${page}-ocr.pdf`)).then(()=>true,()=>false)));
@@ -293,9 +365,10 @@ function createProjects(root,{signatures,readSeparator=defaultReadSeparator}={})
   async readCode(id,index,reader=require('./document-codes.cjs').readDocumentCode){const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index],source=await sourceImage(id,page);let last={status:'not-found'};for(const mode of ['qr','barcode']){const result=await reader(source,mode);if(result.status==='found')return result;if(result.status==='ambiguous')last=result;}return last;},
   async namePage(id,index,value){if(typeof value!=='string'||!value.trim())throw Error('Informe o nome que deseja usar.');const stem=require('./document-naming.cjs').safeCodeName(value.trim());if(!stem)throw Error('Informe um nome de arquivo válido.');const data=await read(id);if(!Number.isInteger(index)||!data.pages[index])throw Error('Página inválida.');const page=data.pages[index];await require('./document-naming.cjs').writeJson(path.join(directory(id),page+'-name.json'),{mode:'manual',status:'found',text:value.trim(),stem});return this.pageOutput(id,index);},
   async checkOutputs(id){await checkOutputs((await read(id)).outputs);},
-  async sendPage(id,page,buffer){const data=await read(id);if(data.separation.mode!=='none')return {filename:null,warning:''};const output=await outputPage(data,page,buffer);await writeOutput(data,output);return {filename:output.filename,warning:output.warning};},
+  async sendPage(id,page,buffer){const data=await read(id);if(data.indexing?.enabled)return {filename:null,warning:'Documento aguardando finalização na indexação manual.'};if(data.separation.mode!=='none')return {filename:null,warning:''};const output=await outputPage(data,page,buffer);await writeOutput(data,output);return {filename:output.filename,warning:output.warning};},
   async exportAll(id){
    const data=await read(id);
+   if(data.indexing?.enabled)throw Error('Finalize os documentos e use Processar fila na tela Visualizar fila.');
    if(!data.outputs.length)throw Error('Configure pelo menos uma pasta de saída no projeto.');
    await checkOutputs(data.outputs);
    if(data.separation.mode!=='none')return exportDocuments(data);

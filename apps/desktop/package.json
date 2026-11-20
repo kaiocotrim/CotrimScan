@@ -64,8 +64,27 @@
       "node_modules/zxing-wasm/**/*"
     ],
     "extraResources": [
-      { "from": "scan-share-publish", "to": "scan-share", "filter": ["**/*"] },
-      { "from": "../../.local/naps2-cli/App", "to": "naps2-cli", "filter": ["**/*"] }
-    ]
+      {
+        "from": "scan-share-publish",
+        "to": "scan-share",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../../.local/naps2-cli/App",
+        "to": "naps2-cli",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "CotrimScan-Setup-${version}.${ext}"
+    }
   }
 }

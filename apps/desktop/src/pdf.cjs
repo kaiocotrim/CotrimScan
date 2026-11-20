@@ -69,9 +69,14 @@ async function indexedPdf(pdf,indexBuffer){
  await doc.attach(Uint8Array.from(indexBuffer),'cotrimscan-indexacao.json',{mimeType:'application/json',description:'Dados de captura e indexação do CotrimScan'});
  return Buffer.from(await doc.save({useObjectStreams:false}));
 }
-async function documentPdf(jpegs,{dpi=300,name='Documento'}={}){
+async function documentPdf(jpegs,{dpi=300,name='Documento',searchablePdfs=[]}={}){
  const doc=await PDFDocument.create();
- for(const jpeg of jpegs){
+ for(const [index,jpeg] of jpegs.entries()){
+  if(searchablePdfs[index]){
+   const source=await PDFDocument.load(searchablePdfs[index]);
+   for(const page of await doc.copyPages(source,source.getPageIndices()))doc.addPage(page);
+   continue;
+  }
   const image=await doc.embedJpg(Uint8Array.from(jpeg)),width=image.width*72/dpi,height=image.height*72/dpi;
   doc.addPage([width,height]).drawImage(image,{x:0,y:0,width,height});
  }

@@ -547,10 +547,264 @@ html.app-light .scanner-alert [data-slot="alert-title"]{color:#202020!important}
 html.app-light .scanner-alert [data-slot="alert-description"],html.app-light .scanner-alert [data-slot="alert-close"]{color:#666!important}
 
 /* Project document settings are grouped in a single card. */
-#project-editor .project-document-card{gap:0;overflow:hidden;padding:0;background:#292929;color:#eee;box-shadow:none;--tw-ring-color:#ffffff18}
-#project-editor .project-document-card>h3{border:0;border-bottom:1px solid #ffffff12;background:#303030;padding:14px 18px;color:#eee}
-#project-editor .project-document-card>label{margin:0 18px;padding:18px 4px;border-bottom:1px solid #ffffff12}
-#project-editor .project-document-card>label:last-child{border-bottom:0}
-html.app-light #project-editor .project-document-card{background:#fff;color:#243449;--tw-ring-color:#d9e1ea}
-html.app-light #project-editor .project-document-card>h3{background:#f3f6fa;color:#243449;border-bottom-color:#d9e1ea}
-html.app-light #project-editor .project-document-card>label{color:#243449;border-bottom-color:#e5ebf1}
+#project-editor .project-capture-action:hover,#project-editor .project-capture-action:focus-visible{background:#fff!important;border-color:#fff!important;color:#111!important}
+html.app-light #project-editor .project-capture-action:hover,html.app-light #project-editor .project-capture-action:focus-visible{background:#fff!important;border-color:#fff!important;color:#111!important}
+#project-editor .project-outputs{color:#ddd}
+#project-editor .project-output-heading{border:0!important;border-radius:12px;background:#ffffff08;color:#d8e6f4}
+#project-editor .project-output-count{border:0!important}
+#project-editor .project-output-row{border:0!important;border-radius:12px;background:#ffffff05}
+#project-editor .project-output-input{border:0!important;border-radius:10px;background:#191919;color:#eee;box-shadow:none!important}
+#project-editor .project-output-remove{border:0!important;border-radius:10px;background:#ffffff0a}
+#project-editor .project-output-add,#project-editor .project-output-manual,#project-editor .project-output-config{border:0!important;border-radius:12px}
+#project-editor .project-output-config{background:#fff!important;color:#111!important}
+#project-editor .project-output-config:hover,#project-editor .project-output-config:focus-visible{background:#f2f2f2!important;color:#111!important}
+#project-editor .project-output-section{border:0!important;border-top:0!important}
+#project-editor .project-output-label{border:0!important;border-bottom:0!important;border-radius:12px;background:#ffffff05;padding:14px!important}
+html.app-light #project-editor .project-outputs{color:#304257}
+html.app-light #project-editor .project-output-heading{background:#eaf0f6;color:#304257}
+html.app-light #project-editor .project-output-count{background:#dce5ee;color:#506174}
+html.app-light #project-editor .project-output-row,html.app-light #project-editor .project-output-label{background:#f3f6fa}
+html.app-light #project-editor .project-output-input{background:#fff;color:#243449;box-shadow:none!important}
+html.app-light #project-editor .project-output-remove,html.app-light #project-editor .project-output-add{background:#e9eff5;color:#304257}
+html.app-light #project-editor .project-output-config{background:#fff!important;color:#111!important}
+html.app-light #project-editor .project-output-config:hover,html.app-light #project-editor .project-output-config:focus-visible{background:#f2f2f2!important;color:#111!important}
+html.app-light #project-editor .project-output-manual{color:#52677d}
+#project-editor .project-document-card{display:flex;flex-direction:column;gap:10px;overflow:visible;padding:0;background:transparent;color:#eee;box-shadow:none;--tw-ring-color:transparent}
+#project-editor .project-document-card>h3{border:0;border-radius:12px;background:#ffffff06;padding:14px 18px;color:#eee}
+#project-editor .project-document-card>label{margin:0;padding:14px;border:0;border-radius:12px;background:#ffffff04}
+#project-editor .project-document-card>label:last-child{border:0}
+html.app-light #project-editor .project-document-card{background:transparent;color:#243449;--tw-ring-color:transparent}
+html.app-light #project-editor .project-document-card>h3{background:#edf2f7;color:#243449}
+html.app-light #project-editor .project-document-card>label{color:#243449;background:#f3f6fa}
+.blank-page-settings{border:0!important;border-radius:16px!important;background:#ffffff04}
+.blank-page-settings>label{border:0!important;border-radius:12px}
+.blank-page-settings .blank-page-action{border:0!important;border-radius:12px;background:#ffffff08;color:#eee}
+.blank-page-settings .blank-page-action:hover:not(:disabled){background:#ffffff14!important;color:#fff!important}
+.blank-page-preview{border:0!important;border-radius:16px;background:#191919}
+html.app-light .blank-page-settings{background:#f3f6fa;color:#304257}
+html.app-light .blank-page-settings>label{background:#eaf0f6;color:#304257}
+html.app-light .blank-page-settings .blank-page-action{background:#e6edf5;color:#304257}
+html.app-light .blank-page-settings .blank-page-action:hover:not(:disabled){background:#dce6f0!important;color:#243449!important}
+html.app-light .blank-page-preview{background:#fff;color:#304257}
+.blank-page-empty{display:flex;min-height:150px;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.blank-page-empty p{max-width:340px;margin:0;line-height:1.6}
+.blank-page-empty-icon{width:44px;height:44px;overflow:visible;stroke:#75baff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.blank-page-empty-icon rect,.blank-page-empty-icon path:not(.blank-page-scan-line){stroke:#8794a3}
+.blank-page-empty-icon .blank-page-scan-line{stroke:#75baff;stroke-width:2.5;filter:drop-shadow(0 0 4px #75baff99);animation:blank-page-scan 2.2s ease-in-out infinite alternate}
+@keyframes blank-page-scan{from{transform:translateY(-9px);opacity:.55}to{transform:translateY(8px);opacity:1}}
+html.app-light .blank-page-empty-icon rect,html.app-light .blank-page-empty-icon path:not(.blank-page-scan-line){stroke:#70849a}
+html.app-light .blank-page-empty-icon .blank-page-scan-line{stroke:#3287dc;filter:drop-shadow(0 0 4px #3287dc66)}
+@media(prefers-reduced-motion:reduce){.blank-page-empty-icon .blank-page-scan-line{animation:none}}
+#project-editor .project-editor-heading{border:0!important;border-bottom:0!important;border-radius:12px;background:#ffffff06}
+#project-editor .project-editor-row,#project-editor .project-document-card>.project-editor-row{border:0!important;border-bottom:0!important;border-radius:12px;background:#ffffff04}
+#project-editor .project-general-input{border:0!important;box-shadow:none!important}
+#project-editor .project-general-input:focus-visible{outline:2px solid #3287dc!important;outline-offset:2px}
+#project-editor .project-document-card>h3.project-editor-heading{border:0!important;border-bottom:0!important;border-radius:12px;background:#ffffff06}
+html.app-light #project-editor .project-editor-heading{background:#edf2f7;color:#304257}
+html.app-light #project-editor .project-editor-row,html.app-light #project-editor .project-document-card>.project-editor-row{border:0!important;border-bottom:0!important;background:#f3f6fa;color:#304257}
+html.app-light #project-editor .project-document-card>h3.project-editor-heading{border:0!important;border-bottom:0!important;background:#edf2f7;color:#304257}
+
+/* Borderless rounded layout for the scanning workspace. */
+#scanner-view>header{border:0!important;border-bottom:0!important;border-radius:0;background:#191919}
+#scanner-view>main{gap:18px}
+#scanner-view .scanner-pages-card,#scanner-view .scan-preview-card,#scanner-view .scan-tools-card{border:0!important;border-radius:16px!important;background:#202326;box-shadow:none!important}
+#scanner-view .scanner-pages-card{padding:16px 12px}
+#scanner-view .scan-preview-card,#scanner-view .scan-tools-card{overflow:hidden}
+#scanner-view .sidebar-heading{padding:4px 6px 10px}
+#scanner-view #pages{gap:10px;padding:2px}
+#scanner-view #pages article{border:0!important;border-radius:14px!important;background:#262b30!important;padding:10px;box-shadow:none!important}
+#scanner-view #pages article:has(button[aria-current="page"]){background:#2c3640!important;box-shadow:inset 0 0 0 2px #3287dc!important}
+#scanner-view #pages article:has(input:checked){background:#29333c!important}
+#scanner-view #pages article:has(button[aria-current="page"]):has(input:checked){background:#2c3640!important}
+#scanner-view #pages button[aria-current],#scanner-view .thumbnail-open{border:0!important;border-radius:10px!important;background:#171a1d}
+#scanner-view .selection-actions{gap:10px;margin-top:12px;padding-top:12px;border:0!important}
+#scanner-view .selection-actions button,#scanner-view #select-all,#scanner-view #delete-selected{border:0!important;border-radius:12px!important;background:#292e33;color:#d7dee5}
+#scanner-view .selection-actions button:hover:not(:disabled),#scanner-view #select-all:hover:not(:disabled),#scanner-view #delete-selected:hover:not(:disabled){background:#343b42}
+#scanner-view .scan-preview-card>div:first-child,#scanner-view .scan-preview-card>div:last-child{border:0!important}
+#scanner-view [aria-label="Zoom do documento"]{gap:9px;padding:12px 16px;border:0!important;background:#22272c;border-radius:14px;margin:10px}
+#scanner-view [aria-label="Zoom do documento"] button,#scanner-view [aria-label="Zoom do documento"] select{border:0!important;border-radius:10px!important;background:#30363c;color:#e4e9ee}
+#scanner-view [aria-label="Zoom do documento"] button:hover:not(:disabled){background:#3b444d}
+#scanner-view .zoom-toolbar{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:14px;min-height:50px;margin:8px 10px;padding:8px 12px;overflow:hidden;white-space:nowrap}
+.zoom-toolbar-controls{display:flex;min-width:0;align-items:center;gap:8px}
+.zoom-toolbar-label{flex:none;color:#aeb8c1;font-size:11px}
+.zoom-toolbar-stepper{display:flex;height:32px;flex:none;align-items:center;overflow:hidden;border-radius:10px;background:#30363c}
+#scanner-view .zoom-toolbar .zoom-toolbar-step{display:grid!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;margin:0!important;padding:0!important;place-items:center;border:0!important;border-radius:0!important;background:transparent!important;color:#e4e9ee;font-size:17px;line-height:1}
+#scanner-view .zoom-toolbar .zoom-toolbar-step:hover:not(:disabled){background:#454e56!important}
+#scanner-view .zoom-toolbar .zoom-toolbar-step:disabled{opacity:.4}
+.zoom-toolbar [data-slot="native-select-wrapper"]{width:auto!important;flex:0 0 auto}
+#scanner-view .zoom-toolbar select.zoom-toolbar-select{display:block;width:106px!important;min-width:106px!important;max-width:116px!important;height:32px!important;margin:0!important;padding:0 26px 0 8px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#e4e9ee;font-size:10px}
+.zoom-toolbar [data-slot="native-select-icon"]{right:7px;width:13px;height:13px}
+.zoom-toolbar-hint{min-width:0;margin-left:auto;overflow:hidden;color:#8e9aa5;font-size:10px;text-overflow:ellipsis}
+#scanner-view .zoom-toolbar .zoom-toolbar-button.is-active{background:#234968!important;color:#fff!important}
+@media(max-width:900px){.zoom-toolbar-hint{display:none}}
+@media(max-width:600px){#scanner-view .zoom-toolbar{gap:7px;margin:5px 6px;padding:7px 8px}.zoom-toolbar-controls{gap:5px}.zoom-toolbar-label{display:none}#scanner-view .zoom-toolbar select.zoom-toolbar-select{width:92px!important;min-width:92px!important;max-width:96px!important}#scanner-view .zoom-toolbar .zoom-toolbar-button{padding-inline:9px;font-size:10px}}
+#document-viewport{border:0!important;border-radius:12px;background:#15181b!important;outline-offset:2px}
+#scanner-view .scan-tools-card h2{border:0!important;border-radius:12px;background:#252a2f;margin:10px 10px 0;padding:12px 14px}
+#scanner-view .scan-tools-card>div:first-child>div{gap:8px;padding:12px}
+#scanner-view .scan-tools-card>div:first-child>div>div:not(:first-child){margin-top:8px;padding-top:10px;border:0!important;border-radius:10px;background:#252a2f;padding-left:10px}
+#scanner-view .scan-tools-card button:not(.MuiIconButton-root){border:0!important;border-radius:12px!important;background:#292e33;color:#dce3e9}
+#scanner-view .scan-tools-card button:hover:not(:disabled){background:#353d44!important}
+#scanner-view .scan-tools-card>div:last-child{border:0!important;background:#202326;padding:12px}
+#scanner-view .scan-tools-card>div:last-child button{border:0!important;border-radius:12px!important;background:#fff!important;color:#111!important}
+#scanner-view .scan-tools-card>div:last-child button:hover:not(:disabled){background:#f1f1f1!important}
+#scanner-view #zoom-level,#scanner-view .scan-tools-card input{border:0!important;border-radius:10px!important}
+#scanner-view .scan-tools-card :is(input,select,textarea):focus-visible,#scanner-view button:focus-visible,#document-viewport:focus-visible{outline:2px solid #75baff!important;outline-offset:2px}
+html.app-light #scanner-view>header{border:0!important;background:#fff!important}
+html.app-light #scanner-view .scanner-pages-card,html.app-light #scanner-view .scan-preview-card,html.app-light #scanner-view .scan-tools-card{background:#fff!important}
+html.app-light #scanner-view #pages article{background:#f1f5f9!important}
+html.app-light #scanner-view #pages article:has(button[aria-current="page"]){background:#eaf2fa!important;box-shadow:inset 0 0 0 2px #3287dc!important}
+html.app-light #scanner-view #pages article:has(input:checked){background:#eaf2fa!important}
+html.app-light #scanner-view #pages button[aria-current],html.app-light #scanner-view .thumbnail-open{background:#f7f9fc!important}
+html.app-light #scanner-view .selection-actions button,html.app-light #scanner-view #select-all,html.app-light #scanner-view #delete-selected{background:#edf2f7;color:#304257}
+html.app-light #scanner-view .selection-actions button:hover:not(:disabled),html.app-light #scanner-view #select-all:hover:not(:disabled),html.app-light #scanner-view #delete-selected:hover:not(:disabled){background:#e1eaf3}
+html.app-light #scanner-view [aria-label="Zoom do documento"]{background:#f3f6fa}
+html.app-light #scanner-view [aria-label="Zoom do documento"] button,html.app-light #scanner-view [aria-label="Zoom do documento"] select{background:#e7edf4;color:#304257}
+html.app-light #document-viewport{background:#f3f6fa!important}
+html.app-light #scanner-view .scan-tools-card h2,html.app-light #scanner-view .scan-tools-card>div:first-child>div>div:not(:first-child){background:#f3f6fa;color:#304257}
+html.app-light #scanner-view .scan-tools-card button:not(.MuiIconButton-root){background:#edf2f7;color:#304257}
+html.app-light #scanner-view .scan-tools-card button:hover:not(:disabled){background:#e1eaf3!important}
+html.app-light #scanner-view .scan-tools-card>div:last-child{background:#fff}
+html.app-light #scanner-view .scan-tools-card>div:last-child button{background:#202020!important;color:#fff!important}
+@media(max-width:700px){#scanner-view [aria-label="Zoom do documento"]{margin:6px;border-radius:12px}}
+
+.mobile-connect-sheet{background:#202326!important;color:#eee!important;box-shadow:0 24px 70px #0008}
+.mobile-connect-sheet h2{color:#eee}
+.mobile-connect-sheet [data-slot="sheet-description"]{color:#aaa}
+.mobile-connect-sheet [data-slot="sheet-close"].mobile-connect-close{position:absolute!important;inset-block-start:16px!important;inset-inline-end:16px!important;display:grid!important;width:32px!important;height:32px!important;min-height:32px!important;margin:0!important;padding:0!important;place-items:center!important;line-height:0!important}
+.mobile-connect-sheet [data-slot="sheet-close"].mobile-connect-close svg{display:block!important;width:16px!important;height:16px!important;margin:0!important}
+.mobile-connect-sheet .mobile-connect-body{color:#eee}
+.mobile-connect-sheet [class~="overscroll-contain"]{overflow-x:hidden;scrollbar-width:none!important;-ms-overflow-style:none!important}
+.mobile-connect-sheet [class~="overscroll-contain"]::-webkit-scrollbar,.mobile-connect-sheet *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.mobile-connect-sheet *{scrollbar-width:none!important;-ms-overflow-style:none!important}
+.mobile-connect-sheet [class~="w-1.5"]{display:none!important}
+.mobile-connect-sheet .mobile-connect-body>div:has(>img[alt="QR Code para conectar o celular"]),.mobile-connect-sheet .mobile-connect-body>div:has(>p){border:0!important;border-radius:16px;background:#171a1d}
+.mobile-connect-sheet .mobile-connect-body img[alt="QR Code para conectar o celular"]{border-radius:10px;padding:8px}
+.mobile-connect-sheet .mobile-connect-body input,.mobile-connect-sheet .mobile-connect-body select{border:0!important;border-radius:10px;background:#141719;color:#eee}
+.mobile-connect-sheet .mobile-connect-body button{border:0!important;border-radius:10px}
+.mobile-connect-sheet .mobile-connect-body>div:has(>h3){border:0!important;border-radius:14px;background:#2a3035}
+html.app-light .mobile-connect-sheet{background:#fff!important;color:#243449!important}
+html.app-light .mobile-connect-sheet h2,html.app-light .mobile-connect-sheet .mobile-connect-body{color:#243449}
+html.app-light .mobile-connect-sheet .mobile-connect-body>div:has(>img[alt="QR Code para conectar o celular"]),html.app-light .mobile-connect-sheet .mobile-connect-body>div:has(>p){background:#f3f6fa}
+html.app-light .mobile-connect-sheet .mobile-connect-body input,html.app-light .mobile-connect-sheet .mobile-connect-body select{background:#f3f6fa;color:#243449}
+html.app-light .mobile-connect-sheet .mobile-connect-body>div:has(>h3){background:#f3f6fa}
+
+.mobile-connect-sheet[data-starting-style] { transform: none; }
+
+.panelui-spinner-ring,.panelui-spinner-spokes{animation:panelui-spinner-spin 900ms linear infinite}
+.panelui-spinner-orbit{transform-origin:12px 12px;animation:panelui-spinner-spin 1200ms linear infinite}
+.panelui-spinner-dot{transform-box:fill-box;transform-origin:center;animation:panelui-spinner-dot 900ms ease-in-out infinite}
+.panelui-spinner-pulse{transform-box:fill-box;transform-origin:center;animation:panelui-spinner-pulse 1100ms ease-out infinite}
+@keyframes panelui-spinner-spin{to{transform:rotate(360deg)}}
+@keyframes panelui-spinner-dot{0%,60%,100%{opacity:.3;transform:scale(.75)}30%{opacity:1;transform:scale(1)}}
+@keyframes panelui-spinner-pulse{0%{opacity:.75;transform:scale(.65)}100%{opacity:0;transform:scale(1.25)}}
+@media(prefers-reduced-motion:reduce){.panelui-spinner-ring,.panelui-spinner-spokes,.panelui-spinner-orbit{animation-duration:2700ms}.panelui-spinner-dot{animation-duration:2700ms}.panelui-spinner-pulse{animation-duration:3300ms}}
+
+/* Barra de rolagem cinza discreta na janela da fila de documentos. */
+.queue-scroll{scrollbar-width:thin;scrollbar-color:#777 #292a2b;scrollbar-gutter:stable}
+.queue-scroll::-webkit-scrollbar{width:10px;height:10px}
+.queue-scroll::-webkit-scrollbar-track{border:2px solid #222324;border-radius:999px;background:#292a2b}
+.queue-scroll::-webkit-scrollbar-thumb{min-height:32px;border:2px solid #292a2b;border-radius:999px;background:#858585}
+.queue-scroll::-webkit-scrollbar-thumb:hover{background:#aaa}
+.queue-scroll::-webkit-scrollbar-corner{background:#222324}
+
+/* A indexação ocupa a largura da coluna sem ficar espremida entre os botões. */
+#scanner-view .scan-tools-card .scanner-tools-content{gap:10px;padding:14px 12px 16px}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3){margin:10px 0 2px;padding:14px 12px!important;border-radius:16px;background:#252a2f;box-shadow:none}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button{background:#292e33!important;color:#dce3e9!important}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button:hover:not(:disabled){background:#353d44!important}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) h3{margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:.01em}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) p{margin:6px 0 10px;line-height:1.45}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) label{margin:10px 0!important;line-height:1.5}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) input{height:40px!important;margin-top:6px!important;padding-inline:12px}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button{min-height:40px!important;white-space:normal;line-height:1.3}
+#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button+ p{margin-top:14px}
+@media(max-width:900px){#scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3){padding:16px!important}}
+html.app-light #scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3){background:#f3f6fa;color:#304257}
+html.app-light #scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button{background:#edf2f7!important;color:#304257!important}
+html.app-light #scanner-view .scan-tools-card .scanner-tools-content>div:has(>h3) button:hover:not(:disabled){background:#e1eaf3!important}
+
+/* Barra de rolagem da coluna Ferramentas, incluindo o painel de indexação. */
+#scanner-view .scanner-tools-scroll{scrollbar-width:thin;scrollbar-color:#70757a #25282b;scrollbar-gutter:stable}
+#scanner-view .scanner-tools-scroll::-webkit-scrollbar{width:9px}
+#scanner-view .scanner-tools-scroll::-webkit-scrollbar-track{margin:8px 0;border-radius:10px;background:#25282b}
+#scanner-view .scanner-tools-scroll::-webkit-scrollbar-thumb{border:2px solid #25282b;border-radius:10px;background:#70757a}
+#scanner-view .scanner-tools-scroll::-webkit-scrollbar-thumb:hover{background:#92979c}
+html.app-light #scanner-view .scanner-tools-scroll{scrollbar-color:#aeb6bf #eef1f4}
+html.app-light #scanner-view .scanner-tools-scroll::-webkit-scrollbar-track{background:#eef1f4}
+html.app-light #scanner-view .scanner-tools-scroll::-webkit-scrollbar-thumb{border-color:#eef1f4;background:#aeb6bf}
+html.app-light #scanner-view .scanner-tools-scroll::-webkit-scrollbar-thumb:hover{background:#89939e}
+#scanner-view .scan-tools-card .manual-indexing{margin-top:4px!important;padding:8px 10px!important;border-radius:12px!important;background:#252a2f!important}
+html.app-light #scanner-view .scan-tools-card .manual-indexing{background:#f3f6fa!important;color:#304257!important}
+
+/* Grupos recolhíveis da coluna Ferramentas. */
+#scanner-view .scan-tools-card .scanner-tool-section{margin:0;padding:0;border:0;border-radius:12px;background:#252a2f;color:#dce3e9;box-shadow:none}
+#scanner-view .scan-tools-card .scanner-tool-section-trigger{display:flex;width:100%;min-height:38px;align-items:center;justify-content:space-between;margin:0;padding:9px 12px;border:0;border-radius:12px;background:#252a2f;color:#b9c5d0;text-align:left;font-size:10px;font-weight:500;letter-spacing:1.2px}
+#scanner-view .scan-tools-card .scanner-tool-section-trigger:hover{background:#30363c!important;color:#fff}
+#scanner-view .scan-tools-card .scanner-tool-section-content{display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:0 10px}
+
+#scanner-view .scan-tools-card .scanner-tool-section-inner>button{min-height:36px;margin:0!important;background:#292e33!important;color:#dce3e9!important}
+html.app-light #scanner-view .scan-tools-card .scanner-tool-section,html.app-light #scanner-view .scan-tools-card .scanner-tool-section-trigger{background:#f3f6fa;color:#304257}
+html.app-light #scanner-view .scan-tools-card .scanner-tool-section-inner>button{background:#edf2f7!important;color:#304257!important}
+
+/* Indexação usa o mesmo cabeçalho dos outros grupos recolhíveis. */
+#scanner-view .scan-tools-card .scanner-tools-content>.manual-indexing{margin:0!important;padding:0!important;border:0!important;border-radius:12px!important;background:#252a2f!important;box-shadow:none!important}
+
+#scanner-view .scan-tools-card .scanner-tool-section-trigger{padding-left:18px!important;padding-right:16px!important}
+#scanner-view .scan-tools-card .manual-indexing>div>div{padding-left:14px!important;padding-right:14px!important}
+
+
+
+/* A altura animada envolve o conteúdo; o recuo fica dentro, sem sobrar espaço ao fechar. */
+#scanner-view .scan-tools-card .scanner-tool-section-content{display:block;padding:0!important}
+#scanner-view .scan-tools-card .scanner-tool-section-inner{display:flex;flex-direction:column;gap:8px;padding:10px 14px 12px}
+
+/* Um único estilo de cabeçalho para todos os grupos, incluindo indexação. */
+#scanner-view .scan-tools-card .scanner-tool-section-trigger{height:44px!important;min-height:44px!important;padding:12px 14px!important;font-family:inherit!important;font-size:13px!important;font-weight:400!important;letter-spacing:0!important;line-height:20px!important;color:#eee!important;background:#252a2f!important}
+#scanner-view .scan-tools-card .scanner-tool-section-trigger>span:last-child{font-size:16px;line-height:1;color:inherit}
+#scanner-view .scan-tools-card .scanner-tool-section-trigger:hover:not(:disabled){background:#30363c!important}
+html.app-light #scanner-view .scan-tools-card .scanner-tool-section-trigger{color:#304257!important;background:#f3f6fa!important}
+html.app-light #scanner-view .scan-tools-card .scanner-tool-section-trigger:hover:not(:disabled){background:#e1eaf3!important}
+
+#scanner-view .scan-tools-card>div:last-child button.scanner-start-button,
+html.app-light #scanner-view .scan-tools-card>div:last-child button.scanner-start-button{background:#287fe5!important;color:#fff!important}
+#scanner-view .scan-tools-card>div:last-child button.scanner-start-button:hover:not(:disabled),
+html.app-light #scanner-view .scan-tools-card>div:last-child button.scanner-start-button:hover:not(:disabled){background:#1e6dcb!important}
+
+#scanner-view .scan-tools-card .scanner-tool-section-trigger{position:relative;justify-content:center!important;padding-inline:34px!important;text-align:center!important}
+#scanner-view .scan-tools-card .scanner-tool-section-trigger>span:last-child{position:absolute;right:14px;display:flex;align-items:center;justify-content:center;width:16px}
+
+.document-queue-screen .queue-layout>nav,
+.document-queue-screen .queue-layout>section,
+.document-queue-screen .queue-layout>aside,
+.document-queue-screen .queue-layout>nav>button{border:0!important;box-shadow:none!important}
+
+.document-queue-screen{box-sizing:border-box;max-width:100vw;min-width:0}
+.document-queue-screen>header{min-width:0;flex-wrap:wrap}
+.document-queue-screen>header>div{min-width:0}
+.document-queue-screen>header>div:last-child{flex-wrap:wrap;margin-left:auto;flex-shrink:0}
+.document-queue-screen>header button,.document-queue-screen>footer button{width:auto!important;flex:none;white-space:nowrap}
+.document-queue-screen .queue-layout{min-width:0}
+.document-queue-screen .queue-layout>section{min-width:0}
+.queue-preview-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;flex:none;font-size:12px}
+.queue-view-modes{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto;background:#191c1e;padding:4px;border-radius:12px}
+.document-queue-screen .queue-view-modes button,.document-queue-screen .queue-navigation button{margin:0;width:auto;min-height:34px;padding:6px 12px;border:0;border-radius:8px;background:transparent;color:#c7cdd2;font-size:11px}
+.document-queue-screen .queue-view-modes button[aria-pressed=true]{background:#384651;color:#fff}
+.queue-navigation{display:flex;gap:6px}
+.document-queue-screen .queue-navigation button{width:34px;background:#30363b;font-size:20px;padding:0}
+.queue-navigation button:disabled{opacity:.35}
+.queue-document-pages{display:grid;grid-template-columns:minmax(0,1fr);min-height:0;flex:1;gap:12px;padding:12px;border-radius:12px;background:#131415}
+.queue-document-pages.is-duplex{grid-template-columns:repeat(2,minmax(0,1fr))}
+.queue-document-pages figure{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:0;margin:0;padding:0;border:0;background:transparent}
+.queue-document-pages figcaption{flex:none;margin-bottom:10px;color:#aeb9c3;font-size:11px}
+.queue-document-pages img{min-height:0;width:100%;height:100%;flex:1;object-fit:contain}
+.queue-document-pages p{font-size:12px;color:#aaa;text-align:center}
+.queue-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start;gap:14px;min-height:0;flex:1;overflow:auto;padding:12px;background:#131415;border-radius:12px}
+.document-queue-screen .queue-page-grid button{display:flex;flex-direction:column;gap:8px;margin:0;width:100%;padding:10px;border:0;border-radius:12px;background:#292d30;color:#ddd;font-size:11px}
+.queue-page-grid img{width:100%;height:190px;object-fit:contain}
+.queue-thumbnail-strip{display:flex;flex:none;gap:8px;overflow:auto;padding:4px;max-width:100%}
+.document-queue-screen .queue-thumbnail-strip button{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;width:52px;height:68px;margin:0;padding:5px;border:0;border-radius:9px;background:#292d30;color:#bbb;font-size:9px}
+.document-queue-screen .queue-thumbnail-strip button[aria-pressed=true]{background:#465b6b;color:#fff}
+.queue-thumbnail-strip img{width:100%;height:42px;object-fit:contain}
+
+#scanner-view .scan-tools-card h2.scanner-tools-title{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 10px 0;padding:12px 14px;border:0!important;border-radius:0;background:transparent!important;box-shadow:none;color:#eee;font-size:13px;font-weight:500}
+html.app-light #scanner-view .scan-tools-card h2.scanner-tools-title{background:transparent!important;color:#304257}

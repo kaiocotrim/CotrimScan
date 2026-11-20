@@ -1,0 +1,30 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const sharp=require('sharp');
+const {createProjects}=require('../src/projects.cjs');
+const {importImages}=require('../src/import-images.cjs');
+test('importação adiciona fotos em ordem, preserva originais e permite finalizar novo lote',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-import-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const projects=createProjects(dir),project=await projects.create({name:'Importação',port:9880,dpi:300,source:'Feeder',indexing:{enabled:true,fields:[{id:'code',name:'Código',type:'text',source:'manual'}]}});
+ const originals=await Promise.all(['white','blue'].map(background=>sharp({create:{width:30,height:40,channels:3,background}}).png().toBuffer()));
+ const files=originals.map((_,i)=>path.join(dir,i+'.png'));await Promise.all(files.map((file,i)=>fs.writeFile(file,originals[i])));
+ const emitted=[];
+ const normalize=buffer=>sharp(buffer).jpeg().toBuffer();
+ let result=await importImages(files,{projects,projectId:project.id,onPage:image=>emitted.push(image),normalize});
+ assert.equal(result.imported,2);assert.equal(emitted.length,2);
+ for(let i=0;i<2;i++)assert.deepEqual(await projects.original(project.id,i),originals[i]);
+ const [batch]=await projects.indexingQueue(project.id,'add',{values:{code:'001'}});assert.equal(batch.pageCount,2);
+ result=await importImages([files[0]],{projects,projectId:project.id,onPage:()=>{},normalize});
+ assert.equal(result.imported,1);assert.equal((await projects.open(project.id)).pages.length,1);
+ assert.equal((await projects.indexingQueue(project.id,'add',{values:{code:'002'}})).length,2);
+});
+test('importação informa arquivos inválidos e continua sem perder os válidos',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cotrim-import-invalid-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const bad=path.join(dir,'bad.png'),good=path.join(dir,'good.png');await fs.writeFile(bad,'invalid');await fs.writeFile(good,'valid');
+ let saved=0;
+ const result=await importImages([bad,good],{projectId:'test',projects:{info:async()=>({}),append:async()=>{saved++;return 'page';},sendPage:async()=>({})},onPage:()=>{},normalize:async buffer=>{if(buffer.toString()==='invalid')throw Error('Imagem inválida.');return buffer;}});
+ assert.equal(saved,1);assert.equal(result.imported,1);assert.match(result.warnings[0],/bad.png: Imagem inválida/);
+});

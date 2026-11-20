@@ -59,3 +59,24 @@ test('usuário ignora maiúsculas, mas a senha continua exata',async t=>{
  restarted.requireSession();
  assert.equal(JSON.parse(await fs.readFile(file,'utf8')).username,'Kaio');
 });
+
+test('entrar direto abre sessão sem cadastro e permite sair e entrar novamente',async t=>{
+ const file=await fixture(t),auth=createAuth(file);
+ assert.throws(()=>auth.requireSession(),/Faça login/);
+ assert.deepEqual(await auth.enter(),{username:'Local'});
+ auth.requireSession();
+ assert.equal((await auth.status()).authenticated,true);
+ await assert.rejects(fs.access(file),{code:'ENOENT'});
+ auth.logout();assert.throws(()=>auth.requireSession(),/Faça login/);
+ await auth.enter();auth.requireSession();
+ const restarted=createAuth(file);assert.equal((await restarted.status()).authenticated,false);
+ await restarted.enter();restarted.requireSession();
+});
+test('entrar direto preserva conta existente sem exigir senha',async t=>{
+ const file=await fixture(t),auth=createAuth(file);
+ await auth.register('Kaio','senha-antiga');auth.logout();
+ const before=await fs.readFile(file,'utf8');
+ const restarted=createAuth(file);
+ assert.deepEqual(await restarted.enter(),{username:'Kaio'});restarted.requireSession();
+ assert.equal(await fs.readFile(file,'utf8'),before);
+});

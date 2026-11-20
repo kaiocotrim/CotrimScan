@@ -36,3 +36,57 @@
 .capture-redesign .capture-editor-status.is-success { border-color: #3da66b !important; background: #183326 !important; color: #c8f1d7 !important; }
 .capture-redesign .capture-editor-status.is-idle { border-color: #383c41 !important; background: #202326 !important; color: #a1a5ad !important; }
 @media (max-width: 700px) { .capture-editor-modal .capture-redesign[role=dialog] { padding: 0 10px 12px; } .capture-redesign .capture-sample-badge { display: none; } .capture-redesign .capture-editor-viewport { padding: 12px !important; } }
+
+/* Rounded, borderless capture editor surfaces. */
+.capture-editor-modal .capture-redesign[role=dialog] { padding: 0 22px 18px; border: 0 !important; border-radius: 18px !important; background: #131619; }
+.capture-redesign .capture-editor-header { min-height: 62px; margin-bottom: 14px; padding: 12px 6px; border: 0; }
+.capture-redesign .capture-sample-badge { border: 0; border-radius: 999px; }
+.capture-redesign .capture-editor-toolbar { gap: 9px; padding: 0; }
+.capture-editor-modal .capture-redesign .capture-editor-toolbar button { min-height: 40px; border: 0 !important; border-radius: 12px !important; background: #252a2f; }
+.capture-editor-modal .capture-redesign .capture-editor-toolbar button:first-child { background: #3287dc !important; }
+.capture-editor-modal .capture-redesign .capture-editor-toolbar button:focus-visible,
+.capture-editor-modal .capture-redesign .capture-editor-fields button:focus-visible,
+.capture-editor-modal .capture-redesign .capture-editor-settings :is(input,select,button):focus-visible,
+.capture-editor-modal .capture-redesign .capture-editor-footer button:focus-visible { outline: 2px solid #75baff !important; outline-offset: 2px; }
+.capture-editor-modal .capture-redesign .capture-editor-viewport { border: 0 !important; border-radius: 16px; background: #101316; box-shadow: inset 0 0 0 1px #ffffff05; }
+.capture-redesign .capture-editor-viewport img { border-radius: 8px; }
+.capture-editor-modal .capture-redesign .capture-editor-settings { border: 0 !important; padding-left: 8px; }
+.capture-redesign .capture-editor-fields { padding: 18px; border: 0 !important; border-radius: 16px; background: #1c2024; box-shadow: none !important; }
+.capture-redesign .capture-fields-model-row { gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border: 0; }
+.capture-redesign .capture-fields-model-row summary { width: 38px; height: 38px; border: 0; border-radius: 12px; background: #292e33; }
+.capture-redesign .capture-fields-model-row details label { border: 0; border-radius: 12px; background: #252a2f; }
+.capture-editor-modal .capture-redesign .capture-editor-settings :is(input:not([type=checkbox]),select) { min-height: 40px; border: 0 !important; border-radius: 12px !important; background: #141719 !important; }
+.capture-editor-modal .capture-redesign .capture-editor-settings :is(input:not([type=checkbox]),select):focus-visible { outline: 2px solid #75baff !important; outline-offset: 2px; }
+.capture-editor-modal .capture-redesign .capture-editor-new-model { border: 0 !important; border-radius: 12px !important; background: #292e33 !important; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current] { min-height: 44px; margin: 5px 0; border: 0 !important; border-radius: 12px; background: #252a2f; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current=true] { background: #23364c !important; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current]:hover { background: #303840 !important; }
+.capture-editor-modal .capture-redesign .capture-editor-fields button[aria-current=true]:hover { background: #2b4058 !important; }
+.capture-editor-modal .capture-redesign .capture-editor-field-card { margin-top: 14px; padding: 16px 14px 12px; border: 0 !important; border-radius: 14px; background: #22272c; }
+.capture-editor-modal .capture-redesign .capture-editor-fields details { border: 0 !important; border-radius: 12px; background: #292e33; }
+.capture-editor-modal .capture-redesign .capture-editor-field-card button { border: 0 !important; border-radius: 12px; background: #30363c; }
+.capture-redesign .capture-delete-field { background: #38272a !important; color: #f0b9bf !important; }
+.capture-redesign .capture-editor-status { margin: 12px 0; border: 0 !important; border-radius: 12px; }
+.capture-redesign .capture-editor-status.is-error { background: #3a1e22 !important; }
+.capture-redesign .capture-editor-status.is-success { background: #183326 !important; }
+.capture-redesign .capture-editor-status.is-idle { background: #202326 !important; }
+.capture-redesign .capture-editor-footer { margin-top: 2px; padding-top: 12px; border: 0 !important; }
+.capture-editor-modal .capture-redesign .capture-editor-footer > button { min-height: 40px; border: 0 !important; border-radius: 12px !important; background: #252a2f !important; }
+.capture-editor-modal .capture-redesign .capture-editor-footer > button:first-child { color: #e5e7eb !important; }
+.capture-editor-modal .capture-redesign .capture-editor-footer > button:first-child:hover:not(:disabled) { background: #30363c !important; color: #fff !important; }
+.capture-editor-modal .capture-redesign .capture-editor-footer > button:last-child:not(:disabled) { background: #3287dc !important; color: #fff !important; }
+.capture-editor-modal .capture-redesign .capture-editor-footer > button:last-child:not(:disabled):hover { background: #4397ea !important; }
+.capture-redesign .capture-model-name-label { display: flex; align-items: center; gap: 7px; }
+.capture-redesign .capture-model-pencil { width: 15px; height: 15px; overflow: visible; stroke: #75baff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transform-origin: 70% 80%; transition: transform .2s ease; }
+.capture-redesign .capture-model-pencil path:first-child { stroke-dasharray: 40; stroke-dashoffset: 0; transition: stroke-dashoffset .35s ease; }
+.capture-redesign .capture-fields-model-name:hover .capture-model-pencil,
+.capture-redesign .capture-fields-model-name:focus-within .capture-model-pencil { transform: rotate(-12deg) translateY(-1px); }
+.capture-redesign .capture-fields-model-name:hover .capture-model-pencil path:first-child,
+.capture-redesign .capture-fields-model-name:focus-within .capture-model-pencil path:first-child { stroke-dashoffset: 40; animation: capture-pencil-draw .45s ease forwards; }
+@keyframes capture-pencil-draw { to { stroke-dashoffset: 0; } }
+@media(prefers-reduced-motion:reduce) { .capture-redesign .capture-model-pencil,.capture-redesign .capture-model-pencil path:first-child { transition:none!important; animation:none!important; } }
+@media (max-width: 700px) {
+  .capture-editor-modal .capture-redesign[role=dialog] { padding: 0 12px 14px; border-radius: 0 !important; }
+  .capture-editor-modal .capture-redesign .capture-editor-settings { padding: 0 !important; }
+  .capture-redesign .capture-editor-viewport { border-radius: 14px; }
+}

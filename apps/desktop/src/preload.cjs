@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('scanner',{
  addManual:input=>ipcRenderer.invoke('scanners:manual-add',input),
  removeManual:id=>ipcRenderer.invoke('scanners:manual-remove',id),
  scan:()=>ipcRenderer.invoke('scan'),
+ importPhotos:projectId=>ipcRenderer.invoke('pages:import',projectId),
  remove:indices=>ipcRenderer.invoke('pages:remove',indices),
  rotate:(index,angle)=>ipcRenderer.invoke('pages:rotate',index,angle),
  enhance:(index,corners,mode)=>ipcRenderer.invoke('pages:enhance',index,corners,mode),
@@ -31,6 +32,7 @@ contextBridge.exposeInMainWorld('scanner',{
 });
 
 contextBridge.exposeInMainWorld('localAuth',{
+ enter:()=>ipcRenderer.invoke('auth:enter'),
  status:()=>ipcRenderer.invoke('auth:status'),
  register:(username,password)=>ipcRenderer.invoke('auth:register',username,password),
  login:(username,password)=>ipcRenderer.invoke('auth:login',username,password),
@@ -38,6 +40,7 @@ contextBridge.exposeInMainWorld('localAuth',{
 });
 
 contextBridge.exposeInMainWorld('projects',{
+ indexingQueue:(projectId,command,input)=>ipcRenderer.invoke('indexing:queue',projectId,command,input),
  rename:(id,name)=>ipcRenderer.invoke('projects:rename',id,name),
  duplicate:id=>ipcRenderer.invoke('projects:duplicate',id),
  delete:id=>ipcRenderer.invoke('projects:delete',id),

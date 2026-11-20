@@ -16,7 +16,6 @@ function errorText(error: unknown): string {
 function AppContent() {
   const [view, setView] = useState<'auth' | 'projects' | 'scanner'>('auth');
   const [account, setAccount] = useState('');
-  const [creating, setCreating] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
   const [enteringProjects, setEnteringProjects] = useState(false);
@@ -63,7 +62,7 @@ function AppContent() {
     window.localAuth.status().then(session => {
       if (!active) return;
       if (session.authenticated) void showProjects(session.username);
-      else { setCreating(!session.hasAccount); setAuthLoading(false); }
+      else { setAuthLoading(false); }
     }).catch(error => { if (active) { setAuthError(errorText(error)); setAuthLoading(false); } });
     const unsubscribePage = window.scanner.onPage(page => {
       if (page.projectId && page.projectId !== projectRef.current?.id) return;
@@ -80,7 +79,7 @@ function AppContent() {
     try { await action(); } catch (error) { setStatus(errorText(error)); } finally { setBusy(false); }
   }
   async function logout() {
-    await run(async () => { await window.localAuth.logout(); setProject(null); setPages([]); setView('auth'); setAuthLoading(false); setCreating(false); });
+    await run(async () => { await window.localAuth.logout(); setProject(null); setPages([]); setView('auth'); setAuthLoading(false); });
   }
   async function openProject(selected: Project) {
     await run(async () => {
@@ -94,9 +93,9 @@ function AppContent() {
   }
   return <>
     {themeMotion > 0 && <motion.div key={themeMotion} aria-hidden="true" className="app-theme-transition" style={{ background: lightTheme ? 'radial-gradient(ellipse at 50% 45%, #a6cfff80, transparent 70%)' : 'radial-gradient(ellipse at 50% 45%, #23354c99, transparent 70%)' }} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: [0, 0.75, 0], scale: [0.97, 1, 1.03] }} transition={{ duration: 0.65, ease: 'easeInOut' }} />}
-    {view === 'auth' && <AuthView creating={creating} loading={authLoading} error={authError} onSubmit={async (username, password) => {
-      setAuthError('Validando…');
-      try { const session = creating ? await window.localAuth.register(username, password) : await window.localAuth.login(username, password); await showProjects(session.username, true); }
+    {view === 'auth' && <AuthView loading={authLoading} error={authError} onSubmit={async () => {
+      setAuthError('');
+      try { const session = await window.localAuth.enter(); await showProjects(session.username, true); }
       catch (error) { setAuthError(errorText(error)); }
     }} />}
     {view === 'projects' && <ProjectsView entering={enteringProjects} onRefresh={refreshProjects} username={account} projects={projects} status={status} setStatus={setStatus} busy={busy} onLogout={logout} onNew={() => setEditing(null)} onOpen={openProject} onEdit={setEditing} />}
