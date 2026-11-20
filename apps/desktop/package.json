@@ -8,7 +8,7 @@
     "build": "node scripts/copy-renderer.cjs",
     "start": "electron .",
     "test": "node --test",
-    "dist:win": "node scripts/publish-scan-share.cjs && electron-builder --win nsis",
+    "dist:win": "node scripts/publish-scan-share.cjs && electron-builder --win nsis --publish never",
     "dist:linux": "electron-builder --linux AppImage deb"
   },
   "devDependencies": {
